@@ -1,44 +1,30 @@
 # Persistence and behavioral anchoring detection rules
----
+category: persistence
 rules:
   - id: persistent_behavior
-    pattern: "(from\\s+now\\s+on|in\\s+(all\\s+)?future\\s+(runs?|sessions?|conversations?))"
+    pattern: '(from\s+now\s+on|in\s+(all\s+)?future\s+(runs?|sessions?|conversations?))'
     severity: high
     title: "Persistent behavior change: modifies behavior across sessions"
     taxonomy_id: MCP-T14
     atlas_id: J4
 
   - id: permanent_instruction
-    pattern: "(always|permanently|forever)\\s+(remember|apply|use|follow)\\s+"
+    pattern: '(always|permanently|forever)\s+(remember|apply|use|follow)\s+'
     severity: medium
     title: "Permanent instruction: anchors behavior indefinitely"
     taxonomy_id: MCP-T14
     atlas_id: J4
 
   - id: self_modify_config
-    pattern: "(write|add|append|create)\\s+(this\\s+)?(to|in)\\s+(your\\s+)?(memory|rules?|config)"
+    pattern: '(write|add|append|create)\s+(this|these|the\s+following)\s+(to|into|in)\s+(your\s+)?(memory|rules?|config|settings)'
     severity: critical
     title: "Self-modification: instructs agent to write to its own config"
     taxonomy_id: MCP-T09
     atlas_id: J4
 
   - id: persistence_mechanism
-    pattern: "(install|register|add)\\s+(a\\s+)?(hook|callback|webhook|cron|timer)"
+    pattern: '(install|register|add)\s+(a\s+)?(hook|callback|webhook|cron|timer)'
     severity: high
     title: "Persistence mechanism: registers ongoing execution trigger"
     taxonomy_id: MCP-T14
-    atlas_id: J4
-
-  - id: startup_injection
-    pattern: "(on\\s+start|at\\s+boot|when\\s+(loaded|initialized|started))\\s+.*(execute|run|call)"
-    severity: high
-    title: "Startup injection: executes on agent initialization"
-    taxonomy_id: MCP-T14
-    atlas_id: J4
-
-  - id: git_hook_install
-    pattern: "(pre-commit|post-commit|pre-push|post-receive).*?(install|write|create|chmod)"
-    severity: high
-    title: "Git hook installation: persists execution via version control hooks"
-    taxonomy_id: MCP-T08
     atlas_id: J4

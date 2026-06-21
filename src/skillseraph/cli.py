@@ -32,6 +32,8 @@ SEVERITY_COLORS = {
 @click.option("--json-out", "-j", type=click.Path(), help="Write JSON findings to file")
 @click.option("--sarif", type=click.Path(), help="Write SARIF 2.1.0 report")
 @click.option("--fail-on", type=click.Choice(["critical", "high", "medium", "low", "any", "none"]), default="high", help="Exit non-zero if findings at this severity or above")
+@click.option("--baseline", type=click.Path(), help="Suppress findings recorded in this baseline file")
+@click.option("--save-baseline", type=click.Path(), help="Write current findings as an accepted baseline and exit 0")
 @click.option("--quiet", "-q", is_flag=True, help="Suppress console output (use with --json-out)")
 @click.option("--version", "-V", is_flag=True, help="Show version")
 def main(
@@ -41,6 +43,8 @@ def main(
     json_out: str | None,
     sarif: str | None,
     fail_on: str,
+    baseline: str | None,
+    save_baseline: str | None,
     quiet: bool,
     version: bool,
 ) -> None:
@@ -49,13 +53,30 @@ def main(
         click.echo(f"skillseraph {__version__}")
         return
 
+    from .baseline import apply_baseline, load_baseline
+    from .baseline import save_baseline as write_baseline
+
     target_path = Path(target).resolve()
     platforms = [Platform(p) for p in platform] if platform else None
 
     result = scan_directory(target_path, platforms=platforms, include_deps=include_deps)
 
+    if save_baseline:
+        count = write_baseline(result, Path(save_baseline))
+        if not quiet:
+            console.print(f"[green]Wrote baseline with {count} accepted finding(s) → {save_baseline}[/green]")
+        sys.exit(0)
+
+    suppressed = 0
+    if baseline:
+        before = len(result.findings)
+        result = apply_baseline(result, load_baseline(Path(baseline)))
+        suppressed = before - len(result.findings)
+
     if not quiet:
         _print_results(result, fail_on)
+        if suppressed:
+            console.print(f"  [dim]({suppressed} finding(s) suppressed by baseline)[/dim]")
 
     if json_out:
         _write_json(result, Path(json_out))

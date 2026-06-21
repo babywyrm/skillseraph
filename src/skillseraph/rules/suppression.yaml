@@ -1,0 +1,30 @@
+# Review suppression and stealth detection rules
+category: suppression
+rules:
+  - id: review_suppression
+    pattern: '(don.t|do\s+not|never)\s+(mention|include|show|reveal|disclose)\s+.*(commit|PR|review|summary|changelog)'
+    severity: high
+    title: "Instructs hiding changes from review/PR/commit messages"
+    taxonomy_id: MCP-T13
+    atlas_id: J7
+
+  - id: change_concealment
+    pattern: '(hide|conceal|obscure|omit)\s+(this|these|the)\s+(change|modif|addition|file)'
+    severity: high
+    title: "Instructs concealing modifications"
+    taxonomy_id: MCP-T13
+    atlas_id: J7
+
+  - id: stealth_operation
+    pattern: '(act|operate|work)\s+(silently|quietly|invisibly|in.?the.?background)'
+    severity: medium
+    title: "Instructs silent/invisible operation"
+    taxonomy_id: MCP-T13
+    atlas_id: J7
+
+  - id: user_deception
+    pattern: '(don.t|do\s+not)\s+(tell|inform|alert|notify|warn)\s+(the\s+)?(user|human|developer|operator)'
+    severity: high
+    title: "Instructs hiding actions from the user"
+    taxonomy_id: MCP-T13
+    atlas_id: J7

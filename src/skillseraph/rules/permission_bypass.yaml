@@ -1,0 +1,37 @@
+# Permission / sandbox bypass detection rules
+category: permission_bypass
+rules:
+  - id: sandbox_bypass
+    pattern: '(auto.?approve|skip.?confirm|bypass.?sandbox|disable.?safety)'
+    severity: critical
+    title: "Sandbox/approval bypass instruction"
+    taxonomy_id: MCP-T09
+    atlas_id: J1
+
+  - id: consent_bypass
+    pattern: '(?<!not\s)(operate|act|work|proceed)\s+(without\s+(user\s+)?consent|without\s+asking|silently|secretly)'
+    severity: high
+    title: "Operates without user consent"
+    taxonomy_id: MCP-T09
+    atlas_id: J1
+
+  - id: arbitrary_execution
+    pattern: '(execute|run|invoke)\s+(any|all|arbitrary)\s+(command|tool|script)'
+    severity: critical
+    title: "Arbitrary command/tool execution instruction"
+    taxonomy_id: MCP-T09
+    atlas_id: J1
+
+  - id: validation_skip
+    pattern: '(disable|ignore|skip)\s+(the\s+)?(linter|review|check|validation|policy)'
+    severity: medium
+    title: "Instructs skipping validation/review"
+    taxonomy_id: MCP-T09
+    atlas_id: J1
+
+  - id: privilege_request
+    pattern: '(root|admin|sudo|privileged)\s+(access|mode|shell|execution)'
+    severity: high
+    title: "Requests elevated privileges"
+    taxonomy_id: MCP-T09
+    atlas_id: J1

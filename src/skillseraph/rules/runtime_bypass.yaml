@@ -1,0 +1,52 @@
+# Command-blocklist bypass via language runtimes / interpreters
+# References: GTFOBins, OWASP MCP Top 10 (MCP05 Command Injection).
+category: runtime_bypass
+rules:
+  - id: node_inline_bypass
+    pattern: '\bnode\s+-e\b.*(readFileSync|writeFileSync|child_process|require\s*\(|process\.)'
+    severity: high
+    title: "Node.js inline execution wired to file/process APIs (blocklist bypass)"
+    taxonomy_id: MCP-T05
+    atlas_id: J4
+
+  - id: python_inline_bypass
+    pattern: '\bpython3?\s+-c\b.*(open\s*\(|os\.|subprocess|socket|requests)'
+    severity: high
+    title: "Python inline execution wired to file/OS/network APIs (blocklist bypass)"
+    taxonomy_id: MCP-T05
+    atlas_id: J4
+
+  - id: scripting_inline_bypass
+    pattern: '\b(perl|ruby)\s+-e\b.*(open|system|exec|IO::)'
+    severity: high
+    title: "Perl/Ruby inline execution wired to file/process APIs (blocklist bypass)"
+    taxonomy_id: MCP-T05
+    atlas_id: J4
+
+  - id: php_inline_bypass
+    pattern: '\bphp\s+-r\b.*(file_get_contents|fopen|system|exec|shell_exec)'
+    severity: high
+    title: "PHP inline execution wired to file/process APIs (blocklist bypass)"
+    taxonomy_id: MCP-T05
+    atlas_id: J4
+
+  - id: explicit_bypass_instruction
+    pattern: '(use|prefer|instead\s+use|fall\s?back\s+to)\s+.*(runtime|interpreter|node\s+-e|python\s+-c).*(blocked|blocklist|forbidden|denied|restricted)'
+    severity: critical
+    title: "Explicit instruction to use a runtime to bypass a command blocklist"
+    taxonomy_id: MCP-T05
+    atlas_id: J4
+
+  - id: encoded_pipe_to_shell
+    pattern: '(echo|printf)\s+[A-Za-z0-9+/=]+\s*\|\s*base64\s+-d\s*\|\s*(sh|bash|python|node)'
+    severity: critical
+    title: "Base64-decoded payload piped to an interpreter (obfuscated execution)"
+    taxonomy_id: MCP-T05
+    atlas_id: J4
+
+  - id: env_wrapped_interpreter
+    pattern: '\b(env|/usr/bin/env)\s+\w+\s+-(e|c)\b'
+    severity: medium
+    title: "Interpreter invoked via env wrapper (may evade name-based blocklists)"
+    taxonomy_id: MCP-T05
+    atlas_id: J4

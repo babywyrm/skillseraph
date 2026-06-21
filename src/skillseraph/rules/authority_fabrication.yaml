@@ -1,0 +1,53 @@
+# Fabricated authority / fake authorization detection rules
+# Threat class: untrusted content asserting authority it does not have to defeat
+# a downstream guardrail or human reviewer (OWASP LLM01 / MCP06).
+category: authority_fabrication
+rules:
+  - id: fake_maintenance_window
+    pattern: '(maintenance\s+(window|mode)\s+(is\s+)?(open|active|enabled|authorized))'
+    severity: high
+    title: "Fabricated maintenance window: pre-authorizes privileged operations"
+    taxonomy_id: MCP-T02
+    atlas_id: J1
+
+  - id: fake_approval_claim
+    pattern: '(approved|authorized|cleared|signed.?off)\s+by\s+(the\s+)?(security|ops|admin|sysadmin|management|team)'
+    severity: high
+    title: "Fabricated approval: claims authorization from a trusted party"
+    taxonomy_id: MCP-T02
+    atlas_id: J1
+
+  - id: preauthorization_claim
+    pattern: '(you\s+are|you''?re)\s+(pre.?)?(authorized|approved|cleared|permitted)\s+to'
+    severity: high
+    title: "Pre-authorization claim: asserts the agent already has permission"
+    taxonomy_id: MCP-T02
+    atlas_id: J1
+
+  - id: emergency_override_claim
+    pattern: '(emergency|incident|urgent)\s+(override|authorization|access|approval)'
+    severity: high
+    title: "Emergency override claim: invokes urgency to bypass controls"
+    taxonomy_id: MCP-T02
+    atlas_id: J1
+
+  - id: false_trust_assertion
+    pattern: '(this\s+(has\s+been|is)\s+(already\s+)?(reviewed|approved|vetted|verified|trusted))'
+    severity: medium
+    title: "False trust assertion: claims content is already vetted"
+    taxonomy_id: MCP-T02
+    atlas_id: J1
+
+  - id: fake_ticket_reference
+    pattern: '(ticket|change\s?request|CR|JIRA|INC)[-#\s]?\d{2,}.*?(approved|authorized|emergency)'
+    severity: medium
+    title: "Fake ticket reference: fabricates a change-management trail"
+    taxonomy_id: MCP-T02
+    atlas_id: J1
+
+  - id: operator_clearance_claim
+    pattern: '(all\s+operators?\s+(are\s+)?cleared|operators?\s+(have\s+been\s+)?notified)'
+    severity: medium
+    title: "Operator clearance claim: fabricates team-wide authorization"
+    taxonomy_id: MCP-T02
+    atlas_id: J1

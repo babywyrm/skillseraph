@@ -1,0 +1,38 @@
+# Break-glass / emergency-override token detection rules
+# References: OWASP MCP Top 10 (MCP02 Privilege Escalation, MCP07 Insufficient Auth).
+category: breakglass
+rules:
+  - id: breakglass_reference
+    pattern: '\bbreak.?glass\b'
+    severity: high
+    title: "Break-glass reference: emergency override mechanism in config"
+    taxonomy_id: MCP-T09
+    atlas_id: J1
+
+  - id: override_token_assignment
+    pattern: '(override|bypass|emergency|master)[-_\s]?(token|key|code|password|secret)\s*[:=]'
+    severity: critical
+    title: "Override token assignment: embeds an emergency-access credential"
+    taxonomy_id: MCP-T09
+    atlas_id: J1
+
+  - id: override_usage_instruction
+    pattern: '(use|include|append|add)\s+(this\s+)?(token|annotation|header|flag)\s+to\s+(bypass|override|escalate|approve)'
+    severity: critical
+    title: "Instruction to use a token to bypass/override controls"
+    taxonomy_id: MCP-T09
+    atlas_id: J1
+
+  - id: policy_bypass_token
+    pattern: '(admission|policy|guardrail|gate)\s+(bypass|override|exception)\s+(token|code|flag|annotation)'
+    severity: critical
+    title: "Policy/admission bypass token referenced in config"
+    taxonomy_id: MCP-T09
+    atlas_id: J1
+
+  - id: admission_skip_instruction
+    pattern: '(skip|disable|ignore)\s+(the\s+)?(admission|policy|approval|guardrail)\s+(check|gate|controller|webhook)'
+    severity: high
+    title: "Instruction to skip an admission/policy control"
+    taxonomy_id: MCP-T09
+    atlas_id: J1

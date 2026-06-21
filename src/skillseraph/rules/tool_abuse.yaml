@@ -1,0 +1,30 @@
+# Dangerous tool invocation / path access detection rules
+category: tool_abuse
+rules:
+  - id: dangerous_tool_invocation
+    pattern: '(shell|bash|exec|system|subprocess|os\.popen|eval|rm\s+-rf|curl\s+\|.*sh|wget\s+.*\|)'
+    severity: high
+    title: "Dangerous tool/command invocation"
+    taxonomy_id: MCP-T09
+    atlas_id: J4
+
+  - id: path_traversal
+    pattern: '\.\./\.\./|/etc/(passwd|shadow|hosts)|/root/|~/.ssh/'
+    severity: high
+    title: "Path traversal pattern"
+    taxonomy_id: MCP-T06
+    atlas_id: J1
+
+  - id: sensitive_path_access
+    pattern: '(/\.env|/\.aws/|/\.kube/config|/\.ssh/id_|/\.git/config|/\.npmrc|/\.pypirc)'
+    severity: medium
+    title: "References sensitive credential path"
+    taxonomy_id: MCP-T07
+    atlas_id: J1
+
+  - id: remote_bootstrap
+    pattern: '(curl|wget|fetch)\s+.*(https?://|\|)\s*(sh|bash|python|node)'
+    severity: critical
+    title: "Remote code bootstrap (download and execute)"
+    taxonomy_id: MCP-T08
+    atlas_id: J4
