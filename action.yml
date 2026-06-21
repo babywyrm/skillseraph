@@ -1,0 +1,59 @@
+name: "skillseraph"
+description: "Scan agent config files (skills, rules, hooks, instructions) for poisoning and injection."
+author: "babywyrm"
+branding:
+  icon: "shield"
+  color: "purple"
+
+inputs:
+  path:
+    description: "Directory to scan."
+    required: false
+    default: "."
+  fail-on:
+    description: "Severity threshold that fails the run (critical|high|medium|low|any|none)."
+    required: false
+    default: "high"
+  platform:
+    description: "Restrict to a specific platform (cursor, codex, claude, …). Empty = auto-detect."
+    required: false
+    default: ""
+  include-deps:
+    description: "Scan dependency trees (node_modules, vendor, .venv)."
+    required: false
+    default: "true"
+  sarif:
+    description: "Path to write SARIF 2.1.0 output."
+    required: false
+    default: "skillseraph.sarif"
+  json:
+    description: "Path to write JSON findings."
+    required: false
+    default: "skillseraph.json"
+
+outputs:
+  sarif-file:
+    description: "Path to the generated SARIF file."
+    value: ${{ inputs.sarif }}
+  json-file:
+    description: "Path to the generated JSON file."
+    value: ${{ inputs.json }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
+
+    - name: Run skillseraph
+      shell: bash
+      run: |
+        ARGS=("${{ inputs.path }}" "--fail-on" "${{ inputs.fail-on }}")
+        ARGS+=("--sarif" "${{ inputs.sarif }}" "--json-out" "${{ inputs.json }}")
+        if [ -n "${{ inputs.platform }}" ]; then
+          ARGS+=("--platform" "${{ inputs.platform }}")
+        fi
+        if [ "${{ inputs.include-deps }}" = "false" ]; then
+          ARGS+=("--no-deps")
+        fi
+        uvx skillseraph "${ARGS[@]}"

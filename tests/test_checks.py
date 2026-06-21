@@ -2,7 +2,6 @@
 
 from pathlib import Path
 
-import pytest
 
 from skillseraph.checks.injection import check_injection
 from skillseraph.checks.exfiltration import check_exfiltration

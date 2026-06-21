@@ -17,6 +17,9 @@ def run_all_checks(path: Path, content: str, line_offset: int = 0) -> list[Findi
     from .suppression import check_suppression
     from .persistence import check_persistence
     from .tool_abuse import check_tool_abuse
+    from .authority_fabrication import check_authority_fabrication
+    from .runtime_bypass import check_runtime_bypass
+    from .breakglass import check_breakglass
 
     findings: list[Finding] = []
     for checker in [
@@ -28,6 +31,9 @@ def run_all_checks(path: Path, content: str, line_offset: int = 0) -> list[Findi
         check_suppression,
         check_persistence,
         check_tool_abuse,
+        check_authority_fabrication,
+        check_runtime_bypass,
+        check_breakglass,
     ]:
         findings.extend(checker(path, content))
     return findings

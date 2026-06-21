@@ -146,7 +146,6 @@ PLATFORMS: dict[Platform, PlatformSpec] = {
 def detect_platforms(target_path: str) -> list[Platform]:
     """Auto-detect which platforms have configs in the target path."""
     from pathlib import Path
-    import glob
 
     root = Path(target_path)
     detected: list[Platform] = []
