@@ -45,6 +45,10 @@ runs:
     - name: Install uv
       uses: astral-sh/setup-uv@v5
 
+    - name: Install skillseraph (from this action's checkout)
+      shell: bash
+      run: uv tool install "${{ github.action_path }}"
+
     - name: Run skillseraph
       shell: bash
       run: |
@@ -56,4 +60,4 @@ runs:
         if [ "${{ inputs.include-deps }}" = "false" ]; then
           ARGS+=("--no-deps")
         fi
-        uvx skillseraph "${ARGS[@]}"
+        skillseraph "${ARGS[@]}"

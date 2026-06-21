@@ -33,15 +33,21 @@ skillseraph finds these patterns and fails your CI before the agent runs.
 
 ## Install
 
-```bash
-# With uv (recommended)
-uv tool install skillseraph
+> Not yet published to PyPI. Install from source or run directly from git.
 
-# Or from source
+```bash
+# From a local checkout — global `skillseraph` on your PATH
 git clone https://github.com/babywyrm/skillseraph
 cd skillseraph
+uv tool install .
+skillseraph --version
+
+# Or run without installing (dev)
 uv sync
 uv run skillseraph --version
+
+# Or run straight from git (no clone, no PyPI) — great for CI
+uvx --from git+https://github.com/babywyrm/skillseraph skillseraph --version
 ```
 
 Runs on Linux and macOS. Pure Python (3.11+), no system dependencies.
@@ -143,6 +149,14 @@ Findings map to:
 - The agentic-sec [Attack Path Atlas](https://github.com/babywyrm/agentic-sec/blob/main/docs/attack-path-atlas.md) (Domain J: config & automation)
 
 ---
+
+## Project status & direction
+
+Alpha (`0.1.0`). Source/git install for now; PyPI and a container image are
+near-term. See:
+
+- [CHANGELOG.md](CHANGELOG.md) — release history
+- [ROADMAP.md](ROADMAP.md) — what's planned and current maturity
 
 ## License
 

@@ -6,9 +6,19 @@ Get from zero to a passing security gate in five minutes.
 
 ## 1. Install & first scan
 
+Not on PyPI yet — install from a local checkout (puts `skillseraph` on your PATH):
+
 ```bash
-uv tool install skillseraph        # or: git clone … && uv sync
+git clone https://github.com/babywyrm/skillseraph
+cd skillseraph
+uv tool install .
 skillseraph .                      # scan current repo
+```
+
+Prefer not to install? Run straight from git:
+
+```bash
+uvx --from git+https://github.com/babywyrm/skillseraph skillseraph .
 ```
 
 You'll get a table of findings grouped by severity, plus a summary line with the
@@ -75,7 +85,7 @@ jobs:
 
       - name: Run skillseraph
         run: |
-          uvx skillseraph . \
+          uvx --from git+https://github.com/babywyrm/skillseraph skillseraph . \
             --fail-on high \
             --sarif skillseraph.sarif \
             --json-out skillseraph.json
