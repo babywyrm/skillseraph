@@ -1,0 +1,180 @@
+"""CLI entry point for skillseraph."""
+
+from __future__ import annotations
+
+import json
+import sys
+from pathlib import Path
+
+import click
+from rich.console import Console
+from rich.table import Table
+
+from . import __version__
+from .models import Platform, Severity
+from .scanner import scan_directory
+
+console = Console()
+
+SEVERITY_COLORS = {
+    Severity.CRITICAL: "red bold",
+    Severity.HIGH: "red",
+    Severity.MEDIUM: "yellow",
+    Severity.LOW: "blue",
+    Severity.INFO: "dim",
+}
+
+
+@click.command()
+@click.argument("target", default=".", type=click.Path(exists=True))
+@click.option("--platform", "-p", type=click.Choice([p.value for p in Platform]), multiple=True, help="Target platform(s). Default: auto-detect.")
+@click.option("--include-deps/--no-deps", default=True, help="Scan dependency trees (node_modules, vendor, etc.)")
+@click.option("--json-out", "-j", type=click.Path(), help="Write JSON findings to file")
+@click.option("--sarif", type=click.Path(), help="Write SARIF 2.1.0 report")
+@click.option("--fail-on", type=click.Choice(["critical", "high", "medium", "low", "any", "none"]), default="high", help="Exit non-zero if findings at this severity or above")
+@click.option("--quiet", "-q", is_flag=True, help="Suppress console output (use with --json-out)")
+@click.option("--version", "-V", is_flag=True, help="Show version")
+def main(
+    target: str,
+    platform: tuple[str, ...],
+    include_deps: bool,
+    json_out: str | None,
+    sarif: str | None,
+    fail_on: str,
+    quiet: bool,
+    version: bool,
+) -> None:
+    """Scan agent configs for security issues across agentic platforms."""
+    if version:
+        click.echo(f"skillseraph {__version__}")
+        return
+
+    target_path = Path(target).resolve()
+    platforms = [Platform(p) for p in platform] if platform else None
+
+    result = scan_directory(target_path, platforms=platforms, include_deps=include_deps)
+
+    if not quiet:
+        _print_results(result, fail_on)
+
+    if json_out:
+        _write_json(result, Path(json_out))
+
+    if sarif:
+        _write_sarif(result, Path(sarif))
+
+    exit_code = _check_threshold(result, fail_on)
+    sys.exit(exit_code)
+
+
+def _print_results(result, fail_on: str) -> None:
+    console.print()
+    console.print(f"[bold]skillseraph v{__version__}[/bold] — agent config security scanner")
+    console.print(f"  Target: {result.target}")
+    console.print(f"  Platforms: {', '.join(p.value for p in result.platforms_detected)}")
+    console.print(f"  Files scanned: {result.files_scanned}")
+    console.print()
+
+    if not result.findings:
+        console.print("[green bold]✓ No findings[/green bold]")
+        return
+
+    table = Table(show_header=True, header_style="bold")
+    table.add_column("Sev", width=8)
+    table.add_column("Check", width=24)
+    table.add_column("Location", width=40)
+    table.add_column("Title", min_width=30)
+
+    for f in sorted(result.findings, key=lambda x: x.severity.score, reverse=True):
+        sev_style = SEVERITY_COLORS.get(f.severity, "")
+        table.add_row(
+            f"[{sev_style}]{f.severity.value.upper()}[/{sev_style}]",
+            f.check,
+            f.location,
+            f.title,
+        )
+
+    console.print(table)
+    console.print()
+    console.print(
+        f"  [red]{result.critical_count} critical[/red]  "
+        f"[red]{result.high_count} high[/red]  "
+        f"[yellow]{sum(1 for f in result.findings if f.severity == Severity.MEDIUM)} medium[/yellow]  "
+        f"[blue]{sum(1 for f in result.findings if f.severity == Severity.LOW)} low[/blue]  "
+        f"risk_score={result.risk_score}"
+    )
+    console.print(f"  fail_on={fail_on}")
+    console.print()
+
+
+def _write_json(result, path: Path) -> None:
+    data = {
+        "version": __version__,
+        "target": str(result.target),
+        "platforms": [p.value for p in result.platforms_detected],
+        "files_scanned": result.files_scanned,
+        "risk_score": result.risk_score,
+        "findings": [
+            {
+                "path": str(f.path),
+                "line": f.line,
+                "check": f.check,
+                "severity": f.severity.value,
+                "title": f.title,
+                "detail": f.detail,
+                "evidence": f.evidence,
+                "platform": f.platform.value,
+                "taxonomy_id": f.taxonomy_id,
+                "atlas_id": f.atlas_id,
+            }
+            for f in result.findings
+        ],
+    }
+    path.write_text(json.dumps(data, indent=2))
+
+
+def _write_sarif(result, path: Path) -> None:
+    sarif_doc = {
+        "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/main/sarif-2.1/schema/sarif-schema-2.1.0.json",
+        "version": "2.1.0",
+        "runs": [{
+            "tool": {
+                "driver": {
+                    "name": "skillseraph",
+                    "version": __version__,
+                    "informationUri": "https://github.com/babywyrm/skillseraph",
+                }
+            },
+            "results": [
+                {
+                    "ruleId": f.check,
+                    "level": {"critical": "error", "high": "error", "medium": "warning", "low": "note", "info": "note"}[f.severity.value],
+                    "message": {"text": f"{f.title}: {f.detail}"},
+                    "locations": [{
+                        "physicalLocation": {
+                            "artifactLocation": {"uri": str(f.path.relative_to(result.target))},
+                            "region": {"startLine": f.line or 1},
+                        }
+                    }],
+                }
+                for f in result.findings
+            ],
+        }],
+    }
+    path.write_text(json.dumps(sarif_doc, indent=2))
+
+
+def _check_threshold(result, fail_on: str) -> int:
+    if fail_on == "none":
+        return 0
+    threshold = {
+        "critical": Severity.CRITICAL,
+        "high": Severity.HIGH,
+        "medium": Severity.MEDIUM,
+        "low": Severity.LOW,
+        "any": Severity.INFO,
+    }[fail_on]
+    for f in result.findings:
+        if f.severity.score >= threshold.score:
+            return 1
+    return 0
