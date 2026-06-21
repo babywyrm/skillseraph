@@ -1,0 +1,51 @@
+# Exfiltration and secret access detection rules
+---
+rules:
+  - id: exfil_credentials
+    pattern: "(harvest|collect|gather|exfil)\\s+(all\\s+)?(tokens?|cred|secret|key|password|api.?key)"
+    severity: critical
+    title: "Credential harvesting instruction"
+    taxonomy_id: MCP-T12
+    atlas_id: J1
+
+  - id: exfil_to_url
+    pattern: "send\\s+(to|data|results?|output)\\s+(https?://|wss?://)"
+    severity: critical
+    title: "Data exfiltration to external URL"
+    taxonomy_id: MCP-T12
+    atlas_id: J1
+
+  - id: secret_file_access
+    pattern: "read\\s+(the\\s+)?(\\.env|ssh.key|id_rsa|id_ed25519|\\.aws/cred|\\.kube/config)"
+    severity: high
+    title: "Instruction to read sensitive files"
+    taxonomy_id: MCP-T07
+    atlas_id: J1
+
+  - id: outbound_data_push
+    pattern: "(curl|wget|fetch|http)\\s+.*\\s+(POST|PUT)\\s+"
+    severity: medium
+    title: "Outbound data push instruction"
+    taxonomy_id: MCP-T12
+    atlas_id: J1
+
+  - id: env_secret_access
+    pattern: "(environment|process\\.env|os\\.environ)\\s*.*(token|secret|key|pass)"
+    severity: high
+    title: "Environment variable secret access"
+    taxonomy_id: MCP-T07
+    atlas_id: J1
+
+  - id: clipboard_exfil
+    pattern: "(copy|clipboard|pbcopy|xclip).*?(secret|token|key|password)"
+    severity: high
+    title: "Clipboard exfiltration of secrets"
+    taxonomy_id: MCP-T12
+    atlas_id: J1
+
+  - id: dns_exfil
+    pattern: "(dig|nslookup|host)\\s+.*\\.(burpcollaborator|oast|interact\\.sh)"
+    severity: critical
+    title: "DNS exfiltration to known attacker infrastructure"
+    taxonomy_id: MCP-T12
+    atlas_id: J1

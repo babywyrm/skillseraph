@@ -21,7 +21,7 @@ _PATTERNS: list[tuple[re.Pattern, str, Severity, str]] = [
         "Permanent instruction: attempts to anchor behavior indefinitely",
     ),
     (
-        re.compile(r"(write|add|append|create)\s+(this\s+)?(to|in)\s+(your\s+)?(memory|rules?|config)", re.IGNORECASE),
+        re.compile(r"(write|add|append|create)\s+(this|these|the\s+following)\s+(to|into|in)\s+(your\s+)?(memory|rules?|config|settings)", re.IGNORECASE),
         "self_modify_config",
         Severity.CRITICAL,
         "Self-modification: instructs agent to write to its own config",

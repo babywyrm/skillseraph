@@ -15,7 +15,7 @@ _PATTERNS: list[tuple[re.Pattern, str, Severity, str]] = [
         "Sandbox/approval bypass instruction",
     ),
     (
-        re.compile(r"(without\s+(user\s+)?consent|without\s+asking|silently|secretly)", re.IGNORECASE),
+        re.compile(r"(?<!not\s)(operate|act|work|proceed)\s+(without\s+(user\s+)?consent|without\s+asking|silently|secretly)", re.IGNORECASE),
         "consent_bypass",
         Severity.HIGH,
         "Operates without user consent",

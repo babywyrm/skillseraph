@@ -15,7 +15,7 @@ _PATTERNS: list[tuple[re.Pattern, str, Severity, str]] = [
         "Credential harvesting instruction",
     ),
     (
-        re.compile(r"send\s+(to|data|results?|output)\s+(https?://|wss?://)", re.IGNORECASE),
+        re.compile(r"send\s+(the\s+)?(data|results?|output|tokens?|secrets?|contents?)\s+(to\s+)?(https?://|wss?://)", re.IGNORECASE),
         "exfil_to_url",
         Severity.CRITICAL,
         "Data exfiltration to external URL",

@@ -1,0 +1,87 @@
+# Prompt injection detection rules
+# Each rule: pattern (regex), id, severity, title, taxonomy_id, atlas_id
+---
+rules:
+  - id: prompt_injection_override
+    pattern: "ignore\\s+(all\\s+)?previous\\s+instructions"
+    severity: critical
+    title: "Instruction override: attempts to reset agent context"
+    taxonomy_id: MCP-T01
+    atlas_id: J1
+
+  - id: persona_hijack
+    pattern: "you\\s+are\\s+now\\s+(a|an)\\s+"
+    severity: high
+    title: "Persona hijack: redefines agent identity"
+    taxonomy_id: MCP-T01
+    atlas_id: J1
+
+  - id: fake_role_claim
+    pattern: "(system|assistant)\\s*:\\s*"
+    severity: high
+    title: "Fake role marker: mimics system/assistant message boundary"
+    taxonomy_id: MCP-T01
+    atlas_id: J1
+
+  - id: safety_override
+    pattern: "do\\s+not\\s+follow\\s+(any|your)\\s+(safety|security|previous)"
+    severity: critical
+    title: "Safety override: instructs agent to ignore safety guidelines"
+    taxonomy_id: MCP-T01
+    atlas_id: J1
+
+  - id: jailbreak_language
+    pattern: "(jailbreak|DAN|do\\s+anything\\s+now)"
+    severity: critical
+    title: "Jailbreak pattern: known alignment bypass technique"
+    taxonomy_id: MCP-T01
+    atlas_id: J1
+
+  - id: hypothetical_framing
+    pattern: "pretend\\s+(you\\s+)?(are|have|can)\\s+"
+    severity: medium
+    title: "Hypothetical framing: may trick agent into unsafe behavior"
+    taxonomy_id: MCP-T01
+    atlas_id: J1
+
+  - id: token_boundary_injection
+    pattern: "<\\|(im_start|im_end|endoftext)\\|>"
+    severity: critical
+    title: "Token boundary injection: manipulates tokenizer control sequences"
+    taxonomy_id: MCP-T01
+    atlas_id: J1
+
+  - id: invisible_unicode
+    pattern: "\\\\u200[b-f]|\\\\u00ad|\\\\ufeff"
+    severity: high
+    title: "Invisible unicode: may hide instructions from human review"
+    taxonomy_id: MCP-T01
+    atlas_id: J1
+
+  - id: delimiter_escape
+    pattern: "(```|---|\\*\\*\\*|===)\\s*(system|instruction|override)"
+    severity: high
+    title: "Delimiter escape: uses markdown boundaries to inject role context"
+    taxonomy_id: MCP-T01
+    atlas_id: J1
+
+  - id: context_window_stuffing
+    pattern: "(repeat\\s+(this|the\\s+following)\\s+\\d+\\s+times|AAAA{50,})"
+    severity: medium
+    title: "Context window stuffing: may push legitimate instructions out of context"
+    taxonomy_id: MCP-T01
+    atlas_id: J1
+
+  - id: instruction_in_comment
+    pattern: "<!--.*?(ignore|override|inject|execute|system:).*?-->"
+    severity: high
+    title: "Hidden instruction in HTML/markdown comment"
+    taxonomy_id: MCP-T02
+    atlas_id: J1
+
+  - id: multi_language_injection
+    pattern: "(instrucciones|инструкции|指示|anweisungen).*?(ignorar|игнорировать|忽略|ignorieren)"
+    severity: medium
+    title: "Multi-language injection: bypasses English-only pattern detection"
+    taxonomy_id: MCP-T01
+    atlas_id: J1
