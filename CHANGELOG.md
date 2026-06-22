@@ -6,7 +6,26 @@ uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-_Nothing yet — see [ROADMAP.md](ROADMAP.md) for what's planned._
+### Added
+
+- **Dockerfile** — multi-stage (python:3.12-slim + uv), GHCR push on main in CI.
+  Enables the K8s init-container and admission webhook paths.
+- **`--changed-only` / `--files-from`** — PR diff mode: scan only changed files
+  (fast CI gate). The GHA action auto-diffs on pull_request events.
+- **K8s init-container gate** — runnable Pod manifest + poisoned/clean ConfigMaps +
+  `deploy/k8s/test-gate.sh` for end-to-end validation on any cluster.
+- **K8s admission webhook** — ValidatingWebhookConfiguration + `webhook.py` that
+  rejects ConfigMap creates/updates containing poisoned agent configs. Opt-in via
+  namespace label `skillseraph.io/scan: "true"`.
+- **Atlas J3 rules** (automation_triggers.yaml) — wildcard events, shell exec in
+  automations, broad write permissions.
+- **Atlas J5 rules** (config_inheritance.yaml) — parent traversal, absolute path
+  includes, remote URL fetch, recursive globs.
+- **`--generate-policy`** — emit a NullfieldPolicy YAML from findings, mapping
+  critical/high→DENY, medium→HOLD, with a default-deny catch-all.
+- **Action hardening** — `baseline` input, `changed-only` input (auto-diff),
+  reusable workflow exposes all new inputs. Ready for `@v1` tag.
+- 9 new tests (77 total).
 
 ## [0.1.0] — 2026-06-20
 

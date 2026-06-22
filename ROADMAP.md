@@ -10,34 +10,31 @@ Domain J (config & automation).
 | Area | State |
 |------|-------|
 | Multi-platform detection (11 platforms) | **Strong** |
-| Data-driven YAML rules | **Strong** |
+| Data-driven YAML rules (11 packs) | **Strong** |
 | Baseline / allowlist | **Medium** — file-level baseline; no inline ignores yet |
 | Output (console / JSON / SARIF) | **Strong** |
-| CI integration (Action + workflow) | **Medium** — works; not yet on a registry |
-| Distribution (PyPI / container image) | **Thin** — source/git only |
-| Policy generation (nullfield) | **Not started** |
-| Atlas Domain J coverage | **Partial** — J1/J4/J6/J7/J8 done; J3/J5 open |
+| CI integration (Action + workflow + PR diff mode) | **Strong** — composite action, reusable workflow, `--changed-only` |
+| Distribution (container image) | **Strong** — Dockerfile + GHCR push in CI; PyPI pending |
+| Kubernetes gating | **Strong** — init-container + admission webhook (opt-in) |
+| Policy generation (nullfield) | **Done** — `--generate-policy` emits NullfieldPolicy |
+| Atlas Domain J coverage | **Strong** — J1/J3/J4/J5/J6/J7/J8 done |
 
 ---
 
 ## Near-term
 
 - **PyPI publish** — `pip install skillseraph` / `uvx skillseraph` without git.
-- **Container image** (GHCR) — `ghcr.io/babywyrm/skillseraph` so the Kubernetes
-  init-container example in QUICKSTART runs out of the box.
 - **Inline ignores** — `# skillseraph: ignore <rule>` comments and a
   `.skillseraphignore` file for path/rule exclusions, complementing baselines.
-- **Diff mode** — `--changed-only` to scan just the files in a PR diff (fast CI).
-- **Publish the Action to the Marketplace** so `uses: babywyrm/skillseraph@v1` is
-  first-class.
+- **Publish the Action to the Marketplace** — tag `v0.1.0` + floating `v1` so
+  `uses: babywyrm/skillseraph@v1` is first-class.
 
 ## Medium
 
-- **Atlas J3 / J5 coverage** — automation-trigger abuse (J3) and config-inheritance
-  escalation (J5): scan automation/event definitions and parent→child config
-  inheritance for scope widening.
-- **nullfield policy generation** — `--generate-policy` to emit a NullfieldPolicy
-  from findings, closing the scan → enforce loop with the rest of the ecosystem.
+- ~~Atlas J3/J5~~ **Done** (automation_triggers.yaml, config_inheritance.yaml).
+- ~~nullfield policy generation~~ **Done** (`--generate-policy`).
+- ~~Container image~~ **Done** (Dockerfile + GHCR push in CI).
+- ~~Diff mode~~ **Done** (`--changed-only` + `--files-from`).
 - **Provenance / signature checks** — flag skills and rules lacking a trusted
   source or signature; optional allowlist of trusted publishers.
 - **Structural parsers** — parse JSON/YAML configs (MCP server defs, hooks)
