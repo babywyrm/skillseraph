@@ -35,6 +35,9 @@ SEVERITY_COLORS = {
 @click.option("--baseline", type=click.Path(), help="Suppress findings recorded in this baseline file")
 @click.option("--save-baseline", type=click.Path(), help="Write current findings as an accepted baseline and exit 0")
 @click.option("--quiet", "-q", is_flag=True, help="Suppress console output (use with --json-out)")
+@click.option("--changed-only", is_flag=True, help="Scan only changed files (reads list from stdin, one path per line)")
+@click.option("--files-from", type=click.Path(), help="File containing changed paths (one per line); alternative to stdin for --changed-only")
+@click.option("--generate-policy", type=click.Path(), help="Write a NullfieldPolicy YAML from findings (scan→enforce bridge)")
 @click.option("--version", "-V", is_flag=True, help="Show version")
 def main(
     target: str,
@@ -46,6 +49,9 @@ def main(
     baseline: str | None,
     save_baseline: str | None,
     quiet: bool,
+    changed_only: bool,
+    files_from: str | None,
+    generate_policy: str | None,
     version: bool,
 ) -> None:
     """Scan agent configs for security issues across agentic platforms."""
@@ -59,7 +65,16 @@ def main(
     target_path = Path(target).resolve()
     platforms = [Platform(p) for p in platform] if platform else None
 
-    result = scan_directory(target_path, platforms=platforms, include_deps=include_deps)
+    changed: list[Path] | None = None
+    if changed_only or files_from:
+        if files_from:
+            changed = [Path(l.strip()) for l in Path(files_from).read_text().splitlines() if l.strip()]
+        elif not sys.stdin.isatty():
+            changed = [Path(l.strip()) for l in sys.stdin if l.strip()]
+        else:
+            changed = []
+
+    result = scan_directory(target_path, platforms=platforms, include_deps=include_deps, changed_files=changed)
 
     if save_baseline:
         count = write_baseline(result, Path(save_baseline))
@@ -83,6 +98,12 @@ def main(
 
     if sarif:
         _write_sarif(result, Path(sarif))
+
+    if generate_policy:
+        from .policy_gen import write_policy
+        count = write_policy(result, Path(generate_policy))
+        if not quiet:
+            console.print(f"  [green]NullfieldPolicy written → {generate_policy} ({count} finding(s) mapped)[/green]")
 
     exit_code = _check_threshold(result, fail_on)
     sys.exit(exit_code)

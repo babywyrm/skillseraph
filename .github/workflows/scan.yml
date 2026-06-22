@@ -1,13 +1,12 @@
 name: skillseraph scan
 
-# Reusable workflow. Call it from any repo:
+# Reusable workflow. Call from any repo:
 #
 #   jobs:
 #     skillseraph:
-#       uses: babywyrm/skillseraph/.github/workflows/scan.yml@main
+#       uses: babywyrm/skillseraph/.github/workflows/scan.yml@v1
 #       with:
 #         fail-on: high
-#         paths: "."
 
 on:
   workflow_call:
@@ -27,6 +26,16 @@ on:
         required: false
         type: boolean
         default: true
+      changed-only:
+        description: "Only scan files changed in the PR."
+        required: false
+        type: boolean
+        default: true
+      baseline:
+        description: "Path to a baseline file (suppress accepted findings)."
+        required: false
+        type: string
+        default: ""
 
 permissions:
   contents: read
@@ -37,14 +46,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: skillseraph
         id: scan
-        uses: babywyrm/skillseraph@main
+        uses: babywyrm/skillseraph@v1
         with:
           path: ${{ inputs.paths }}
           fail-on: ${{ inputs.fail-on }}
           include-deps: ${{ inputs.include-deps }}
+          changed-only: ${{ inputs.changed-only }}
+          baseline: ${{ inputs.baseline }}
 
       - name: Upload SARIF
         if: always()

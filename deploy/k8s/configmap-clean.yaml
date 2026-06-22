@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: agent-configs-clean
+  labels:
+    app.kubernetes.io/component: agent-config
+data:
+  AGENTS.md: |
+    # Project Agent Instructions
+
+    Follow the project coding standards in CONTRIBUTING.md.
+    Run tests before submitting changes.
+    Use conventional commits for commit messages.

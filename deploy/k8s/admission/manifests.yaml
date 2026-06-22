@@ -1,0 +1,127 @@
+# skillseraph admission webhook — optional deploy-time gate.
+#
+# Rejects ConfigMap/Secret creates/updates in labeled namespaces when their data
+# contains agent-config keys with findings above threshold.
+#
+# Opt-in: label namespaces with skillseraph.io/scan=true
+# Requires: cert-manager for TLS (or provide certs manually).
+#
+# Apply:
+#   kubectl apply -f deploy/k8s/admission/manifests.yaml
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: skillseraph-system
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: skillseraph-webhook
+  namespace: skillseraph-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: skillseraph-webhook
+  template:
+    metadata:
+      labels:
+        app: skillseraph-webhook
+    spec:
+      containers:
+        - name: webhook
+          image: ghcr.io/babywyrm/skillseraph:latest
+          command: ["python", "-m", "skillseraph.webhook"]
+          ports:
+            - containerPort: 8443
+          env:
+            - name: FAIL_ON
+              value: "high"
+            - name: TLS_CERT_FILE
+              value: /certs/tls.crt
+            - name: TLS_KEY_FILE
+              value: /certs/tls.key
+          volumeMounts:
+            - name: certs
+              mountPath: /certs
+              readOnly: true
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          readinessProbe:
+            tcpSocket:
+              port: 8443
+            initialDelaySeconds: 3
+            periodSeconds: 10
+      volumes:
+        - name: certs
+          secret:
+            secretName: skillseraph-webhook-tls
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: skillseraph-webhook
+  namespace: skillseraph-system
+spec:
+  selector:
+    app: skillseraph-webhook
+  ports:
+    - port: 443
+      targetPort: 8443
+---
+# cert-manager Certificate (generates the TLS secret automatically).
+# Requires cert-manager installed. If using manual certs, create the
+# Secret skillseraph-webhook-tls with tls.crt + tls.key and skip this.
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: skillseraph-webhook-cert
+  namespace: skillseraph-system
+spec:
+  secretName: skillseraph-webhook-tls
+  dnsNames:
+    - skillseraph-webhook.skillseraph-system.svc
+    - skillseraph-webhook.skillseraph-system.svc.cluster.local
+  issuerRef:
+    name: selfsigned-issuer
+    kind: ClusterIssuer
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: selfsigned-issuer
+spec:
+  selfSigned: {}
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: skillseraph-agent-config
+  annotations:
+    cert-manager.io/inject-ca-from: skillseraph-system/skillseraph-webhook-cert
+webhooks:
+  - name: configmap.skillseraph.io
+    admissionReviewVersions: ["v1"]
+    sideEffects: None
+    failurePolicy: Ignore
+    timeoutSeconds: 10
+    namespaceSelector:
+      matchLabels:
+        skillseraph.io/scan: "true"
+    rules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["configmaps"]
+    clientConfig:
+      service:
+        namespace: skillseraph-system
+        name: skillseraph-webhook
+        path: /validate
+        port: 443

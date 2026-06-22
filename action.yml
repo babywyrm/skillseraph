@@ -22,6 +22,14 @@ inputs:
     description: "Scan dependency trees (node_modules, vendor, .venv)."
     required: false
     default: "true"
+  changed-only:
+    description: "Only scan files changed in the PR (fast gate). Ignored on push events."
+    required: false
+    default: "true"
+  baseline:
+    description: "Path to a baseline file (suppress known/accepted findings)."
+    required: false
+    default: ""
   sarif:
     description: "Path to write SARIF 2.1.0 output."
     required: false
@@ -45,9 +53,17 @@ runs:
     - name: Install uv
       uses: astral-sh/setup-uv@v5
 
-    - name: Install skillseraph (from this action's checkout)
+    - name: Install skillseraph
       shell: bash
       run: uv tool install "${{ github.action_path }}"
+
+    - name: Compute changed files (PR diff mode)
+      id: diff
+      if: inputs.changed-only == 'true' && github.event_name == 'pull_request'
+      shell: bash
+      run: |
+        git diff --name-only --diff-filter=ACMR "${{ github.event.pull_request.base.sha }}...${{ github.sha }}" > /tmp/skillseraph-changed.txt
+        echo "files=/tmp/skillseraph-changed.txt" >> "$GITHUB_OUTPUT"
 
     - name: Run skillseraph
       shell: bash
@@ -59,5 +75,11 @@ runs:
         fi
         if [ "${{ inputs.include-deps }}" = "false" ]; then
           ARGS+=("--no-deps")
+        fi
+        if [ -n "${{ inputs.baseline }}" ]; then
+          ARGS+=("--baseline" "${{ inputs.baseline }}")
+        fi
+        if [ -n "${{ steps.diff.outputs.files }}" ]; then
+          ARGS+=("--files-from" "${{ steps.diff.outputs.files }}")
         fi
         skillseraph "${ARGS[@]}"

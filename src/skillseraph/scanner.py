@@ -26,8 +26,13 @@ def scan_directory(
     target: Path,
     platforms: list[Platform] | None = None,
     include_deps: bool = True,
+    changed_files: list[Path] | None = None,
 ) -> ScanResult:
-    """Scan a directory for agent config security issues across platforms."""
+    """Scan a directory for agent config security issues across platforms.
+
+    If *changed_files* is provided, only those files (that also match platform
+    patterns) are scanned — this enables fast PR-diff gates.
+    """
     target = target.resolve()
 
     if platforms is None:
@@ -42,6 +47,10 @@ def scan_directory(
     files_to_scan: set[Path] = set()
     for pattern in patterns:
         files_to_scan.update(target.glob(pattern))
+
+    if changed_files is not None:
+        resolved_changed = {(target / f).resolve() for f in changed_files}
+        files_to_scan = files_to_scan & resolved_changed
 
     all_findings: list[Finding] = []
     for fpath in sorted(files_to_scan):

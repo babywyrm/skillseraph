@@ -1,0 +1,50 @@
+# skillseraph init-container gate.
+#
+# The init container scans agent configs from a mounted volume before the main
+# agent container starts. If findings at/above --fail-on are detected, the init
+# container exits non-zero and the pod fails to start (CrashLoopBackOff).
+#
+# Usage:
+#   1. Apply a ConfigMap with agent config data (see configmap-*.yaml).
+#   2. Apply this Pod. Clean configs -> pod starts. Poisoned -> pod fails init.
+#
+# Customize:
+#   IMAGE     ghcr.io/babywyrm/skillseraph:latest (or build locally: skillseraph:local)
+#   FAIL_ON   critical | high | medium | low | any
+#   VOLUME    mount your ConfigMap / Secret / PVC at /configs
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: agent-with-gate
+  labels:
+    app: agent-workload
+spec:
+  restartPolicy: Never
+  volumes:
+    - name: agent-configs
+      configMap:
+        name: agent-configs  # swap: agent-configs-clean or agent-configs-poisoned
+  initContainers:
+    - name: skillseraph-gate
+      image: ghcr.io/babywyrm/skillseraph:latest
+      args: ["/configs", "--fail-on", "high"]
+      volumeMounts:
+        - name: agent-configs
+          mountPath: /configs
+          readOnly: true
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop: ["ALL"]
+  containers:
+    - name: agent
+      image: busybox:1.36
+      command: ["sh", "-c", "echo 'Agent booted with clean configs'; sleep 3600"]
+      volumeMounts:
+        - name: agent-configs
+          mountPath: /workspace/configs
+          readOnly: true

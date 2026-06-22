@@ -1,0 +1,34 @@
+# Atlas J3 — Automation trigger abuse.
+# Detects overly broad event triggers in automation configs.
+rules:
+  - id: j3_wildcard_event_trigger
+    pattern: "(?i)(on:\\s*\\*|events?\\s*:\\s*\\*)"
+    severity: high
+    title: "Wildcard event trigger — automation fires on all events"
+    detail: "A wildcard event trigger means ANY event activates this automation, vastly expanding the attack surface."
+    taxonomy_id: MCP-T09
+    atlas_id: J3
+
+  - id: j3_hook_all_events
+    pattern: "(?i)\"event\"\\s*:\\s*\"(\\*|all|any)\""
+    severity: high
+    title: "Hook registered for all events"
+    detail: "An agent hook listening to all events can be triggered by attacker-controlled actions."
+    taxonomy_id: MCP-T09
+    atlas_id: J3
+
+  - id: j3_automation_shell_exec
+    pattern: "(?i)run:\\s*\\|?\\s*(curl|wget|bash|sh|eval)\\s"
+    severity: high
+    title: "Automation executes shell commands directly"
+    detail: "Shell execution in a broadly-triggered automation is a command injection risk."
+    taxonomy_id: MCP-T09
+    atlas_id: J3
+
+  - id: j3_broad_write_permissions
+    pattern: "(?i)permissions:\\s*\\n\\s*(contents|actions|packages|id-token):\\s*write"
+    severity: medium
+    title: "Automation requests broad write permissions"
+    detail: "Write permissions on a broadly-triggered automation expand the blast radius."
+    taxonomy_id: MCP-T09
+    atlas_id: J3

@@ -20,6 +20,8 @@ def run_all_checks(path: Path, content: str, line_offset: int = 0) -> list[Findi
     from .authority_fabrication import check_authority_fabrication
     from .runtime_bypass import check_runtime_bypass
     from .breakglass import check_breakglass
+    from .automation_triggers import check_automation_triggers
+    from .config_inheritance import check_config_inheritance
 
     findings: list[Finding] = []
     for checker in [
@@ -34,6 +36,8 @@ def run_all_checks(path: Path, content: str, line_offset: int = 0) -> list[Findi
         check_authority_fabrication,
         check_runtime_bypass,
         check_breakglass,
+        check_automation_triggers,
+        check_config_inheritance,
     ]:
         findings.extend(checker(path, content))
     return findings
