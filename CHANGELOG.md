@@ -6,7 +6,42 @@ uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-_Nothing pending._
+### Added
+
+- **`skill_invocation` rule pack (Atlas J2)** — detects skill invocation hijack
+  distinct from rule injection: callback/webhook on invocation, tool-call
+  redirects, skill self-modification, invocation-time overrides, load-time
+  exfil, silent invocation, and remote skill pull. Wired via a new
+  `check_skill_invocation` module.
+- **Sleeper / conditional-trigger detection (Atlas C1)** in the `injection`
+  pack — if-then triggers, keyword/passphrase-activated modes, selective
+  disclosure, and time/turn-based delayed activation.
+- **Tool schema smuggling (Atlas I3)** in `mcp_servers` — instruction override,
+  exfil URLs, and role-marker injection hidden in MCP tool `description`/
+  parameter fields.
+- **Supply-chain patterns (Atlas D1/D3/D4)** in `tool_abuse` — unpinned agent
+  package installs, `package.json` lifecycle hooks referencing agent tooling,
+  CI secret exposure, and non-canonical registry redirects.
+- **Encoding pack extended** — `eval(atob())` decode-then-execute, ROT13/`tr`
+  pipes, and `String.fromCharCode`/hex-escape concatenation, in addition to the
+  existing base64/hex/unicode/data-URI checks.
+- 27 new tests (`test_extended_coverage.py`) + `poisoned_skill_invocation.md`
+  fixture. 110 tests total.
+
+### Changed
+
+- **`encoding` is now fully data-driven** — `encoding.py` delegates to
+  `rules/encoding.yaml` via the rules engine, removing the duplicate hardcoded
+  regexes so there is a single source of truth (and no double-reporting).
+- `__version__` bumped to `0.2.0` to match `pyproject.toml` (banner now shows
+  the correct version).
+
+### Fixed
+
+- **Watch mode `NameError`** — `cli.py` referenced `platforms` before it was
+  defined; the assignment now precedes the `--watch` branch.
+- Lint: removed unused `Path` import and dead `cat` local in `correlator.py`;
+  renamed ambiguous `l` loop vars in `cli.py`.
 
 ## [0.2.0] — 2026-06-25
 

@@ -61,3 +61,32 @@ rules:
     detail: "A wildcard tool allowlist grants the server access to every capability. This defeats least-privilege and allows a compromised server to invoke any tool."
     taxonomy_id: MCP-T09
     atlas_id: J3
+
+  # ── I3: Tool schema smuggling (Atlas I3) ──────────────────────────────────
+  # Hidden instructions embedded in MCP tool description or parameter fields.
+  # These are read into LLM context when the tool manifest is loaded and can
+  # silently override agent behavior without appearing in user-visible configs.
+
+  - id: mcp_tool_description_override
+    pattern: "(?i)\"description\"\\s*:\\s*\"[^\"]{0,200}\\b(ignore|override|forget|disregard|instead\\s+do)\\b[^\"]*\""
+    severity: critical
+    title: "MCP tool description contains instruction override"
+    detail: "The tool's description field contains override language that will be injected into the LLM's context when the tool manifest is loaded — a classic tool schema smuggling vector (Atlas I3)."
+    taxonomy_id: MCP-T03
+    atlas_id: I3
+
+  - id: mcp_tool_description_exfil
+    pattern: "(?i)\"description\"\\s*:\\s*\"[^\"]{0,200}\\b(send|exfil|forward|post\\s+to|upload)\\b[^\"]*https?://"
+    severity: critical
+    title: "MCP tool description instructs exfiltration to URL"
+    detail: "The tool description embeds an exfiltration instruction with an external URL. This payload reaches the LLM via the tool manifest without appearing in any user-visible config."
+    taxonomy_id: MCP-T12
+    atlas_id: I3
+
+  - id: mcp_tool_param_name_injection
+    pattern: "(?i)\"(name|title|label)\"\\s*:\\s*\"[^\"]{0,80}(system:|assistant:|\\[INST\\]|<\\|im_start\\|>)"
+    severity: high
+    title: "MCP tool parameter name contains role-marker injection"
+    detail: "A tool parameter name embeds a chat-role boundary marker (system:, [INST], <|im_start|>). These markers hijack the tokenizer's role-separation logic when the tool schema is loaded."
+    taxonomy_id: MCP-T01
+    atlas_id: I3

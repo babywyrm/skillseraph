@@ -67,20 +67,20 @@ def main(
     from .baseline import save_baseline as write_baseline
 
     target_path = Path(target).resolve()
+    platforms = [Platform(p) for p in platform] if platform else None
 
     # Watch mode: enter the polling loop and never return (until Ctrl-C or fail).
     if watch:
         from .watcher import watch_and_scan
         watch_and_scan(target_path, platforms=platforms, include_deps=include_deps, fail_on=fail_on, quiet=quiet)
         return  # unreachable (watch exits via sys.exit)
-    platforms = [Platform(p) for p in platform] if platform else None
 
     changed: list[Path] | None = None
     if changed_only or files_from:
         if files_from:
-            changed = [Path(l.strip()) for l in Path(files_from).read_text().splitlines() if l.strip()]
+            changed = [Path(ln.strip()) for ln in Path(files_from).read_text().splitlines() if ln.strip()]
         elif not sys.stdin.isatty():
-            changed = [Path(l.strip()) for l in sys.stdin if l.strip()]
+            changed = [Path(ln.strip()) for ln in sys.stdin if ln.strip()]
         else:
             changed = []
 

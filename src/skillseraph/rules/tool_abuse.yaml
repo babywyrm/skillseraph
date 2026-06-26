@@ -1,4 +1,4 @@
-# Dangerous tool invocation / path access detection rules
+# Dangerous tool invocation / path access / supply chain detection rules
 category: tool_abuse
 rules:
   - id: dangerous_tool_invocation
@@ -28,3 +28,40 @@ rules:
     title: "Remote code bootstrap (download and execute)"
     taxonomy_id: MCP-T08
     atlas_id: J4
+
+  # ── T04: Supply chain via agent config (Atlas D3) ─────────────────────────
+  # Statically-detectable supply chain patterns in agent config files:
+  # unpinned remote package installs, postinstall hooks that phone home,
+  # and CI/build configs that invoke agent APIs without review.
+
+  - id: supply_chain_unpinned_agent_package
+    pattern: '(?i)(npm\s+install|pip\s+install|npx\s+-y|uvx\s+(?!skillseraph))\s+[^\s@#]{3,}(?<![0-9])(?!\s*==|\s*@[0-9])'
+    severity: medium
+    title: "Unpinned agent-related package install (supply chain risk)"
+    detail: "An agent config instructs the agent to install a package without a pinned version. An attacker who compromises or typosquats that package achieves code execution via supply chain."
+    taxonomy_id: MCP-T04
+    atlas_id: D3
+
+  - id: supply_chain_postinstall_agent_hook
+    pattern: '(?i)"(postinstall|prepare|preinstall)"\s*:\s*"[^"]{0,200}(agent|skill|mcp|cursor|codex|claude)'
+    severity: high
+    title: "package.json lifecycle hook references agent tooling"
+    detail: "A postinstall or prepare script references agent-specific tooling. An attacker who plants or modifies this script achieves execution during dependency install, before any agent security gate runs."
+    taxonomy_id: MCP-T04
+    atlas_id: D3
+
+  - id: supply_chain_ci_secret_agent_exfil
+    pattern: '(?i)(GITHUB_TOKEN|AWS_SECRET|AZURE_CLIENT_SECRET|GCP_SA_KEY)\s*[:=]\s*\$\{\{?\s*secrets\.'
+    severity: medium
+    title: "CI secret passed into context where agent instructions could reach it"
+    detail: "A CI workflow exposes a secret that could be read by an agent with access to the workflow context or environment. Combined with an AGENTS.md exfil instruction, this becomes a credential exfiltration chain."
+    taxonomy_id: MCP-T04
+    atlas_id: D4
+
+  - id: supply_chain_registry_confusion
+    pattern: '(?i)(registry\s*=\s*https?://(?!registry\.npmjs\.org|pypi\.org|files\.pythonhosted\.org)[^\s"]+|--index-url\s+https?://(?!pypi\.org)[^\s"]+)'
+    severity: high
+    title: "Package registry redirected to non-canonical source"
+    detail: "The config points to a non-standard package registry. This is a dependency confusion or registry hijack setup where malicious packages masquerade as internal ones."
+    taxonomy_id: MCP-T04
+    atlas_id: D1

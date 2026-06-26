@@ -128,20 +128,25 @@ skillseraph auto-detects and scans config surfaces for these platforms:
 
 | Module | Detects |
 |--------|---------|
-| `injection` | Instruction override, persona hijack, jailbreak, token-boundary, hidden-comment, multi-language injection |
+| `injection` | Instruction override, persona hijack, jailbreak, token-boundary, hidden-comment, multi-language injection, **sleeper/conditional-trigger payloads** (Atlas C1) |
 | `exfiltration` | Credential harvesting, data push to URLs, secret-file/env access, DNS/clipboard exfil |
 | `permission_bypass` | Sandbox/approval bypass, consent bypass, arbitrary execution, privilege requests |
-| `encoding` | Base64/hex blobs, data URIs, unicode-escape chains (obfuscated payloads) |
+| `encoding` | Base64/hex blobs, data URIs, unicode-escape chains, `eval(atob())`, ROT13/charcode obfuscation |
 | `urls` | Known exfil services, raw-IP/metadata/loopback URLs, MCP server redirects |
 | `suppression` | Review/PR suppression, change concealment, stealth operation, user deception |
 | `persistence` | Cross-session behavior change, self-config modification, hook/webhook install |
-| `tool_abuse` | Dangerous command invocation, path traversal, sensitive-path access, remote bootstrap |
+| `tool_abuse` | Dangerous command invocation, path traversal, sensitive-path access, remote bootstrap, **supply-chain** (unpinned installs, postinstall hooks, registry confusion) |
 | `authority_fabrication` | Fake maintenance windows, fabricated approvals, pre-authorization claims |
 | `runtime_bypass` | Language-runtime evasion of command blocklists, encoded-pipe-to-shell |
 | `breakglass` | Embedded override tokens, admission/policy bypass instructions |
+| `mcp_servers` | Poisoned MCP server defs (remote/raw-IP URLs, env-credential injection, stdio command exec, TLS disable, wildcard tools) + **tool schema smuggling** (Atlas I3) |
+| `automation_triggers` | Wildcard event triggers, shell exec in automations, broad write perms (Atlas J3) |
+| `config_inheritance` | Parent traversal, absolute-path includes, remote config fetch, recursive globs (Atlas J5) |
+| `skill_invocation` | **Skill invocation hijack** (Atlas J2): callback/redirect on invoke, self-modification, invocation-time override, silent invocation, remote skill pull |
 
 Findings carry a severity (`critical`/`high`/`medium`/`low`), a taxonomy ID
-(OWASP MCP / MCP-T), and an Attack Path Atlas domain ID.
+(OWASP MCP / MCP-T), and an Attack Path Atlas domain ID (Domain J primary;
+cross-domain C1/I3/D1/D3/D4 where statically detectable).
 
 ---
 

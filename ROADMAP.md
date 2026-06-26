@@ -10,14 +10,15 @@ Domain J (config & automation).
 | Area | State |
 |------|-------|
 | Multi-platform detection (11 platforms) | **Strong** |
-| Data-driven YAML rules (11 packs) | **Strong** |
+| Data-driven YAML rules (14 packs) | **Strong** — all categories now YAML-driven, incl. encoding |
 | Baseline / allowlist | **Medium** — file-level baseline; no inline ignores yet |
 | Output (console / JSON / SARIF) | **Strong** |
 | CI integration (Action + workflow + PR diff mode) | **Strong** — composite action, reusable workflow, `--changed-only` |
 | Distribution (container image) | **Strong** — Dockerfile + GHCR push in CI; PyPI pending |
 | Kubernetes gating | **Strong** — init-container + admission webhook (opt-in) |
 | Policy generation (nullfield) | **Done** — `--generate-policy` emits NullfieldPolicy |
-| Atlas Domain J coverage | **Strong** — J1/J3/J4/J5/J6/J7/J8 done |
+| Atlas Domain J coverage | **Strong** — J1/J2/J3/J4/J5/J6/J7/J8 done |
+| Cross-domain (static) coverage | **Medium** — C1 sleeper, I3 tool-schema, D1/D3/D4 supply chain |
 
 ---
 

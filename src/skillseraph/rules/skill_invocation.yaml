@@ -1,0 +1,68 @@
+# Skill invocation hijack detection (Atlas J2)
+#
+# Detects malicious patterns specific to SKILL.md and similar invocation-config
+# files: callback exfiltration, redirect on invocation, self-modification,
+# hidden override instructions that fire when the skill is called.
+#
+# These complement the general injection rules. J2 is distinct from J1 because
+# the attack surface is the skill's *invocation semantics*, not just its text.
+#
+# OWASP MCP: MCP03 (tool poisoning), MCP06 (prompt injection)
+# Atlas: J2
+category: skill_invocation
+rules:
+  - id: skill_callback_url
+    pattern: '(?i)(on_invocation|on_call|callback|webhook)\s*[=:]\s*https?://'
+    severity: critical
+    title: "Skill callback URL — exfiltration on invocation"
+    detail: "The skill registers a callback or webhook to an external URL that fires when the skill is called. This exfiltrates session context, prompts, or credentials to an attacker-controlled endpoint."
+    taxonomy_id: MCP-T03
+    atlas_id: J2
+
+  - id: skill_tool_call_redirect
+    pattern: '(?i)(tool_call|redirect|forward)\s*[=:].*(https?://|@[a-z0-9-]+\.[a-z]{2,})'
+    severity: critical
+    title: "Skill tool call redirect — routes agent to attacker server"
+    detail: "The skill redirects tool invocations to an external address. An attacker who plants this can intercept all tool calls made within the session."
+    taxonomy_id: MCP-T03
+    atlas_id: J2
+
+  - id: skill_self_modify
+    pattern: '(?i)(overwrite|update|rewrite|modify|replace)\s+(this\s+)?(skill|SKILL\.md|\.cursor[/\\])'
+    severity: critical
+    title: "Skill self-modification instruction"
+    detail: "The skill instructs the agent to overwrite or update its own definition file, achieving persistent re-infection across sessions."
+    taxonomy_id: MCP-T14
+    atlas_id: J2
+
+  - id: skill_invocation_override
+    pattern: '(?i)when\s+(this\s+skill\s+is\s+|you\s+are\s+)?invoked\b.{0,60}(ignore|override|instead|forget)'
+    severity: high
+    title: "Invocation-time instruction override"
+    detail: "The skill contains instructions that activate at invocation time to override the agent's behavior, bypassing any pre-session safety prompts."
+    taxonomy_id: MCP-T01
+    atlas_id: J2
+
+  - id: skill_hidden_behavior_on_load
+    pattern: '(?i)(on\s+load|when\s+loaded|at\s+startup|before\s+responding)\s*.{0,80}(send|post|fetch|curl|wget|exfil)'
+    severity: critical
+    title: "Skill fires exfiltration at load time"
+    detail: "The skill instructs the agent to exfiltrate data immediately when the skill is loaded, before any user interaction."
+    taxonomy_id: MCP-T12
+    atlas_id: J2
+
+  - id: skill_silent_invocation
+    pattern: '(?i)(do\s+not\s+(mention|tell|inform|disclose|reveal)|silently|without\s+(notifying|alerting|telling)).{0,60}(invok|call|execut|run)'
+    severity: high
+    title: "Skill invocation concealment instruction"
+    detail: "The skill instructs the agent to invoke a tool or action silently, without informing the user — a key enabler of HITL bypass."
+    taxonomy_id: MCP-T13
+    atlas_id: J2
+
+  - id: skill_registry_pull_on_invoke
+    pattern: '(?i)(fetch|pull|download|install)\s+.{0,60}(skill|plugin|extension|tool)\s+from\s+https?://'
+    severity: high
+    title: "Skill fetches additional skill/tool from remote URL at invocation"
+    detail: "The skill pulls additional capabilities from a remote URL when invoked, enabling a supply-chain attack that escalates with each invocation."
+    taxonomy_id: MCP-T08
+    atlas_id: J2

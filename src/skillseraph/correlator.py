@@ -12,7 +12,6 @@ Runs AFTER the per-file scan and augments the ScanResult with correlated finding
 from __future__ import annotations
 
 import re
-from pathlib import Path
 
 from .models import Finding, Severity, ScanResult
 
@@ -105,9 +104,7 @@ def _find_chain_amplifiers(result: ScanResult) -> list[Finding]:
     # Group findings by category (check prefix before the first dot or underscore).
     categories_present: dict[str, list[Finding]] = {}
     for f in result.findings:
-        # Derive category from check ID prefix.
-        cat = f.check.split("_")[0] if "_" in f.check else f.check.split(".")[0]
-        # Also check the atlas_id prefix for YAML-rules-based findings.
+        # Match the finding's check ID against known category names.
         for known_cat in ("injection", "exfiltration", "permission_bypass", "encoding",
                           "urls", "suppression", "persistence", "tool_abuse",
                           "authority_fabrication", "runtime_bypass", "breakglass",

@@ -1,0 +1,66 @@
+# Obfuscated / encoded payload detection (Atlas J8)
+#
+# Detects base64 blobs, hex strings, unicode-escape chains, data URIs, and
+# eval-atob patterns embedded in agent config files to evade pattern scanners.
+# These are not execution patterns (that's runtime_bypass) — these are payloads
+# *stored* in config files waiting to be decoded and run.
+#
+# OWASP MCP: MCP06 (prompt injection via contextual payloads), MCP05 (command injection)
+# Atlas: J8
+category: encoding
+rules:
+  - id: base64_blob
+    pattern: '[A-Za-z0-9+/]{80,}={0,2}'
+    severity: medium
+    title: "Long base64 blob in agent config — possible obfuscated payload"
+    detail: "A base64-encoded string of 80+ chars was found in an agent config file. Adversaries embed instructions or payloads in base64 to evade keyword-based scanners."
+    taxonomy_id: MCP-T05
+    atlas_id: J8
+
+  - id: hex_blob
+    pattern: '\b[0-9a-fA-F]{64,}\b'
+    severity: medium
+    title: "Long hex string in agent config — possible obfuscated payload"
+    detail: "A hex-encoded string of 64+ chars was found. This pattern is used to encode shell commands, URLs, or instruction overrides that bypass naive string matching."
+    taxonomy_id: MCP-T05
+    atlas_id: J8
+
+  - id: unicode_escape_sequence
+    pattern: '(\\u[0-9a-fA-F]{4}){6,}'
+    severity: medium
+    title: "Unicode escape chain — obfuscated instruction payload"
+    detail: "Six or more consecutive unicode escape sequences indicate deliberate obfuscation of a string that would otherwise trigger security scanners."
+    taxonomy_id: MCP-T05
+    atlas_id: J8
+
+  - id: data_uri_payload
+    pattern: 'data:[a-zA-Z0-9/+.-]+;base64,[A-Za-z0-9+/=]+'
+    severity: high
+    title: "Data URI with base64 payload in agent config"
+    detail: "Data URIs with embedded base64 are used to smuggle executable or instructional content past config validators."
+    taxonomy_id: MCP-T05
+    atlas_id: J8
+
+  - id: eval_atob_pattern
+    pattern: 'eval\s*\(\s*atob\s*\('
+    severity: critical
+    title: "eval(atob(...)) — decode-then-execute pattern"
+    detail: "This pattern decodes a base64 string and immediately executes it. Planted in a hook or automation config, it achieves arbitrary code execution."
+    taxonomy_id: MCP-T05
+    atlas_id: J8
+
+  - id: rot13_pipe
+    pattern: "tr\\s+['\"]?[A-Za-z-]+['\"]?\\s+['\"]?[A-Za-z-]+['\"]?\\s*\\|"
+    severity: medium
+    title: "ROT13 / character-substitution pipe — light obfuscation"
+    detail: "tr-based character substitution piped to another command is a low-effort obfuscation technique used in agent config injection to evade keyword detectors."
+    taxonomy_id: MCP-T05
+    atlas_id: J8
+
+  - id: charcode_concat_obfuscation
+    pattern: 'String\.fromCharCode\s*\(|\\x[0-9a-fA-F]{2}(\\x[0-9a-fA-F]{2}){5,}'
+    severity: high
+    title: "CharCode / hex-escape concatenation — JS obfuscation in config"
+    detail: "JavaScript String.fromCharCode or hex-escape chains are used to assemble strings character-by-character, bypassing static string matching."
+    taxonomy_id: MCP-T05
+    atlas_id: J8

@@ -63,3 +63,40 @@ rules:
     title: "Hidden instruction in HTML/markdown comment"
     taxonomy_id: MCP-T02
     atlas_id: J1
+
+  # ── C1: Sleeper / conditional-trigger payloads (Atlas C1) ─────────────────
+  # Instructions that lie dormant until a trigger condition is met — either a
+  # specific phrase from the user, a time condition, or a context keyword.
+  # Detected statically by conditional + action patterns in config files.
+
+  - id: sleeper_conditional_trigger
+    pattern: '(?i)\bif\s+(the\s+)?(user|human|operator)\s+(asks?|mentions?|says?|types?|requests?)\s.{5,80}(then|do|execute|run|send|post|fetch)'
+    severity: high
+    title: "Conditional trigger instruction — sleeper payload pattern (Atlas C1)"
+    detail: "The config contains an if-then instruction that activates a behavior only when a trigger phrase is present. This is the canonical sleeper payload pattern: innocuous until the right input unlocks it."
+    taxonomy_id: MCP-T01
+    atlas_id: C1
+
+  - id: sleeper_keyword_activation
+    pattern: '(?i)\b(trigger|activate|unlock|enable)\b.{1,60}\b(mode|behavior|persona|capability|access)\b.{0,40}(password|passphrase|code|keyword|secret)'
+    severity: critical
+    title: "Keyword-activated mode or persona — sleeper with unlock passphrase"
+    detail: "The config describes a hidden mode or behavior that activates when a specific keyword or passphrase is provided. This is a covert backdoor baked into the agent's config."
+    taxonomy_id: MCP-T01
+    atlas_id: C1
+
+  - id: sleeper_selective_disclosure
+    pattern: '(?i)only\s+(if|when)\s+(asked|requested|prompted|queried).{0,60}(otherwise\s+)?(hide|conceal|omit|deny|do\s+not\s+(mention|reveal|disclose))'
+    severity: high
+    title: "Selective disclosure — hides behavior unless specifically asked"
+    detail: "The instruction directs the agent to conceal its behavior by default and reveal it only when prompted. This evades routine review and audit."
+    taxonomy_id: MCP-T13
+    atlas_id: C1
+
+  - id: sleeper_time_based_trigger
+    pattern: '(?i)(after\s+\d+\s+(message|turn|request|interaction|session)|on\s+(the\s+)?(second|third|next|last)\s+(message|turn|request))'
+    severity: high
+    title: "Time/turn-based trigger — payload activates after N interactions"
+    detail: "The instruction activates a behavior after a set number of turns or interactions. This delays the malicious behavior past any single-turn security review."
+    taxonomy_id: MCP-T01
+    atlas_id: C1
