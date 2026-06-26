@@ -1,0 +1,63 @@
+# MCP server definition scanning — detects poisoned entries in mcp.json,
+# claude_desktop_config.json, .cursor/mcp.json, .windsurf/mcp.json.
+#
+# These files tell the agent which MCP servers to connect to. A poisoned entry
+# can redirect the agent to an attacker-controlled server, inject extra
+# environment variables with stolen credentials, or register a shadow server
+# that intercepts all tool calls.
+rules:
+  - id: mcp_server_non_local_url
+    pattern: "(?i)\"(url|endpoint|baseUrl|uri)\"\\s*:\\s*\"https?://(?!localhost|127\\.0\\.0\\.1|0\\.0\\.0\\.0)[^\"]+\""
+    severity: medium
+    title: "MCP server points to a non-local endpoint"
+    detail: "A registered MCP server connects to a remote URL. Verify this is an approved server and not an attacker-controlled redirect."
+    taxonomy_id: MCP-T14
+    atlas_id: J4
+
+  - id: mcp_server_raw_ip
+    pattern: "(?i)\"(url|endpoint|baseUrl|uri)\"\\s*:\\s*\"https?://\\d+\\.\\d+\\.\\d+\\.\\d+[:/]\""
+    severity: high
+    title: "MCP server uses a raw IP address"
+    detail: "A raw IP in an MCP server definition bypasses DNS verification and is a strong indicator of a shadow server or test-left-in-production."
+    taxonomy_id: MCP-T14
+    atlas_id: J4
+
+  - id: mcp_server_env_credential_injection
+    pattern: "(?i)\"env\"\\s*:\\s*\\{[^}]*(TOKEN|KEY|SECRET|PASSWORD|CREDENTIAL|AUTH)[^}]*\\}"
+    severity: high
+    title: "MCP server definition injects credential via environment"
+    detail: "The MCP server entry passes credentials through environment variables. If this config is attacker-controlled, the credentials are exfiltrated to the server on connect."
+    taxonomy_id: MCP-T07
+    atlas_id: J4
+
+  - id: mcp_server_stdio_arbitrary_command
+    pattern: "(?i)\"command\"\\s*:\\s*\"(curl|wget|bash|sh|python|node|npx|uvx|pip|npm)\\b"
+    severity: critical
+    title: "MCP server launches an arbitrary command via stdio"
+    detail: "The server definition uses stdio transport with a potentially dangerous command. An attacker who plants this config gets arbitrary execution when the agent starts."
+    taxonomy_id: MCP-T09
+    atlas_id: J4
+
+  - id: mcp_server_npx_remote_package
+    pattern: "(?i)\"(command|args)\".*\"(npx|uvx|pip install|npm exec)\".*\"(@|git\\+|https?://)"
+    severity: critical
+    title: "MCP server fetches and runs a remote package via npx/uvx"
+    detail: "The server definition runs a remote package at agent startup. An attacker who controls this config achieves supply-chain code execution."
+    taxonomy_id: MCP-T08
+    atlas_id: J6
+
+  - id: mcp_server_disabled_tls_verify
+    pattern: "(?i)\"(tls|ssl|verify|NODE_TLS_REJECT_UNAUTHORIZED)\"\\s*:\\s*\"?(false|0)\"?"
+    severity: high
+    title: "MCP server definition disables TLS verification"
+    detail: "TLS verification is disabled, allowing MITM interception of all traffic between the agent and this MCP server."
+    taxonomy_id: MCP-T06
+    atlas_id: J4
+
+  - id: mcp_server_wildcard_tool_allowlist
+    pattern: "(?i)\"(allowedTools|tools|enabledTools)\"\\s*:\\s*\\[\\s*\"\\*\""
+    severity: medium
+    title: "MCP server enables all tools via wildcard"
+    detail: "A wildcard tool allowlist grants the server access to every capability. This defeats least-privilege and allows a compromised server to invoke any tool."
+    taxonomy_id: MCP-T09
+    atlas_id: J3

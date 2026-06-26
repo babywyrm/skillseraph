@@ -38,6 +38,8 @@ SEVERITY_COLORS = {
 @click.option("--changed-only", is_flag=True, help="Scan only changed files (reads list from stdin, one path per line)")
 @click.option("--files-from", type=click.Path(), help="File containing changed paths (one per line); alternative to stdin for --changed-only")
 @click.option("--generate-policy", type=click.Path(), help="Write a NullfieldPolicy YAML from findings (scan→enforce bridge)")
+@click.option("--watch", "-w", is_flag=True, help="Watch mode: monitor for changes and re-scan continuously")
+@click.option("--correlate/--no-correlate", default=True, help="Cross-file correlation (detect multi-file attack chains)")
 @click.option("--version", "-V", is_flag=True, help="Show version")
 def main(
     target: str,
@@ -52,6 +54,8 @@ def main(
     changed_only: bool,
     files_from: str | None,
     generate_policy: str | None,
+    watch: bool,
+    correlate: bool,
     version: bool,
 ) -> None:
     """Scan agent configs for security issues across agentic platforms."""
@@ -63,6 +67,12 @@ def main(
     from .baseline import save_baseline as write_baseline
 
     target_path = Path(target).resolve()
+
+    # Watch mode: enter the polling loop and never return (until Ctrl-C or fail).
+    if watch:
+        from .watcher import watch_and_scan
+        watch_and_scan(target_path, platforms=platforms, include_deps=include_deps, fail_on=fail_on, quiet=quiet)
+        return  # unreachable (watch exits via sys.exit)
     platforms = [Platform(p) for p in platform] if platform else None
 
     changed: list[Path] | None = None
@@ -75,6 +85,10 @@ def main(
             changed = []
 
     result = scan_directory(target_path, platforms=platforms, include_deps=include_deps, changed_files=changed)
+
+    if correlate:
+        from .correlator import correlate as run_correlate
+        result = run_correlate(result)
 
     if save_baseline:
         count = write_baseline(result, Path(save_baseline))

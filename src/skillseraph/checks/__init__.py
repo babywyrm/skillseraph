@@ -22,6 +22,7 @@ def run_all_checks(path: Path, content: str, line_offset: int = 0) -> list[Findi
     from .breakglass import check_breakglass
     from .automation_triggers import check_automation_triggers
     from .config_inheritance import check_config_inheritance
+    from .mcp_servers import check_mcp_servers
 
     findings: list[Finding] = []
     for checker in [
@@ -38,6 +39,7 @@ def run_all_checks(path: Path, content: str, line_offset: int = 0) -> list[Findi
         check_breakglass,
         check_automation_triggers,
         check_config_inheritance,
+        check_mcp_servers,
     ]:
         findings.extend(checker(path, content))
     return findings
