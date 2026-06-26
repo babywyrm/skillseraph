@@ -33,21 +33,45 @@ skillseraph finds these patterns and fails your CI before the agent runs.
 
 ## Install
 
-> Not yet published to PyPI. Install from source or run directly from git.
+skillseraph is uv-native. `uv` is the engine — every install path below uses it.
+
+### One-liner (macOS / Linux — recommended)
 
 ```bash
-# From a local checkout — global `skillseraph` on your PATH
+curl -fsSL https://raw.githubusercontent.com/babywyrm/skillseraph/main/install.sh | sh
+```
+
+Installs `uv` if it isn't present, then puts `skillseraph` on your PATH via
+`uv tool install`. Takes ~10 seconds on a fast connection.
+
+Pin to a release:
+
+```bash
+SKILLSERAPH_REF=v0.1.0 curl -fsSL https://raw.githubusercontent.com/babywyrm/skillseraph/main/install.sh | sh
+```
+
+### PyPI
+
+```bash
+# Requires uv (https://docs.astral.sh/uv/getting-started/installation/)
+uv tool install skillseraph          # global install → skillseraph on PATH
+pip install skillseraph              # pip also works (Python 3.11+)
+```
+
+### Run without installing (no clone required)
+
+```bash
+uvx skillseraph .                    # ephemeral run, nothing persisted
+uvx --from git+https://github.com/babywyrm/skillseraph skillseraph .   # latest main
+```
+
+### From source (development)
+
+```bash
 git clone https://github.com/babywyrm/skillseraph
 cd skillseraph
-uv tool install .
-skillseraph --version
-
-# Or run without installing (dev)
-uv sync
-uv run skillseraph --version
-
-# Or run straight from git (no clone, no PyPI) — great for CI
-uvx --from git+https://github.com/babywyrm/skillseraph skillseraph --version
+uv tool install .         # global install from local checkout
+# or: uv sync && uv run skillseraph --version   (dev mode, no install)
 ```
 
 Runs on Linux and macOS. Pure Python (3.11+), no system dependencies.
@@ -125,7 +149,7 @@ Findings carry a severity (`critical`/`high`/`medium`/`low`), a taxonomy ID
 
 skillseraph is designed to run as a gate. See [QUICKSTART.md](QUICKSTART.md) for:
 
-- GitHub Actions (reusable workflow + composite action)
+- GitHub Actions (reusable workflow + composite action + GitHub Marketplace)
 - Pre-commit hook
 - Kubernetes init-container / admission scanning of mounted configs
 - IDE agent hooks (scan before an agentic session starts)
@@ -152,8 +176,8 @@ Findings map to:
 
 ## Project status & direction
 
-Alpha (`0.1.0`). Source/git install for now; PyPI and a container image are
-near-term. See:
+`v0.1.0` released. Available via `install.sh`, PyPI (`uv tool install skillseraph`),
+`uvx`, and Docker (GHCR). See:
 
 - [CHANGELOG.md](CHANGELOG.md) — release history
 - [ROADMAP.md](ROADMAP.md) — what's planned and current maturity

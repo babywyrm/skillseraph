@@ -1,0 +1,95 @@
+name: publish
+
+# Publishes skillseraph to PyPI when a version tag is pushed.
+#
+# Setup (one-time):
+#   1. Go to https://pypi.org/manage/account/publishing/
+#   2. Add a trusted publisher: owner=babywyrm, repo=skillseraph,
+#      workflow=publish.yml, environment=pypi
+#   3. Create a GitHub environment named "pypi" in repo Settings → Environments.
+#      (No secrets needed — uses OIDC trusted publishing.)
+#
+# Then cut a release:
+#   git tag v0.1.0 && git push origin v0.1.0
+#
+# The "release" job also creates a GitHub Release with auto-generated notes
+# and a floating "v1" major tag for action consumers (uses: babywyrm/skillseraph@v1).
+
+on:
+  push:
+    tags:
+      - "v[0-9]*"
+
+permissions:
+  contents: write   # create GitHub release + update floating tag
+  id-token: write   # OIDC trusted publishing to PyPI
+
+jobs:
+  # ── build sdist + wheel ───────────────────────────────────────────────────
+  build:
+    name: Build distribution
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Build
+        run: uv build
+
+      - name: Upload dist artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  # ── publish to PyPI ───────────────────────────────────────────────────────
+  publish-pypi:
+    name: Publish to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/skillseraph/
+    steps:
+      - name: Download dist
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish to PyPI (OIDC)
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+  # ── GitHub Release + floating v1 tag ─────────────────────────────────────
+  release:
+    name: GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # need full history for the floating tag update
+
+      - name: Download dist
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: dist/*
+
+      - name: Update floating major tag (e.g. v1)
+        shell: bash
+        run: |
+          # Extract major version from the pushed tag (v1.2.3 → v1)
+          MAJOR="$(echo "${GITHUB_REF_NAME}" | sed 's/\..*//')"
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -fa "${MAJOR}" -m "Update ${MAJOR} to ${GITHUB_REF_NAME}"
+          git push origin "${MAJOR}" --force

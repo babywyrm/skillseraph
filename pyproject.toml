@@ -1,6 +1,6 @@
 [project]
 name = "skillseraph"
-version = "0.1.0"
+version = "0.2.0"
 description = "Agent config security scanner — detects poisoned skills, rules, hooks, and instructions across agentic platforms"
 readme = "README.md"
 license = {text = "MIT"}
@@ -8,7 +8,7 @@ requires-python = ">=3.11"
 authors = [{name = "babywyrm"}]
 keywords = ["security", "agent", "mcp", "cursor", "codex", "skills", "scanner"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Topic :: Security",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",

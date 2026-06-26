@@ -6,19 +6,49 @@ Get from zero to a passing security gate in five minutes.
 
 ## 1. Install & first scan
 
-Not on PyPI yet — install from a local checkout (puts `skillseraph` on your PATH):
+skillseraph is uv-native — `uv` is the runtime engine.
+
+### One-liner (macOS / Linux — fastest)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/babywyrm/skillseraph/main/install.sh | sh
+```
+
+Installs `uv` if missing, then puts `skillseraph` on your PATH. Done in ~10 s.
+
+Pin to a specific release:
+
+```bash
+SKILLSERAPH_REF=v0.1.0 curl -fsSL https://raw.githubusercontent.com/babywyrm/skillseraph/main/install.sh | sh
+```
+
+### PyPI
+
+```bash
+uv tool install skillseraph          # global install via uv (recommended)
+pip install skillseraph              # pip also works (Python 3.11+)
+```
+
+### Run without installing
+
+```bash
+uvx skillseraph .                    # ephemeral run via uv, nothing persisted
+```
+
+### From source
 
 ```bash
 git clone https://github.com/babywyrm/skillseraph
 cd skillseraph
 uv tool install .
-skillseraph .                      # scan current repo
 ```
 
-Prefer not to install? Run straight from git:
+---
+
+After installing, run your first scan:
 
 ```bash
-uvx --from git+https://github.com/babywyrm/skillseraph skillseraph .
+skillseraph .                      # scan current repo
 ```
 
 You'll get a table of findings grouped by severity, plus a summary line with the
@@ -52,9 +82,7 @@ Severity ladder: `critical` > `high` > `medium` > `low`. `--fail-on high`
 
 ## 3. GitHub Actions (recommended)
 
-### Option A — composite action (drop-in)
-
-Add `.github/workflows/skillseraph.yml` to any repo that contains agent configs:
+### Option A — GitHub Marketplace action (drop-in)
 
 ```yaml
 name: skillseraph
@@ -79,38 +107,41 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: babywyrm/skillseraph@v1
+        with:
+          fail-on: high
+```
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v5
+Findings show up inline on the PR via GitHub Code Scanning.
 
-      - name: Run skillseraph
-        run: |
-          uvx --from git+https://github.com/babywyrm/skillseraph skillseraph . \
+### Option B — uvx (no action required)
+
+```yaml
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: |
+          uvx skillseraph . \
             --fail-on high \
             --sarif skillseraph.sarif \
             --json-out skillseraph.json
-
-      - name: Upload SARIF to code scanning
-        if: always()
+      - if: always()
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: skillseraph.sarif
 ```
 
-Findings show up inline on the PR via GitHub Code Scanning, and the job fails
-if anything reaches `high`.
-
-### Option B — reusable workflow
-
-This repo ships a reusable workflow at `.github/workflows/scan.yml`. From a
-consuming repo:
+### Option C — reusable workflow
 
 ```yaml
 name: agent-config-security
 on: [pull_request]
 jobs:
   skillseraph:
-    uses: babywyrm/skillseraph/.github/workflows/scan.yml@main
+    uses: babywyrm/skillseraph/.github/workflows/scan.yml@v1
     with:
       fail-on: high
       paths: "."
