@@ -18,6 +18,7 @@ LOCAL_IDE_FILES: dict[Platform, tuple[str, ...]] = {
         ".config/Code/User/tasks.json",
         ".config/Code/User/keybindings.json",
         ".config/Code/User/snippets",
+        ".vscode/extensions",
     ),
     Platform.CURSOR: (
         "Library/Application Support/Cursor/User/settings.json",
@@ -28,6 +29,7 @@ LOCAL_IDE_FILES: dict[Platform, tuple[str, ...]] = {
         ".config/Cursor/User/tasks.json",
         ".config/Cursor/User/keybindings.json",
         ".config/Cursor/User/snippets",
+        ".cursor/extensions",
     ),
     Platform.WINDSURF: (
         "Library/Application Support/Windsurf/User/settings.json",
@@ -38,6 +40,7 @@ LOCAL_IDE_FILES: dict[Platform, tuple[str, ...]] = {
         ".config/Windsurf/User/tasks.json",
         ".config/Windsurf/User/keybindings.json",
         ".config/Windsurf/User/snippets",
+        ".windsurf/extensions",
     ),
 }
 
@@ -46,6 +49,10 @@ def _iter_existing_files(root: Path) -> list[Path]:
     if root.is_file():
         return [root]
     if root.is_dir():
+        # Extension trees hold thousands of files per extension; only the
+        # manifests carry the config we audit.
+        if root.name == "extensions":
+            return sorted(root.glob("*/package.json"))
         return sorted(path for path in root.rglob("*") if path.is_file())
     return []
 
