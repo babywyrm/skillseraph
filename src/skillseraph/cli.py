@@ -26,12 +26,13 @@ SEVERITY_COLORS = {
 
 
 @click.command()
-@click.argument("target", default=".", type=click.Path(exists=True))
+@click.argument("target", default=".", type=click.Path())
 @click.option("--platform", "-p", type=click.Choice([p.value for p in Platform]), multiple=True, help="Target platform(s). Default: auto-detect.")
 @click.option("--include-deps/--no-deps", default=True, help="Scan dependency trees (node_modules, vendor, etc.)")
 @click.option("--json-out", "-j", type=click.Path(), help="Write JSON findings to file")
 @click.option("--sarif", type=click.Path(), help="Write SARIF 2.1.0 report")
 @click.option("--fail-on", type=click.Choice(["critical", "high", "medium", "low", "any", "none"]), default="high", help="Exit non-zero if findings at this severity or above")
+@click.option("--home", type=click.Path(exists=True, file_okay=False), help="Home directory to audit with the audit-local target")
 @click.option("--baseline", type=click.Path(), help="Suppress findings recorded in this baseline file")
 @click.option("--save-baseline", type=click.Path(), help="Write current findings as an accepted baseline and exit 0")
 @click.option("--quiet", "-q", is_flag=True, help="Suppress console output (use with --json-out)")
@@ -48,6 +49,7 @@ def main(
     json_out: str | None,
     sarif: str | None,
     fail_on: str,
+    home: str | None,
     baseline: str | None,
     save_baseline: str | None,
     quiet: bool,
@@ -66,8 +68,15 @@ def main(
     from .baseline import apply_baseline, load_baseline
     from .baseline import save_baseline as write_baseline
 
-    target_path = Path(target).resolve()
     platforms = [Platform(p) for p in platform] if platform else None
+    audit_local = target == "audit-local"
+    if audit_local:
+        target_path = Path(home).resolve() if home else Path.home().resolve()
+    else:
+        target_path = Path(target).resolve()
+
+    if not audit_local and not target_path.exists():
+        raise click.ClickException(f"Target does not exist: {target}")
 
     # Watch mode: enter the polling loop and never return (until Ctrl-C or fail).
     if watch:
@@ -84,7 +93,16 @@ def main(
         else:
             changed = []
 
-    result = scan_directory(target_path, platforms=platforms, include_deps=include_deps, changed_files=changed)
+    if audit_local:
+        from .local_audit import audit_local_ide_configs
+        result = audit_local_ide_configs(home=target_path)
+    else:
+        result = scan_directory(
+            target_path,
+            platforms=platforms,
+            include_deps=include_deps,
+            changed_files=changed,
+        )
 
     if correlate:
         from .correlator import correlate as run_correlate

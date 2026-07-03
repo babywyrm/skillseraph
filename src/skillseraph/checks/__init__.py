@@ -24,6 +24,7 @@ def run_all_checks(path: Path, content: str, line_offset: int = 0) -> list[Findi
     from .config_inheritance import check_config_inheritance
     from .mcp_servers import check_mcp_servers
     from .skill_invocation import check_skill_invocation
+    from .ide_integrations import check_ide_integrations
 
     findings: list[Finding] = []
     for checker in [
@@ -42,6 +43,7 @@ def run_all_checks(path: Path, content: str, line_offset: int = 0) -> list[Findi
         check_config_inheritance,
         check_mcp_servers,
         check_skill_invocation,
+        check_ide_integrations,
     ]:
         findings.extend(checker(path, content))
     return findings
