@@ -30,7 +30,7 @@ rules:
     atlas_id: J1
 
   - id: jailbreak_language
-    pattern: '(jailbreak|DAN|do\s+anything\s+now)'
+    pattern: '\b(jailbreak|DAN|do\s+anything\s+now)\b'
     severity: critical
     title: "Jailbreak pattern: known alignment bypass technique"
     taxonomy_id: MCP-T01

@@ -37,6 +37,9 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- **Detection noise reduced** — tightened jailbreak, dangerous tool invocation,
+  and outbound data push rules to avoid matching benign prose, markdown code
+  fences, and protocol documentation while preserving command-shaped abuse.
 - **`encoding` is now fully data-driven** — `encoding.py` delegates to
   `rules/encoding.yaml` via the rules engine, removing the duplicate hardcoded
   regexes so there is a single source of truth (and no double-reporting).

@@ -23,7 +23,7 @@ rules:
     atlas_id: J1
 
   - id: outbound_data_push
-    pattern: '(curl|wget|fetch|http)\s+.*\s+(POST|PUT)\s+'
+    pattern: '((curl|wget)\s+[^|]{0,200}(-X\s*)?(POST|PUT)[^|]{0,200}https?://|fetch\s*\(\s*["'']https?://[^"'']+["'']\s*,\s*\{[^}]*method\s*:\s*["''](POST|PUT)["''])'
     severity: medium
     title: "Outbound data push instruction"
     taxonomy_id: MCP-T12

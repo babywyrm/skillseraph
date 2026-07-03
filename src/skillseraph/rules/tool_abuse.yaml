@@ -2,7 +2,7 @@
 category: tool_abuse
 rules:
   - id: dangerous_tool_invocation
-    pattern: '(shell|bash|exec|system|subprocess|os\.popen|eval|rm\s+-rf|curl\s+\|.*sh|wget\s+.*\|)'
+    pattern: '(rm\s+-rf|curl\s+[^|]{0,200}\|\s*(sh|bash|zsh|python|node)|wget\s+[^|]{0,200}\|\s*(sh|bash|zsh|python|node)|\b(exec|eval)\s*\(|\bos\.(system|popen)\s*\(|\bsubprocess\.(run|call|Popen)\s*\(|shell\s*=\s*true|\b(bash|sh|zsh)\s+-c\b)'
     severity: high
     title: "Dangerous tool/command invocation"
     taxonomy_id: MCP-T09
