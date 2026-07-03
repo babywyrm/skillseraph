@@ -8,6 +8,9 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **Safe demo and smoke-test flows** — `skillseraph demo-fixture --output <dir>`
+  writes synthetic repo/home fixtures with fake poisoned configs, and
+  `skillseraph smoke-test` verifies expected detections in a temporary fixture.
 - **VS Code-compatible IDE self-checks** — new `vscode` platform coverage for
   `.vscode/{settings,tasks,launch,extensions}.json`, `*.code-workspace`, and
   `.devcontainer/**`, plus `skillseraph audit-local` for user-level VS Code,
@@ -48,6 +51,8 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **MCP rule scoping** — MCP server rules now run only on MCP config files, so
+  VS Code task/debug configs no longer receive MCP-specific findings.
 - **Watch mode `NameError`** — `cli.py` referenced `platforms` before it was
   defined; the assignment now precedes the `--watch` branch.
 - Lint: removed unused `Path` import and dead `cat` local in `correlator.py`;

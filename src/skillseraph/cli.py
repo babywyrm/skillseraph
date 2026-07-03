@@ -33,6 +33,8 @@ SEVERITY_COLORS = {
 @click.option("--sarif", type=click.Path(), help="Write SARIF 2.1.0 report")
 @click.option("--fail-on", type=click.Choice(["critical", "high", "medium", "low", "any", "none"]), default="high", help="Exit non-zero if findings at this severity or above")
 @click.option("--home", type=click.Path(exists=True, file_okay=False), help="Home directory to audit with the audit-local target")
+@click.option("--output", type=click.Path(), help="Output directory for the demo-fixture target")
+@click.option("--force", is_flag=True, help="Allow demo-fixture to replace a non-empty output directory")
 @click.option("--baseline", type=click.Path(), help="Suppress findings recorded in this baseline file")
 @click.option("--save-baseline", type=click.Path(), help="Write current findings as an accepted baseline and exit 0")
 @click.option("--quiet", "-q", is_flag=True, help="Suppress console output (use with --json-out)")
@@ -50,6 +52,8 @@ def main(
     sarif: str | None,
     fail_on: str,
     home: str | None,
+    output: str | None,
+    force: bool,
     baseline: str | None,
     save_baseline: str | None,
     quiet: bool,
@@ -63,6 +67,33 @@ def main(
     """Scan agent configs for security issues across agentic platforms."""
     if version:
         click.echo(f"skillseraph {__version__}")
+        return
+
+    if target == "demo-fixture":
+        from .demo import create_demo_fixture
+
+        if not output:
+            raise click.ClickException("demo-fixture requires --output <directory>")
+        try:
+            fixture = create_demo_fixture(Path(output), force=force)
+        except ValueError as exc:
+            raise click.ClickException(str(exc)) from exc
+        console.print(f"[green]Demo fixture written → {fixture.root}[/green]")
+        console.print(f"  Repo fixture: {fixture.repo}")
+        console.print(f"  Home fixture: {fixture.home}")
+        console.print("  Try: skillseraph <fixture>/repo --fail-on none")
+        console.print("  Try: skillseraph audit-local --home <fixture>/home --fail-on none")
+        return
+
+    if target == "smoke-test":
+        from .demo import run_smoke_test
+
+        try:
+            checks = run_smoke_test()
+        except RuntimeError as exc:
+            raise click.ClickException(str(exc)) from exc
+        console.print("[green bold]Smoke test passed[/green bold]")
+        console.print("  Checks observed: " + ", ".join(sorted(checks)))
         return
 
     from .baseline import apply_baseline, load_baseline

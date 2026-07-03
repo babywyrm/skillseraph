@@ -99,6 +99,10 @@ skillseraph . --json-out findings.json --sarif results.sarif
 # Developer self-check for local VS Code-compatible IDE config
 skillseraph audit-local --json-out ide-audit.json
 
+# Create a fake local fixture and run the built-in smoke test
+skillseraph demo-fixture --output /tmp/skillseraph-demo
+skillseraph smoke-test
+
 # Quiet mode for CI logs
 skillseraph . --quiet --json-out findings.json
 ```

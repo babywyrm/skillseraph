@@ -44,6 +44,16 @@ def test_mcp_server_clean_local(tmp_path: Path):
     assert mcp_findings == []
 
 
+def test_mcp_server_rules_do_not_scan_vscode_tasks(tmp_path: Path):
+    tasks = tmp_path / ".vscode" / "tasks.json"
+    tasks.parent.mkdir(parents=True)
+    tasks.write_text('{"tasks": [{"type": "shell", "command": "bash -c id"}]}')
+
+    findings = scan_file(tasks)
+
+    assert not any(f.check.startswith("mcp_server_") for f in findings)
+
+
 def test_cross_file_chain_amplification(tmp_path: Path):
     """Injection in one file + suppression in another = CRITICAL chain."""
     rules_dir = tmp_path / ".cursor" / "rules"
