@@ -57,14 +57,23 @@ def _iter_existing_files(root: Path) -> list[Path]:
     return []
 
 
-def audit_local_ide_configs(home: Path | None = None) -> ScanResult:
+def audit_local_ide_configs(
+    home: Path | None = None,
+    allowed_publishers: set[str] | None = None,
+) -> ScanResult:
     """Audit user-level IDE configuration files on the local machine.
 
     The audit intentionally stays static and file-scoped. It reads known
     VS Code-compatible user config locations, runs the normal scanner checks,
     and returns findings without collecting unrelated workstation state.
+
+    When *allowed_publishers* is provided, installed extension manifests are
+    additionally checked against that trusted-publisher allowlist.
     """
+    from .checks.extensions import check_unknown_publisher
+
     target = (home or Path.home()).resolve()
+    allowed_publishers = allowed_publishers or set()
     findings: list[Finding] = []
     files_scanned = 0
     platforms_detected: list[Platform] = []
@@ -78,6 +87,14 @@ def audit_local_ide_configs(home: Path | None = None) -> ScanResult:
                 for finding in scan_file(path):
                     finding.platform = platform
                     findings.append(finding)
+                if allowed_publishers:
+                    try:
+                        content = path.read_text(encoding="utf-8", errors="replace")
+                    except OSError:
+                        content = ""
+                    for finding in check_unknown_publisher(path, content, allowed_publishers):
+                        finding.platform = platform
+                        findings.append(finding)
         if platform_seen:
             platforms_detected.append(platform)
 

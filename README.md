@@ -99,6 +99,9 @@ skillseraph . --json-out findings.json --sarif results.sarif
 # Developer self-check for local VS Code-compatible IDE config
 skillseraph audit-local --json-out ide-audit.json
 
+# Flag installed extensions from any publisher outside your trusted allowlist
+skillseraph audit-local --allow-extension-publisher microsoft --allow-extension-publisher ms-python
+
 # Create a fake local fixture and run the built-in smoke test
 skillseraph demo-fixture --output /tmp/skillseraph-demo
 skillseraph smoke-test
@@ -174,7 +177,7 @@ skillseraph auto-detects and scans config surfaces for these platforms:
 | `config_inheritance` | Parent traversal, absolute-path includes, remote config fetch, recursive globs (Atlas J5) |
 | `skill_invocation` | **Skill invocation hijack** (Atlas J2): callback/redirect on invoke, self-modification, invocation-time override, silent invocation, remote skill pull |
 | `ide_integrations` | VS Code-compatible task/debug/user config abuse: remote shell pipes, secret env injection, runtime preloads, extension trust, APM/telemetry collector redirects |
-| `extensions` | Installed IDE extension manifests (structural parse): wildcard activation, lifecycle scripts fetching remote code, entry points escaping the install dir |
+| `extensions` | Installed IDE extension manifests (structural parse): wildcard activation, lifecycle scripts fetching remote code, entry points escaping the install dir, and (opt-in) non-allowlisted publishers |
 | `lifecycle` | `devcontainer.json` / `hooks.json` lifecycle commands (structural parse): remote-fetch-to-interpreter payloads split across array/object command forms |
 
 Findings carry a severity (`critical`/`high`/`medium`/`low`), a confidence level

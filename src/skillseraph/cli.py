@@ -34,6 +34,7 @@ SEVERITY_COLORS = {
 @click.option("--fail-on", type=click.Choice(["critical", "high", "medium", "low", "any", "none"]), default="high", help="Exit non-zero if findings at this severity or above")
 @click.option("--min-confidence", type=click.Choice(["low", "medium", "high"]), default="low", help="Suppress findings below this confidence level")
 @click.option("--home", type=click.Path(exists=True, file_okay=False), help="Home directory to audit with the audit-local target")
+@click.option("--allow-extension-publisher", multiple=True, help="Trusted extension publisher for audit-local; unlisted publishers are flagged (repeatable)")
 @click.option("--output", type=click.Path(), help="Output directory for the demo-fixture target")
 @click.option("--force", is_flag=True, help="Allow demo-fixture to replace a non-empty output directory")
 @click.option("--baseline", type=click.Path(), help="Suppress findings recorded in this baseline file")
@@ -54,6 +55,7 @@ def main(
     fail_on: str,
     min_confidence: str,
     home: str | None,
+    allow_extension_publisher: tuple[str, ...],
     output: str | None,
     force: bool,
     baseline: str | None,
@@ -128,7 +130,10 @@ def main(
 
     if audit_local:
         from .local_audit import audit_local_ide_configs
-        result = audit_local_ide_configs(home=target_path)
+        result = audit_local_ide_configs(
+            home=target_path,
+            allowed_publishers=set(allow_extension_publisher),
+        )
     else:
         result = scan_directory(
             target_path,

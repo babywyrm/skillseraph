@@ -96,3 +96,50 @@ def check_extension_manifest(path: Path, content: str) -> list[Finding]:
         ))
 
     return findings
+
+
+def check_unknown_publisher(
+    path: Path, content: str, allowed_publishers: set[str]
+) -> list[Finding]:
+    """Flag installed extensions whose publisher is not on the trusted allowlist.
+
+    This is opt-in: with no allowlist configured there is nothing to compare
+    against, so no findings are produced. It surfaces typosquatted or
+    side-loaded extensions even when their manifest looks otherwise clean.
+    """
+    if not allowed_publishers or not _is_extension_manifest(path):
+        return []
+
+    try:
+        data = json.loads(content)
+    except json.JSONDecodeError:
+        return []
+    if not isinstance(data, dict):
+        return []
+
+    publisher = data.get("publisher")
+    name = data.get("name", "unknown")
+    if not isinstance(publisher, str) or not publisher:
+        publisher = "<missing>"
+
+    allowed = {p.lower() for p in allowed_publishers}
+    if publisher.lower() in allowed:
+        return []
+
+    return [Finding(
+        path=path,
+        check="ext_unknown_publisher",
+        severity=Severity.INFO,
+        title="Installed extension from a non-allowlisted publisher",
+        detail=(
+            f"Extension '{name}' is published by '{publisher}', which is not in the "
+            "trusted publisher allowlist. Review whether this extension was "
+            "intentionally installed; typosquatted or side-loaded extensions are a "
+            "common compromise vector."
+        ),
+        evidence=f'"publisher": "{publisher}"',
+        platform=Platform.VSCODE,
+        taxonomy_id="MCP-T08",
+        atlas_id="D3",
+        confidence="low",
+    )]

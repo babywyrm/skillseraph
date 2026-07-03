@@ -14,7 +14,7 @@ Domain J (config & automation).
 | Structural (non-regex) parsers | **Strong** — extension manifests, extensions.json, mcp.json env/allowlist fields, and devcontainer/hooks lifecycle commands |
 | Confidence scores + `--min-confidence` | **Done** — per-rule confidence, filterable |
 | Baseline / allowlist / ignores | **Strong** — baselines, inline ignores, `.skillseraphignore` |
-| Local developer self-check (`audit-local`) | **Strong** — user-level IDE configs + installed extension manifests |
+| Local developer self-check (`audit-local`) | **Strong** — user-level IDE configs, installed extension manifests, opt-in publisher allowlist |
 | Demo / smoke-test flows | **Done** — `demo-fixture` + `smoke-test` |
 | Output (console / JSON / SARIF) | **Strong** — JSON includes confidence |
 | CI integration (Action + workflow + PR diff mode) | **Strong** |
@@ -30,8 +30,6 @@ Domain J (config & automation).
 
 - **SARIF confidence mapping** — carry confidence into SARIF `rank`/properties
   so Code Scanning can sort by it.
-- **Extension allowlist** — optional list of trusted extension IDs/publishers
-  so `audit-local` can flag *unknown* extensions, not just risky manifests.
 - **Windows `audit-local` paths** — `%APPDATA%` config/extension locations for
   VS Code / Cursor / Windsurf (currently macOS + Linux only).
 
@@ -69,6 +67,7 @@ Domain J (config & automation).
 - ~~Atlas J3/J5~~, ~~nullfield policy generation~~, ~~container image~~, ~~diff mode~~
 - ~~VS Code-compatible IDE scanning + `audit-local` + extension manifest auditing~~
 - ~~Structural parsers for MCP configs + devcontainer/hooks lifecycle commands~~
+- ~~Extension publisher allowlist (`--allow-extension-publisher`)~~
 
 ---
 

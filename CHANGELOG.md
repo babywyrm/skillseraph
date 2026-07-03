@@ -8,6 +8,10 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **Extension publisher allowlist** — `audit-local --allow-extension-publisher
+  <name>` (repeatable) flags any installed extension whose publisher is not on
+  the trusted list as an informational, low-confidence finding, surfacing
+  typosquatted or side-loaded extensions even with a clean manifest.
 - **Structural lifecycle/hook parsing** — `devcontainer.json` and `hooks.json`
   get a JSON-aware pass (`lifecycle` check) that reassembles array/object-form
   commands before matching, catching remote-fetch-to-interpreter payloads that
