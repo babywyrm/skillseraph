@@ -8,6 +8,13 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **VS Code-compatible IDE self-checks** — new `vscode` platform coverage for
+  `.vscode/{settings,tasks,launch,extensions}.json`, `*.code-workspace`, and
+  `.devcontainer/**`, plus `skillseraph audit-local` for user-level VS Code,
+  Cursor, and Windsurf config audits.
+- **`ide_integrations` rule pack** — detects remote shell pipes in IDE tasks,
+  secret env injection, runtime preload hooks, suspicious extension trust
+  signals, and APM/telemetry collector redirects.
 - **`skill_invocation` rule pack (Atlas J2)** — detects skill invocation hijack
   distinct from rule injection: callback/webhook on invocation, tool-call
   redirects, skill self-modification, invocation-time overrides, load-time

@@ -96,6 +96,9 @@ skillseraph . --no-deps
 # Machine-readable output
 skillseraph . --json-out findings.json --sarif results.sarif
 
+# Developer self-check for local VS Code-compatible IDE config
+skillseraph audit-local --json-out ide-audit.json
+
 # Quiet mode for CI logs
 skillseraph . --quiet --json-out findings.json
 ```
@@ -111,6 +114,7 @@ skillseraph auto-detects and scans config surfaces for these platforms:
 | Platform | Files |
 |----------|-------|
 | Cursor | `.cursor/rules/**`, `**/SKILL.md`, `.cursor/hooks.json`, `.cursor/mcp.json`, `AGENTS.md` |
+| VS Code-compatible IDEs | `.vscode/{settings,tasks,launch,extensions}.json`, `*.code-workspace`, `.devcontainer/**` |
 | Codex | `AGENTS.md`, `.codex/**`, `codex.{json,yaml}` |
 | GitHub Copilot | `.github/copilot-instructions.md`, `.github/copilot/**` |
 | Claude | `CLAUDE.md`, `.claude/**`, `claude_desktop_config.json`, `.mcp.json` |
@@ -143,6 +147,7 @@ skillseraph auto-detects and scans config surfaces for these platforms:
 | `automation_triggers` | Wildcard event triggers, shell exec in automations, broad write perms (Atlas J3) |
 | `config_inheritance` | Parent traversal, absolute-path includes, remote config fetch, recursive globs (Atlas J5) |
 | `skill_invocation` | **Skill invocation hijack** (Atlas J2): callback/redirect on invoke, self-modification, invocation-time override, silent invocation, remote skill pull |
+| `ide_integrations` | VS Code-compatible task/debug/user config abuse: remote shell pipes, secret env injection, runtime preloads, extension trust, APM/telemetry collector redirects |
 
 Findings carry a severity (`critical`/`high`/`medium`/`low`), a taxonomy ID
 (OWASP MCP / MCP-T), and an Attack Path Atlas domain ID (Domain J primary;
