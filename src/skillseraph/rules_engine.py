@@ -68,5 +68,6 @@ def run_category(category: str, path: Path, content: str) -> list[Finding]:
                     evidence=line.strip()[:200],
                     taxonomy_id=rule.get("taxonomy_id", ""),
                     atlas_id=rule.get("atlas_id", ""),
+                    confidence=rule.get("confidence", "high"),
                 ))
     return findings

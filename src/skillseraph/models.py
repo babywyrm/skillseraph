@@ -59,6 +59,7 @@ class Finding:
     taxonomy_id: str = ""
     atlas_id: str = ""
     mitre_id: str = ""
+    confidence: str = "high"
 
     @property
     def location(self) -> str:

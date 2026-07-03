@@ -42,6 +42,7 @@ rules:
   - id: ide_untrusted_extension_recommendation
     pattern: "(?i)\"recommendations\"\\s*:\\s*\\[[^\\]]*(evil|shadow|unknown|local|\\.vsix|http)"
     severity: medium
+    confidence: medium
     title: "IDE config recommends an untrusted extension source"
     detail: "Workspace extension recommendations influence what developers install. Local, URL-like, or suspicious extension references should be verified before trust."
     taxonomy_id: MCP-T08

@@ -32,6 +32,7 @@ SEVERITY_COLORS = {
 @click.option("--json-out", "-j", type=click.Path(), help="Write JSON findings to file")
 @click.option("--sarif", type=click.Path(), help="Write SARIF 2.1.0 report")
 @click.option("--fail-on", type=click.Choice(["critical", "high", "medium", "low", "any", "none"]), default="high", help="Exit non-zero if findings at this severity or above")
+@click.option("--min-confidence", type=click.Choice(["low", "medium", "high"]), default="low", help="Suppress findings below this confidence level")
 @click.option("--home", type=click.Path(exists=True, file_okay=False), help="Home directory to audit with the audit-local target")
 @click.option("--output", type=click.Path(), help="Output directory for the demo-fixture target")
 @click.option("--force", is_flag=True, help="Allow demo-fixture to replace a non-empty output directory")
@@ -51,6 +52,7 @@ def main(
     json_out: str | None,
     sarif: str | None,
     fail_on: str,
+    min_confidence: str,
     home: str | None,
     output: str | None,
     force: bool,
@@ -138,6 +140,14 @@ def main(
     if correlate:
         from .correlator import correlate as run_correlate
         result = run_correlate(result)
+
+    if min_confidence != "low":
+        levels = {"low": 0, "medium": 1, "high": 2}
+        threshold = levels[min_confidence]
+        result.findings = [
+            f for f in result.findings
+            if levels.get(f.confidence, 2) >= threshold
+        ]
 
     if save_baseline:
         count = write_baseline(result, Path(save_baseline))
@@ -231,6 +241,7 @@ def _write_json(result, path: Path) -> None:
                 "platform": f.platform.value,
                 "taxonomy_id": f.taxonomy_id,
                 "atlas_id": f.atlas_id,
+                "confidence": f.confidence,
             }
             for f in result.findings
         ],

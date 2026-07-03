@@ -39,6 +39,7 @@ rules:
   - id: hypothetical_framing
     pattern: 'pretend\s+(you\s+)?(are|have|can)\s+'
     severity: medium
+    confidence: medium
     title: "Hypothetical framing: may trick agent into unsafe behavior"
     taxonomy_id: MCP-T01
     atlas_id: J1
