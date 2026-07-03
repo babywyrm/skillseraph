@@ -175,6 +175,7 @@ skillseraph auto-detects and scans config surfaces for these platforms:
 | `skill_invocation` | **Skill invocation hijack** (Atlas J2): callback/redirect on invoke, self-modification, invocation-time override, silent invocation, remote skill pull |
 | `ide_integrations` | VS Code-compatible task/debug/user config abuse: remote shell pipes, secret env injection, runtime preloads, extension trust, APM/telemetry collector redirects |
 | `extensions` | Installed IDE extension manifests (structural parse): wildcard activation, lifecycle scripts fetching remote code, entry points escaping the install dir |
+| `lifecycle` | `devcontainer.json` / `hooks.json` lifecycle commands (structural parse): remote-fetch-to-interpreter payloads split across array/object command forms |
 
 Findings carry a severity (`critical`/`high`/`medium`/`low`), a confidence level
 (`high`/`medium`/`low`, filterable with `--min-confidence`), a taxonomy ID

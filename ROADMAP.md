@@ -11,7 +11,7 @@ Domain J (config & automation).
 |------|-------|
 | Multi-platform detection (12 platforms incl. VS Code-compatible IDEs) | **Strong** |
 | Data-driven YAML rules (15 packs) | **Strong** — all regex categories YAML-driven |
-| Structural (non-regex) parsers | **Medium** — extension manifests, extensions.json, and mcp.json env/allowlist fields; hook/devcontainer configs still line-regex |
+| Structural (non-regex) parsers | **Strong** — extension manifests, extensions.json, mcp.json env/allowlist fields, and devcontainer/hooks lifecycle commands |
 | Confidence scores + `--min-confidence` | **Done** — per-rule confidence, filterable |
 | Baseline / allowlist / ignores | **Strong** — baselines, inline ignores, `.skillseraphignore` |
 | Local developer self-check (`audit-local`) | **Strong** — user-level IDE configs + installed extension manifests |
@@ -30,19 +30,15 @@ Domain J (config & automation).
 
 - **SARIF confidence mapping** — carry confidence into SARIF `rank`/properties
   so Code Scanning can sort by it.
-- **Structural parsers for hook/devcontainer configs** — extend the JSON-aware
-  pass (now covering extension manifests and `mcp.json` env/allowlist fields)
-  to `hooks.json` and `devcontainer.json`, cutting false positives and
-  catching field-level tampering the line-regex engine misses.
 - **Extension allowlist** — optional list of trusted extension IDs/publishers
   so `audit-local` can flag *unknown* extensions, not just risky manifests.
+- **Windows `audit-local` paths** — `%APPDATA%` config/extension locations for
+  VS Code / Cursor / Windsurf (currently macOS + Linux only).
 
 ## Medium
 
 - **Provenance / signature checks** — flag skills and rules lacking a trusted
   source or signature; optional allowlist of trusted publishers.
-- **Windows support for `audit-local`** — `%APPDATA%` config paths for
-  VS Code / Cursor / Windsurf (currently macOS + Linux paths only).
 - **JetBrains coverage** — `.idea/**` run configurations, external tools, and
   startup tasks as an IDE surface alongside the VS Code family.
 - **Severity/confidence tuning pass** — audit every rule against a corpus of
@@ -72,6 +68,7 @@ Domain J (config & automation).
 - ~~Watch mode~~ (`--watch`)
 - ~~Atlas J3/J5~~, ~~nullfield policy generation~~, ~~container image~~, ~~diff mode~~
 - ~~VS Code-compatible IDE scanning + `audit-local` + extension manifest auditing~~
+- ~~Structural parsers for MCP configs + devcontainer/hooks lifecycle commands~~
 
 ---
 

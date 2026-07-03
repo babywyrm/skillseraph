@@ -8,6 +8,10 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **Structural lifecycle/hook parsing** — `devcontainer.json` and `hooks.json`
+  get a JSON-aware pass (`lifecycle` check) that reassembles array/object-form
+  commands before matching, catching remote-fetch-to-interpreter payloads that
+  are split across lines and invisible to the line-regex engine.
 - **Structural MCP config parsing** — `mcp.json`-family files now also get a
   JSON-aware pass that catches multi-line field tampering the line-regex
   engine cannot see (env credential blocks and wildcard tool allowlists
@@ -51,7 +55,7 @@ uses [Semantic Versioning](https://semver.org/).
   pipes, and `String.fromCharCode`/hex-escape concatenation, in addition to the
   existing base64/hex/unicode/data-URI checks.
 - 27 new tests (`test_extended_coverage.py`) + `poisoned_skill_invocation.md`
-  fixture. 110 tests total.
+  fixture.
 
 ### Changed
 

@@ -26,6 +26,7 @@ def run_all_checks(path: Path, content: str, line_offset: int = 0) -> list[Findi
     from .skill_invocation import check_skill_invocation
     from .ide_integrations import check_ide_integrations
     from .extensions import check_extension_manifest
+    from .lifecycle import check_lifecycle
 
     findings: list[Finding] = []
     for checker in [
@@ -46,6 +47,7 @@ def run_all_checks(path: Path, content: str, line_offset: int = 0) -> list[Findi
         check_skill_invocation,
         check_ide_integrations,
         check_extension_manifest,
+        check_lifecycle,
     ]:
         findings.extend(checker(path, content))
     return findings
