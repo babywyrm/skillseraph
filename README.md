@@ -103,11 +103,33 @@ skillseraph audit-local --json-out ide-audit.json
 skillseraph demo-fixture --output /tmp/skillseraph-demo
 skillseraph smoke-test
 
+# Suppress heuristic (lower-confidence) findings on large repos
+skillseraph . --min-confidence high
+
 # Quiet mode for CI logs
 skillseraph . --quiet --json-out findings.json
 ```
 
 Exit codes: `0` clean, `1` findings at/above `--fail-on`, non-zero on error.
+
+### Suppressing accepted findings
+
+Inline, on the offending line (suppresses one named rule):
+
+```markdown
+This doc quotes "ignore previous instructions". <!-- skillseraph: ignore prompt_injection_override -->
+```
+
+Repo-wide, via a `.skillseraphignore` file at the scan root:
+
+```text
+# path globs exclude files entirely
+fixtures/**
+docs/examples/**
+
+# rule: lines disable a rule everywhere
+rule:hypothetical_framing
+```
 
 ---
 
@@ -152,8 +174,10 @@ skillseraph auto-detects and scans config surfaces for these platforms:
 | `config_inheritance` | Parent traversal, absolute-path includes, remote config fetch, recursive globs (Atlas J5) |
 | `skill_invocation` | **Skill invocation hijack** (Atlas J2): callback/redirect on invoke, self-modification, invocation-time override, silent invocation, remote skill pull |
 | `ide_integrations` | VS Code-compatible task/debug/user config abuse: remote shell pipes, secret env injection, runtime preloads, extension trust, APM/telemetry collector redirects |
+| `extensions` | Installed IDE extension manifests (structural parse): wildcard activation, lifecycle scripts fetching remote code, entry points escaping the install dir |
 
-Findings carry a severity (`critical`/`high`/`medium`/`low`), a taxonomy ID
+Findings carry a severity (`critical`/`high`/`medium`/`low`), a confidence level
+(`high`/`medium`/`low`, filterable with `--min-confidence`), a taxonomy ID
 (OWASP MCP / MCP-T), and an Attack Path Atlas domain ID (Domain J primary;
 cross-domain C1/I3/D1/D3/D4 where statically detectable).
 

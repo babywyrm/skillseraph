@@ -9,45 +9,50 @@ Domain J (config & automation).
 
 | Area | State |
 |------|-------|
-| Multi-platform detection (11 platforms) | **Strong** |
-| Data-driven YAML rules (14 packs) | **Strong** — all categories now YAML-driven, incl. encoding |
-| Baseline / allowlist | **Medium** — file-level baseline; no inline ignores yet |
-| Output (console / JSON / SARIF) | **Strong** |
-| CI integration (Action + workflow + PR diff mode) | **Strong** — composite action, reusable workflow, `--changed-only` |
-| Distribution (container image) | **Strong** — Dockerfile + GHCR push in CI; PyPI pending |
+| Multi-platform detection (12 platforms incl. VS Code-compatible IDEs) | **Strong** |
+| Data-driven YAML rules (15 packs) | **Strong** — all regex categories YAML-driven |
+| Structural (non-regex) parsers | **Medium** — extension manifests + extensions.json; MCP/hook configs still line-regex |
+| Confidence scores + `--min-confidence` | **Done** — per-rule confidence, filterable |
+| Baseline / allowlist / ignores | **Strong** — baselines, inline ignores, `.skillseraphignore` |
+| Local developer self-check (`audit-local`) | **Strong** — user-level IDE configs + installed extension manifests |
+| Demo / smoke-test flows | **Done** — `demo-fixture` + `smoke-test` |
+| Output (console / JSON / SARIF) | **Strong** — JSON includes confidence |
+| CI integration (Action + workflow + PR diff mode) | **Strong** |
+| Distribution (PyPI, container image, installer) | **Strong** |
 | Kubernetes gating | **Strong** — init-container + admission webhook (opt-in) |
-| Policy generation (nullfield) | **Done** — `--generate-policy` emits NullfieldPolicy |
-| Atlas Domain J coverage | **Strong** — J1/J2/J3/J4/J5/J6/J7/J8 done |
+| Policy generation (nullfield) | **Done** |
+| Atlas Domain J coverage | **Strong** — J1–J8 done |
 | Cross-domain (static) coverage | **Medium** — C1 sleeper, I3 tool-schema, D1/D3/D4 supply chain |
 
 ---
 
 ## Near-term
 
-- **PyPI publish** — `pip install skillseraph` / `uvx skillseraph` without git.
-- **Inline ignores** — `# skillseraph: ignore <rule>` comments and a
-  `.skillseraphignore` file for path/rule exclusions, complementing baselines.
-- **Publish the Action to the Marketplace** — tag `v0.1.0` + floating `v1` so
-  `uses: babywyrm/skillseraph@v1` is first-class.
+- **SARIF confidence mapping** — carry confidence into SARIF `rank`/properties
+  so Code Scanning can sort by it.
+- **Structural parsers for MCP/hook configs** — parse `mcp.json`,
+  `hooks.json`, and `devcontainer.json` as JSON (like the extension checks)
+  instead of line-regex, cutting false positives and catching field-level
+  tampering (server URL redirects, tool allowlist changes).
+- **Extension allowlist** — optional list of trusted extension IDs/publishers
+  so `audit-local` can flag *unknown* extensions, not just risky manifests.
 
 ## Medium
 
-- ~~Atlas J3/J5~~ **Done** (automation_triggers.yaml, config_inheritance.yaml).
-- ~~nullfield policy generation~~ **Done** (`--generate-policy`).
-- ~~Container image~~ **Done** (Dockerfile + GHCR push in CI).
-- ~~Diff mode~~ **Done** (`--changed-only` + `--files-from`).
 - **Provenance / signature checks** — flag skills and rules lacking a trusted
   source or signature; optional allowlist of trusted publishers.
-- **Structural parsers** — parse JSON/YAML configs (MCP server defs, hooks)
-  structurally rather than line-regex, to cut false positives and catch
-  field-level issues (e.g. server URL redirects, tool allowlist tampering).
-- **Severity tuning + confidence scores** — per-rule confidence and a
-  `--min-confidence` filter to reduce noise on large repos.
+- **Windows support for `audit-local`** — `%APPDATA%` config paths for
+  VS Code / Cursor / Windsurf (currently macOS + Linux paths only).
+- **JetBrains coverage** — `.idea/**` run configurations, external tools, and
+  startup tasks as an IDE surface alongside the VS Code family.
+- **Severity/confidence tuning pass** — audit every rule against a corpus of
+  real repos and assign measured confidence values (currently only the known
+  heuristic rules are marked below high).
+- **Baseline expiry** — baselines record a timestamp; `--baseline-max-age`
+  fails when accepted findings go stale without re-review.
 
 ## Horizon
 
-- **Watch mode** — `--watch` for agent workloads that fetch skills/configs at
-  runtime (sidecar use case).
 - **Org-wide scanning** — scan all repos in a GitHub org via the API for
   fleet-wide exposure reporting.
 - **Unicode / homoglyph deep analysis** — dedicated normalization pass for
@@ -56,6 +61,17 @@ Domain J (config & automation).
   with a contract test that every rule has a fixture.
 - **MCP config live cross-check** — optionally hand discovered MCP server URLs
   to mcpnuke for an endpoint scan, bridging static config and live behavior.
+- **Extension binary diffing** — compare installed extension contents against
+  marketplace-published hashes to catch post-install tampering.
+
+### Shipped (previously roadmap items)
+
+- ~~PyPI publish~~ (`uv tool install skillseraph` / `uvx skillseraph`)
+- ~~Inline ignores + `.skillseraphignore`~~
+- ~~Confidence scores + `--min-confidence`~~
+- ~~Watch mode~~ (`--watch`)
+- ~~Atlas J3/J5~~, ~~nullfield policy generation~~, ~~container image~~, ~~diff mode~~
+- ~~VS Code-compatible IDE scanning + `audit-local` + extension manifest auditing~~
 
 ---
 
@@ -63,7 +79,8 @@ Domain J (config & automation).
 
 Detection patterns live in `src/skillseraph/rules/*.yaml`. To add one:
 
-1. Add a rule (`id`, `pattern`, `severity`, `title`, `taxonomy_id`, `atlas_id`).
+1. Add a rule (`id`, `pattern`, `severity`, `title`, `taxonomy_id`, `atlas_id`,
+   optional `confidence`).
 2. Add a fixture under `tests/fixtures/` and a test asserting it fires (and that
    a benign sample does not).
 3. Run `uv run pytest` and `uv run ruff check`.

@@ -8,6 +8,17 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **Installed-extension auditing** — `audit-local` now inspects extension
+  manifests under `.vscode/extensions`, `.cursor/extensions`, and
+  `.windsurf/extensions` via a structural JSON parser (`extensions` check):
+  wildcard activation, lifecycle scripts fetching remote code, and entry
+  points escaping the install directory.
+- **Per-rule confidence scores** — rules may declare `confidence:
+  high|medium|low`; findings carry it in console/JSON output and
+  `--min-confidence` filters heuristic matches on large repos.
+- **Inline ignores + `.skillseraphignore`** — suppress a named rule on one
+  line with `skillseraph: ignore <rule>` comments, exclude paths with globs,
+  or disable a rule repo-wide with `rule:<id>` lines.
 - **Safe demo and smoke-test flows** — `skillseraph demo-fixture --output <dir>`
   writes synthetic repo/home fixtures with fake poisoned configs, and
   `skillseraph smoke-test` verifies expected detections in a temporary fixture.
