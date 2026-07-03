@@ -11,7 +11,7 @@ Domain J (config & automation).
 |------|-------|
 | Multi-platform detection (12 platforms incl. VS Code-compatible IDEs) | **Strong** |
 | Data-driven YAML rules (15 packs) | **Strong** — all regex categories YAML-driven |
-| Structural (non-regex) parsers | **Medium** — extension manifests + extensions.json; MCP/hook configs still line-regex |
+| Structural (non-regex) parsers | **Medium** — extension manifests, extensions.json, and mcp.json env/allowlist fields; hook/devcontainer configs still line-regex |
 | Confidence scores + `--min-confidence` | **Done** — per-rule confidence, filterable |
 | Baseline / allowlist / ignores | **Strong** — baselines, inline ignores, `.skillseraphignore` |
 | Local developer self-check (`audit-local`) | **Strong** — user-level IDE configs + installed extension manifests |
@@ -30,10 +30,10 @@ Domain J (config & automation).
 
 - **SARIF confidence mapping** — carry confidence into SARIF `rank`/properties
   so Code Scanning can sort by it.
-- **Structural parsers for MCP/hook configs** — parse `mcp.json`,
-  `hooks.json`, and `devcontainer.json` as JSON (like the extension checks)
-  instead of line-regex, cutting false positives and catching field-level
-  tampering (server URL redirects, tool allowlist changes).
+- **Structural parsers for hook/devcontainer configs** — extend the JSON-aware
+  pass (now covering extension manifests and `mcp.json` env/allowlist fields)
+  to `hooks.json` and `devcontainer.json`, cutting false positives and
+  catching field-level tampering the line-regex engine misses.
 - **Extension allowlist** — optional list of trusted extension IDs/publishers
   so `audit-local` can flag *unknown* extensions, not just risky manifests.
 

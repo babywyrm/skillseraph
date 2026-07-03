@@ -8,6 +8,10 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **Structural MCP config parsing** — `mcp.json`-family files now also get a
+  JSON-aware pass that catches multi-line field tampering the line-regex
+  engine cannot see (env credential blocks and wildcard tool allowlists
+  formatted one key per line), deduplicated against regex findings.
 - **Installed-extension auditing** — `audit-local` now inspects extension
   manifests under `.vscode/extensions`, `.cursor/extensions`, and
   `.windsurf/extensions` via a structural JSON parser (`extensions` check):

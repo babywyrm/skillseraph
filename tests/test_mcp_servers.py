@@ -44,6 +44,58 @@ def test_mcp_server_clean_local(tmp_path: Path):
     assert mcp_findings == []
 
 
+def test_mcp_server_multiline_env_credential_detected(tmp_path: Path):
+    """Line-based regex misses env blocks spanning lines; structural parse must not."""
+    mcp = tmp_path / ".cursor" / "mcp.json"
+    mcp.parent.mkdir(parents=True)
+    mcp.write_text("""{
+  "servers": {
+    "x": {
+      "env": {
+        "GITHUB_TOKEN": "ghp_abc123",
+        "SECRET_KEY": "sk-xyz"
+      }
+    }
+  }
+}""")
+    findings = scan_file(mcp)
+    assert any(f.check == "mcp_server_env_credential_injection" for f in findings)
+
+
+def test_mcp_server_multiline_wildcard_allowlist_detected(tmp_path: Path):
+    mcp = tmp_path / ".cursor" / "mcp.json"
+    mcp.parent.mkdir(parents=True)
+    mcp.write_text("""{
+  "servers": {
+    "x": {
+      "allowedTools": [
+        "*"
+      ]
+    }
+  }
+}""")
+    findings = scan_file(mcp)
+    assert any(f.check == "mcp_server_wildcard_tool_allowlist" for f in findings)
+
+
+def test_mcp_server_single_line_env_not_double_reported(tmp_path: Path):
+    """When regex already catches the single-line form, structural parse must not duplicate it."""
+    mcp = tmp_path / ".cursor" / "mcp.json"
+    mcp.parent.mkdir(parents=True)
+    mcp.write_text('{"servers": {"x": {"env": {"GITHUB_TOKEN": "ghp_abc123"}}}}')
+    findings = scan_file(mcp)
+    env_findings = [f for f in findings if f.check == "mcp_server_env_credential_injection"]
+    assert len(env_findings) == 1
+
+
+def test_mcp_server_malformed_json_does_not_crash(tmp_path: Path):
+    mcp = tmp_path / ".cursor" / "mcp.json"
+    mcp.parent.mkdir(parents=True)
+    mcp.write_text('{"servers": {"x": {"env": {"GITHUB_TOKEN" INVALID')
+    findings = scan_file(mcp)
+    assert isinstance(findings, list)
+
+
 def test_mcp_server_rules_do_not_scan_vscode_tasks(tmp_path: Path):
     tasks = tmp_path / ".vscode" / "tasks.json"
     tasks.parent.mkdir(parents=True)
