@@ -31,16 +31,14 @@ Domain J (config & automation).
 
 ## Near-term
 
-- **SARIF confidence mapping** — carry confidence into SARIF `rank`/properties
-  so Code Scanning can sort by it.
+- **Severity/confidence tuning pass** — audit every rule against a corpus of
+  real repos and assign measured confidence values (currently only known
+  heuristic rules are marked below high).
 
 ## Medium
 
 - **Provenance / signature checks** — flag skills and rules lacking a trusted
   source or signature; optional allowlist of trusted publishers.
-- **Severity/confidence tuning pass** — audit every rule against a corpus of
-  real repos and assign measured confidence values (currently only the known
-  heuristic rules are marked below high).
 - **Baseline expiry** — baselines record a timestamp; `--baseline-max-age`
   fails when accepted findings go stale without re-review.
 
@@ -68,6 +66,7 @@ Domain J (config & automation).
 - ~~Structural parsers for MCP configs + devcontainer/hooks lifecycle commands~~
 - ~~Extension publisher allowlist (`--allow-extension-publisher`)~~
 - ~~JetBrains `.idea` run configuration / external tool coverage~~
+- ~~SARIF confidence mapping (`rank` + confidence properties)~~
 
 ---
 

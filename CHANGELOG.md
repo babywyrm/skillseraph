@@ -8,6 +8,9 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **SARIF confidence mapping** — SARIF results now include a `rank`
+  (severity × confidence, 0–100) and `confidence`/`security-severity`
+  properties so GitHub Code Scanning can sort and filter by confidence.
 - **JetBrains IDE coverage** — new `jetbrains` platform scans `.idea/**/*.xml`
   (run configurations, external tools) and `*.iml` files, with a `jetbrains`
   rule pack flagging run configs / external tools that fetch remote content or

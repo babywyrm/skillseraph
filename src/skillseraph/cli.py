@@ -254,6 +254,15 @@ def _write_json(result, path: Path) -> None:
     path.write_text(json.dumps(data, indent=2))
 
 
+_CONFIDENCE_FACTOR = {"high": 1.0, "medium": 0.7, "low": 0.4}
+
+
+def _sarif_rank(finding) -> float:
+    """Map severity + confidence to a SARIF rank (0.0–100.0) for sorting."""
+    factor = _CONFIDENCE_FACTOR.get(finding.confidence, 1.0)
+    return round(min(finding.severity.score * 10 * factor, 100.0), 1)
+
+
 def _write_sarif(result, path: Path) -> None:
     sarif_doc = {
         "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/main/sarif-2.1/schema/sarif-schema-2.1.0.json",
@@ -270,7 +279,14 @@ def _write_sarif(result, path: Path) -> None:
                 {
                     "ruleId": f.check,
                     "level": {"critical": "error", "high": "error", "medium": "warning", "low": "note", "info": "note"}[f.severity.value],
+                    "rank": _sarif_rank(f),
                     "message": {"text": f"{f.title}: {f.detail}"},
+                    "properties": {
+                        "confidence": f.confidence,
+                        "security-severity": str(f.severity.score),
+                        "taxonomy_id": f.taxonomy_id,
+                        "atlas_id": f.atlas_id,
+                    },
                     "locations": [{
                         "physicalLocation": {
                             "artifactLocation": {"uri": str(f.path.relative_to(result.target))},

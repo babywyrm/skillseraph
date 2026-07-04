@@ -204,7 +204,9 @@ skillseraph is designed to run as a gate. See [QUICKSTART.md](QUICKSTART.md) for
 
 - **Console** — Rich table, grouped by severity
 - **JSON** — full findings with taxonomy/atlas IDs (`--json-out`)
-- **SARIF 2.1.0** — GitHub Code Scanning / VS Code (`--sarif`)
+- **SARIF 2.1.0** — GitHub Code Scanning / VS Code (`--sarif`); each result
+  carries a `rank` (severity × confidence) and a `confidence` property so Code
+  Scanning can sort by it
 
 ---
 
