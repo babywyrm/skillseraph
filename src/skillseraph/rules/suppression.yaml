@@ -18,6 +18,7 @@ rules:
   - id: stealth_operation
     pattern: '(act|operate|work)\s+(silently|quietly|invisibly|in.?the.?background)'
     severity: medium
+    confidence: medium
     title: "Instructs silent/invisible operation"
     taxonomy_id: MCP-T13
     atlas_id: J7

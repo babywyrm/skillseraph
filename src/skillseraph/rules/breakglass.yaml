@@ -5,6 +5,7 @@ rules:
   - id: breakglass_reference
     pattern: '\bbreak.?glass\b'
     severity: high
+    confidence: medium
     title: "Break-glass reference: emergency override mechanism in config"
     taxonomy_id: MCP-T09
     atlas_id: J1

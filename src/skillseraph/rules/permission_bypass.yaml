@@ -25,6 +25,7 @@ rules:
   - id: validation_skip
     pattern: '(disable|ignore|skip)\s+(the\s+)?(linter|review|check|validation|policy)'
     severity: medium
+    confidence: medium
     title: "Instructs skipping validation/review"
     taxonomy_id: MCP-T09
     atlas_id: J1
@@ -32,6 +33,7 @@ rules:
   - id: privilege_request
     pattern: '(root|admin|sudo|privileged)\s+(access|mode|shell|execution)'
     severity: high
+    confidence: medium
     title: "Requests elevated privileges"
     taxonomy_id: MCP-T09
     atlas_id: J1

@@ -38,6 +38,7 @@ rules:
   - id: skill_invocation_override
     pattern: '(?i)when\s+(this\s+skill\s+is\s+|you\s+are\s+)?invoked\b.{0,60}(ignore|override|instead|forget)'
     severity: high
+    confidence: medium
     title: "Invocation-time instruction override"
     detail: "The skill contains instructions that activate at invocation time to override the agent's behavior, bypassing any pre-session safety prompts."
     taxonomy_id: MCP-T01

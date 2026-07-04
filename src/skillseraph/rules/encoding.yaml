@@ -12,6 +12,7 @@ rules:
   - id: base64_blob
     pattern: '[A-Za-z0-9+/]{80,}={0,2}'
     severity: medium
+    confidence: low
     title: "Long base64 blob in agent config — possible obfuscated payload"
     detail: "A base64-encoded string of 80+ chars was found in an agent config file. Adversaries embed instructions or payloads in base64 to evade keyword-based scanners."
     taxonomy_id: MCP-T05
@@ -20,6 +21,7 @@ rules:
   - id: hex_blob
     pattern: '\b[0-9a-fA-F]{64,}\b'
     severity: medium
+    confidence: low
     title: "Long hex string in agent config — possible obfuscated payload"
     detail: "A hex-encoded string of 64+ chars was found. This pattern is used to encode shell commands, URLs, or instruction overrides that bypass naive string matching."
     taxonomy_id: MCP-T05

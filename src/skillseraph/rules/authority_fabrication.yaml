@@ -34,6 +34,7 @@ rules:
   - id: false_trust_assertion
     pattern: '(this\s+(has\s+been|is)\s+(already\s+)?(reviewed|approved|vetted|verified|trusted))'
     severity: medium
+    confidence: medium
     title: "False trust assertion: claims content is already vetted"
     taxonomy_id: MCP-T02
     atlas_id: J1

@@ -4,6 +4,7 @@ rules:
   - id: persistent_behavior
     pattern: '(from\s+now\s+on|in\s+(all\s+)?future\s+(runs?|sessions?|conversations?))'
     severity: high
+    confidence: medium
     title: "Persistent behavior change: modifies behavior across sessions"
     taxonomy_id: MCP-T14
     atlas_id: J4
@@ -11,6 +12,7 @@ rules:
   - id: permanent_instruction
     pattern: '(always|permanently|forever)\s+(remember|apply|use|follow)\s+'
     severity: medium
+    confidence: medium
     title: "Permanent instruction: anchors behavior indefinitely"
     taxonomy_id: MCP-T14
     atlas_id: J4

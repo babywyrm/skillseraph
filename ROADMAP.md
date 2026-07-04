@@ -12,7 +12,7 @@ Domain J (config & automation).
 | Multi-platform detection (13 platforms incl. VS Code + JetBrains IDEs) | **Strong** |
 | Data-driven YAML rules (15 packs) | **Strong** — all regex categories YAML-driven |
 | Structural (non-regex) parsers | **Strong** — extension manifests, extensions.json, mcp.json env/allowlist fields, and devcontainer/hooks lifecycle commands |
-| Confidence scores + `--min-confidence` | **Done** — per-rule confidence, filterable |
+| Confidence scores + `--min-confidence` | **Strong** — every rule pack carries calibrated confidence; filterable + SARIF rank |
 | Baseline / allowlist / ignores | **Strong** — baselines, inline ignores, `.skillseraphignore` |
 | Local developer self-check (`audit-local`) | **Strong** — user-level IDE configs, installed extension manifests, opt-in publisher allowlist |
 | Demo / smoke-test flows | **Done** — `demo-fixture` + `smoke-test` |
@@ -31,16 +31,13 @@ Domain J (config & automation).
 
 ## Near-term
 
-- **Severity/confidence tuning pass** — audit every rule against a corpus of
-  real repos and assign measured confidence values (currently only known
-  heuristic rules are marked below high).
+- **Baseline expiry** — baselines record a timestamp; `--baseline-max-age`
+  fails when accepted findings go stale without re-review.
 
 ## Medium
 
 - **Provenance / signature checks** — flag skills and rules lacking a trusted
   source or signature; optional allowlist of trusted publishers.
-- **Baseline expiry** — baselines record a timestamp; `--baseline-max-age`
-  fails when accepted findings go stale without re-review.
 
 ## Horizon
 
@@ -67,6 +64,7 @@ Domain J (config & automation).
 - ~~Extension publisher allowlist (`--allow-extension-publisher`)~~
 - ~~JetBrains `.idea` run configuration / external tool coverage~~
 - ~~SARIF confidence mapping (`rank` + confidence properties)~~
+- ~~Rule confidence tuning pass across all packs~~
 
 ---
 

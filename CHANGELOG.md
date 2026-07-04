@@ -8,6 +8,11 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **Rule confidence tuning pass** — every rule pack now carries calibrated
+  `confidence` values: deterministic/structural patterns stay `high`, natural-
+  language instruction heuristics are `medium`, and broad blob/role-marker
+  patterns (base64/hex blobs, bare `system:`/`assistant:` markers) are `low`,
+  so `--min-confidence high` yields a high-signal gate.
 - **SARIF confidence mapping** — SARIF results now include a `rank`
   (severity × confidence, 0–100) and `confidence`/`security-severity`
   properties so GitHub Code Scanning can sort and filter by confidence.

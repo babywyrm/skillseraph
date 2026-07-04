@@ -11,6 +11,7 @@ rules:
   - id: persona_hijack
     pattern: 'you\s+are\s+now\s+(a|an)\s+'
     severity: high
+    confidence: medium
     title: "Persona hijack: redefines agent identity"
     taxonomy_id: MCP-T01
     atlas_id: J1
@@ -18,6 +19,7 @@ rules:
   - id: fake_role_claim
     pattern: '(system|assistant)\s*:\s*'
     severity: high
+    confidence: low
     title: "Fake role marker: mimics system/assistant message boundary"
     taxonomy_id: MCP-T01
     atlas_id: J1
@@ -73,6 +75,7 @@ rules:
   - id: sleeper_conditional_trigger
     pattern: '(?i)\bif\s+(the\s+)?(user|human|operator)\s+(asks?|mentions?|says?|types?|requests?)\s.{5,80}(then|do|execute|run|send|post|fetch)'
     severity: high
+    confidence: medium
     title: "Conditional trigger instruction — sleeper payload pattern (Atlas C1)"
     detail: "The config contains an if-then instruction that activates a behavior only when a trigger phrase is present. This is the canonical sleeper payload pattern: innocuous until the right input unlocks it."
     taxonomy_id: MCP-T01
@@ -89,6 +92,7 @@ rules:
   - id: sleeper_selective_disclosure
     pattern: '(?i)only\s+(if|when)\s+(asked|requested|prompted|queried).{0,60}(otherwise\s+)?(hide|conceal|omit|deny|do\s+not\s+(mention|reveal|disclose))'
     severity: high
+    confidence: medium
     title: "Selective disclosure — hides behavior unless specifically asked"
     detail: "The instruction directs the agent to conceal its behavior by default and reveal it only when prompted. This evades routine review and audit."
     taxonomy_id: MCP-T13

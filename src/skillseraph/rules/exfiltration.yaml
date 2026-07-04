@@ -32,6 +32,7 @@ rules:
   - id: env_secret_access
     pattern: '(environment|process\.env|os\.environ)\s*.*(token|secret|key|pass)'
     severity: high
+    confidence: medium
     title: "Environment variable secret access"
     taxonomy_id: MCP-T07
     atlas_id: J1
