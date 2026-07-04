@@ -22,6 +22,7 @@ class Severity(str, Enum):
 class Platform(str, Enum):
     CURSOR = "cursor"
     VSCODE = "vscode"
+    JETBRAINS = "jetbrains"
     CODEX = "codex"
     COPILOT = "copilot"
     CLAUDE = "claude"

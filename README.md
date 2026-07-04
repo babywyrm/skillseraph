@@ -144,6 +144,7 @@ skillseraph auto-detects and scans config surfaces for these platforms:
 |----------|-------|
 | Cursor | `.cursor/rules/**`, `**/SKILL.md`, `.cursor/hooks.json`, `.cursor/mcp.json`, `AGENTS.md` |
 | VS Code-compatible IDEs | `.vscode/{settings,tasks,launch,extensions}.json`, `*.code-workspace`, `.devcontainer/**` |
+| JetBrains IDEs | `.idea/**/*.xml` (run configurations, external tools), `*.iml` |
 | Codex | `AGENTS.md`, `.codex/**`, `codex.{json,yaml}` |
 | GitHub Copilot | `.github/copilot-instructions.md`, `.github/copilot/**` |
 | Claude | `CLAUDE.md`, `.claude/**`, `claude_desktop_config.json`, `.mcp.json` |
@@ -179,6 +180,7 @@ skillseraph auto-detects and scans config surfaces for these platforms:
 | `ide_integrations` | VS Code-compatible task/debug/user config abuse: remote shell pipes, secret env injection, runtime preloads, extension trust, APM/telemetry collector redirects |
 | `extensions` | Installed IDE extension manifests (structural parse): wildcard activation, lifecycle scripts fetching remote code, entry points escaping the install dir, and (opt-in) non-allowlisted publishers |
 | `lifecycle` | `devcontainer.json` / `hooks.json` lifecycle commands (structural parse): remote-fetch-to-interpreter payloads split across array/object command forms |
+| `jetbrains` | JetBrains `.idea` run configs / external tools / `.iml`: remote-fetch commands and secret env injection in run configurations |
 
 Findings carry a severity (`critical`/`high`/`medium`/`low`), a confidence level
 (`high`/`medium`/`low`, filterable with `--min-confidence`), a taxonomy ID

@@ -53,6 +53,19 @@ PLATFORMS: dict[Platform, PlatformSpec] = {
             "packages/**/.vscode/settings.json",
         ],
     ),
+    Platform.JETBRAINS: PlatformSpec(
+        name=Platform.JETBRAINS,
+        description="JetBrains IDE project configs (run configurations, external tools)",
+        file_patterns=[
+            ".idea/*.xml",
+            ".idea/**/*.xml",
+            "**/.idea/*.xml",
+            "**/.idea/**/*.xml",
+            "*.iml",
+            "**/*.iml",
+        ],
+        dep_plant_paths=[],
+    ),
     Platform.CODEX: PlatformSpec(
         name=Platform.CODEX,
         description="OpenAI Codex / ChatGPT agent configs",

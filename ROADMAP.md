@@ -9,7 +9,7 @@ Domain J (config & automation).
 
 | Area | State |
 |------|-------|
-| Multi-platform detection (12 platforms incl. VS Code-compatible IDEs) | **Strong** |
+| Multi-platform detection (13 platforms incl. VS Code + JetBrains IDEs) | **Strong** |
 | Data-driven YAML rules (15 packs) | **Strong** — all regex categories YAML-driven |
 | Structural (non-regex) parsers | **Strong** — extension manifests, extensions.json, mcp.json env/allowlist fields, and devcontainer/hooks lifecycle commands |
 | Confidence scores + `--min-confidence` | **Done** — per-rule confidence, filterable |
@@ -26,19 +26,18 @@ Domain J (config & automation).
 
 ---
 
+> **Supported platforms:** Linux and macOS are the primary (and only planned)
+> targets. Windows `%APPDATA%` support is intentionally out of scope.
+
 ## Near-term
 
 - **SARIF confidence mapping** — carry confidence into SARIF `rank`/properties
   so Code Scanning can sort by it.
-- **Windows `audit-local` paths** — `%APPDATA%` config/extension locations for
-  VS Code / Cursor / Windsurf (currently macOS + Linux only).
 
 ## Medium
 
 - **Provenance / signature checks** — flag skills and rules lacking a trusted
   source or signature; optional allowlist of trusted publishers.
-- **JetBrains coverage** — `.idea/**` run configurations, external tools, and
-  startup tasks as an IDE surface alongside the VS Code family.
 - **Severity/confidence tuning pass** — audit every rule against a corpus of
   real repos and assign measured confidence values (currently only the known
   heuristic rules are marked below high).
@@ -68,6 +67,7 @@ Domain J (config & automation).
 - ~~VS Code-compatible IDE scanning + `audit-local` + extension manifest auditing~~
 - ~~Structural parsers for MCP configs + devcontainer/hooks lifecycle commands~~
 - ~~Extension publisher allowlist (`--allow-extension-publisher`)~~
+- ~~JetBrains `.idea` run configuration / external tool coverage~~
 
 ---
 

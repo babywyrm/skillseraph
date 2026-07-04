@@ -1,0 +1,24 @@
+# JetBrains IDE project config scanning — .idea run configurations, external
+# tools, and .iml module files.
+#
+# JetBrains run configurations (ShConfigurationType, external tools, and
+# before-launch tasks) execute commands when a developer runs/debugs a project.
+# A poisoned .idea config that lands in a repo runs on the developer's machine
+# with their privileges the first time they hit Run.
+category: jetbrains
+rules:
+  - id: jetbrains_runconfig_remote_fetch
+    pattern: '(?i)(SCRIPT_TEXT|PARAMETERS|COMMAND)"\s+value="[^"]*(curl|wget)\s+[^"]*https?://'
+    severity: high
+    title: "JetBrains run config / external tool fetches remote content"
+    detail: "A JetBrains run configuration or external tool downloads remote content as part of its command. If this config is attacker-controlled, running the project fetches and can execute attacker code."
+    taxonomy_id: MCP-T08
+    atlas_id: J3
+
+  - id: jetbrains_runconfig_env_secret
+    pattern: '(?i)<env\s+name="[^"]*(TOKEN|SECRET|PASSWORD|CREDENTIAL|API_?KEY|AWS_SECRET)[^"]*"'
+    severity: high
+    title: "JetBrains run config injects a sensitive environment variable"
+    detail: "A run configuration sets a secret-bearing environment variable. If the config is attacker-controlled, the value is exposed to launched processes or can be swapped for an exfiltration sink."
+    taxonomy_id: MCP-T07
+    atlas_id: J4

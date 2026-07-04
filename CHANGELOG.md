@@ -8,6 +8,10 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **JetBrains IDE coverage** — new `jetbrains` platform scans `.idea/**/*.xml`
+  (run configurations, external tools) and `*.iml` files, with a `jetbrains`
+  rule pack flagging run configs / external tools that fetch remote content or
+  inject secret-bearing environment variables.
 - **Extension publisher allowlist** — `audit-local --allow-extension-publisher
   <name>` (repeatable) flags any installed extension whose publisher is not on
   the trusted list as an informational, low-confidence finding, surfacing
