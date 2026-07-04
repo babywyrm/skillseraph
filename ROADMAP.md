@@ -13,7 +13,7 @@ Domain J (config & automation).
 | Data-driven YAML rules (15 packs) | **Strong** — all regex categories YAML-driven |
 | Structural (non-regex) parsers | **Strong** — extension manifests, extensions.json, mcp.json env/allowlist fields, and devcontainer/hooks lifecycle commands |
 | Confidence scores + `--min-confidence` | **Strong** — every rule pack carries calibrated confidence; filterable + SARIF rank |
-| Baseline / allowlist / ignores | **Strong** — baselines, inline ignores, `.skillseraphignore` |
+| Baseline / allowlist / ignores | **Strong** — baselines with expiry, inline ignores, `.skillseraphignore` |
 | Local developer self-check (`audit-local`) | **Strong** — user-level IDE configs, installed extension manifests, opt-in publisher allowlist |
 | Demo / smoke-test flows | **Done** — `demo-fixture` + `smoke-test` |
 | Output (console / JSON / SARIF) | **Strong** — JSON includes confidence |
@@ -31,22 +31,20 @@ Domain J (config & automation).
 
 ## Near-term
 
-- **Baseline expiry** — baselines record a timestamp; `--baseline-max-age`
-  fails when accepted findings go stale without re-review.
+- **Provenance / signature checks** — flag skills and rules lacking a trusted
+  source or signature; optional allowlist of trusted publishers.
 
 ## Medium
 
-- **Provenance / signature checks** — flag skills and rules lacking a trusted
-  source or signature; optional allowlist of trusted publishers.
+- **Rule packs** — versioned, shareable rule bundles (community + curated),
+  with a contract test that every rule has a fixture.
+- **Unicode / homoglyph deep analysis** — dedicated normalization pass for
+  invisible-character and homoglyph injection beyond the current regex.
 
 ## Horizon
 
 - **Org-wide scanning** — scan all repos in a GitHub org via the API for
   fleet-wide exposure reporting.
-- **Unicode / homoglyph deep analysis** — dedicated normalization pass for
-  invisible-character and homoglyph injection beyond the current regex.
-- **Rule packs** — versioned, shareable rule bundles (community + curated),
-  with a contract test that every rule has a fixture.
 - **MCP config live cross-check** — optionally hand discovered MCP server URLs
   to mcpnuke for an endpoint scan, bridging static config and live behavior.
 - **Extension binary diffing** — compare installed extension contents against
@@ -65,6 +63,7 @@ Domain J (config & automation).
 - ~~JetBrains `.idea` run configuration / external tool coverage~~
 - ~~SARIF confidence mapping (`rank` + confidence properties)~~
 - ~~Rule confidence tuning pass across all packs~~
+- ~~Baseline expiry (`--baseline-max-age`)~~
 
 ---
 

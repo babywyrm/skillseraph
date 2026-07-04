@@ -134,6 +134,16 @@ docs/examples/**
 rule:hypothetical_framing
 ```
 
+Or accept a reviewed snapshot with a baseline (only *new* findings surface after):
+
+```bash
+# Record the current findings as accepted
+skillseraph . --save-baseline .skillseraph-baseline.json
+
+# Later scans suppress those, and fail if the baseline goes stale (governance)
+skillseraph . --baseline .skillseraph-baseline.json --baseline-max-age 90
+```
+
 ---
 
 ## What it scans

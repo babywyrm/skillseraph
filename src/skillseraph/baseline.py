@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 
 from .models import Finding, ScanResult
@@ -40,9 +41,43 @@ def save_baseline(result: ScanResult, path: Path) -> int:
     path.write_text(json.dumps({
         "version": 1,
         "target": str(result.target),
+        "created": datetime.now(timezone.utc).isoformat(),
         "fingerprints": fps,
     }, indent=2))
     return len(fps)
+
+
+def baseline_created(path: Path) -> datetime | None:
+    """Return the baseline's creation time, or None if missing/unparseable."""
+    if not path.exists():
+        return None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    ts = data.get("created")
+    if not ts:
+        return None
+    try:
+        created = datetime.fromisoformat(ts)
+    except ValueError:
+        return None
+    if created.tzinfo is None:
+        created = created.replace(tzinfo=timezone.utc)
+    return created
+
+
+def is_baseline_expired(path: Path, max_age_days: int) -> bool:
+    """True if the baseline is older than *max_age_days*.
+
+    A baseline with no recorded creation time (legacy format) is treated as
+    expired so enforcement nudges regeneration rather than trusting it forever.
+    """
+    created = baseline_created(path)
+    if created is None:
+        return True
+    age = datetime.now(timezone.utc) - created
+    return age.days > max_age_days
 
 
 def apply_baseline(result: ScanResult, baseline_fps: set[str]) -> ScanResult:

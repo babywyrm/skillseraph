@@ -38,6 +38,7 @@ SEVERITY_COLORS = {
 @click.option("--output", type=click.Path(), help="Output directory for the demo-fixture target")
 @click.option("--force", is_flag=True, help="Allow demo-fixture to replace a non-empty output directory")
 @click.option("--baseline", type=click.Path(), help="Suppress findings recorded in this baseline file")
+@click.option("--baseline-max-age", type=int, help="Fail if the baseline is older than this many days (forces re-review)")
 @click.option("--save-baseline", type=click.Path(), help="Write current findings as an accepted baseline and exit 0")
 @click.option("--quiet", "-q", is_flag=True, help="Suppress console output (use with --json-out)")
 @click.option("--changed-only", is_flag=True, help="Scan only changed files (reads list from stdin, one path per line)")
@@ -59,6 +60,7 @@ def main(
     output: str | None,
     force: bool,
     baseline: str | None,
+    baseline_max_age: int | None,
     save_baseline: str | None,
     quiet: bool,
     changed_only: bool,
@@ -162,8 +164,16 @@ def main(
 
     suppressed = 0
     if baseline:
+        from .baseline import is_baseline_expired
+        baseline_path = Path(baseline)
+        if baseline_max_age is not None and is_baseline_expired(baseline_path, baseline_max_age):
+            raise click.ClickException(
+                f"Baseline {baseline} is expired (older than {baseline_max_age} days "
+                "or has no creation timestamp). Re-review findings and regenerate it "
+                "with --save-baseline."
+            )
         before = len(result.findings)
-        result = apply_baseline(result, load_baseline(Path(baseline)))
+        result = apply_baseline(result, load_baseline(baseline_path))
         suppressed = before - len(result.findings)
 
     if not quiet:

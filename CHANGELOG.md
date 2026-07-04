@@ -8,6 +8,10 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **Baseline expiry** — `save_baseline` now records a creation timestamp and
+  `--baseline-max-age <days>` fails the run when the baseline is older than the
+  limit (or predates timestamping), so accepted findings can't be suppressed
+  indefinitely without re-review.
 - **Rule confidence tuning pass** — every rule pack now carries calibrated
   `confidence` values: deterministic/structural patterns stay `high`, natural-
   language instruction heuristics are `medium`, and broad blob/role-marker
