@@ -28,6 +28,7 @@ def run_all_checks(path: Path, content: str, line_offset: int = 0) -> list[Findi
     from .extensions import check_extension_manifest
     from .lifecycle import check_lifecycle
     from .jetbrains import check_jetbrains
+    from .supply_chain_trust import check_supply_chain_trust
 
     findings: list[Finding] = []
     for checker in [
@@ -50,6 +51,7 @@ def run_all_checks(path: Path, content: str, line_offset: int = 0) -> list[Findi
         check_extension_manifest,
         check_lifecycle,
         check_jetbrains,
+        check_supply_chain_trust,
     ]:
         findings.extend(checker(path, content))
     return findings

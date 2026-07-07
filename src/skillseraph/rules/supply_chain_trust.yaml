@@ -1,0 +1,38 @@
+# Skill / plugin / tool source trust and auto-deploy detection.
+#
+# Agentic ecosystems ingest skills, plugins, and tools from configured sources.
+# Two config-plane failure modes recur across MCP registries, model hubs, and
+# skill marketplaces:
+#   1. A source is wired to auto-deploy / skip human review.
+#   2. A remote source is marked "trusted"/"verified", reducing scrutiny it did
+#      not earn — the classic trusted-source scrutiny-reduction supply-chain gap.
+#
+# OWASP MCP: MCP04 (supply chain). Atlas: D3 (supply chain), J5 (config inheritance).
+category: supply_chain_trust
+rules:
+  - id: skill_source_autodeploy
+    pattern: '(?i)((auto[_-]?(approve|deploy|install|merge))"?\s*[:=]\s*"?(true|1|yes|on)\b|skip[_-]?(human[_-]?)?(review|approval|scan)\b|(require[_-]?(approval|review)|human[_-]?(approval|review|gate|in[_-]?the[_-]?loop))"?\s*[:=]\s*"?(false|no|off|0)\b)'
+    severity: high
+    confidence: medium
+    title: "Skill/plugin source auto-deploys without human review"
+    detail: "A skill, plugin, or tool source is configured to auto-approve/deploy or skip human review. An attacker who influences that source reaches execution with no human gate."
+    taxonomy_id: MCP-T04
+    atlas_id: D3
+
+  - id: trusted_source_bypass
+    pattern: '(?i)((source|feed|registry|repo|channel|publisher)[^\n]{0,40}(trusted|verified|allowlisted|whitelisted)"?\s*[:=]\s*"?(true|1|yes)\b|(trusted|verified|allowlisted)[^\n]{0,24}(source|feed|registry|channel)"?\s*[:=]\s*"?(true|1|yes)\b)'
+    severity: medium
+    confidence: medium
+    title: "Remote source flagged trusted to reduce scrutiny"
+    detail: "A configured source is marked trusted/verified, which typically reduces or skips security scrutiny. Trusted-source status that is not cryptographically earned is a supply-chain scrutiny-reduction gap."
+    taxonomy_id: MCP-T04
+    atlas_id: D3
+
+  - id: remote_skill_feed
+    pattern: '(?i)(skill|plugin|tool|extension|model|agent)[_-]?(feed|registry|source|repo|marketplace|catalog)(_url)?"?\s*[:=]\s*["'']?https?://'
+    severity: medium
+    confidence: medium
+    title: "Skills pulled from a remote feed/registry"
+    detail: "The config pulls skills, plugins, or tools from a remote feed or registry. Verify the source is controlled and scanned; remote skill sources are a supply-chain ingestion point."
+    taxonomy_id: MCP-T04
+    atlas_id: J5
