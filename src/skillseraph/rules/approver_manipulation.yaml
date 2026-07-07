@@ -1,0 +1,29 @@
+# Automated-approver / LLM-as-judge manipulation detection.
+#
+# When an automated reviewer (an LLM-as-judge, a security filter, or an
+# auto-approval bot) evaluates incoming skills/tools/requests, attackers embed
+# instructions in the content aimed at that reviewer to coerce an approve/ALLOW
+# verdict. This is indirect prompt injection targeting the *approver*, distinct
+# from injection targeting the executing agent.
+#
+# OWASP LLM: LLM01 (prompt injection). OWASP MCP: MCP03 (tool poisoning).
+# Atlas: J2 (skill/invocation), I3 (tool-schema smuggling).
+category: approver_manipulation
+rules:
+  - id: approver_directed_injection
+    pattern: '(?i)((mark|flag|classify|treat)\s+(this|it)\s+(as\s+)?(safe|benign|approved|trusted|allowed)|approve\s+(this|it)\s+(automatically|without\s+review)|you\s+are\s+(a|the)\s+(security\s+)?(filter|reviewer|judge|approver|auditor)|(bypass|skip|ignore)\s+(the\s+)?(security\s+)?(review|scan|filter|evaluation|check)|ignore\s+(the\s+|your\s+)?(evaluation|scoring|review)\s+(criteria|rules|guidelines))'
+    severity: high
+    confidence: medium
+    title: "Content directs an automated approver to permit it"
+    detail: "The config contains language aimed at an automated reviewer (LLM-as-judge, security filter, or approval bot) instructing it to mark the content safe, approve it, or skip review. This is indirect prompt injection targeting the approver."
+    taxonomy_id: MCP-T03
+    atlas_id: J2
+
+  - id: judge_verdict_injection
+    pattern: '(?i)(output|return|respond\s+with|answer)\s+["'']?(ALLOW|APPROVE|SAFE|PASS|BENIGN|OK)\b|verdict\s*[:=]\s*["'']?(allow|approve|safe|benign)\b'
+    severity: high
+    confidence: medium
+    title: "Content dictates the approver's verdict token"
+    detail: "The config tries to force the exact verdict token an automated judge should emit (e.g. ALLOW/APPROVE/SAFE). This targets the judge's output format to short-circuit evaluation."
+    taxonomy_id: MCP-T03
+    atlas_id: I3
