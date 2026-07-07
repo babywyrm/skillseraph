@@ -2,7 +2,7 @@
 category: permission_bypass
 rules:
   - id: sandbox_bypass
-    pattern: '(auto.?approve|skip.?confirm|bypass.?sandbox|disable.?safety)'
+    pattern: '(auto.?approve\s+(all\s+|every\s+|any\s+|the\s+)?(tool|command|action|request|call|execution)|skip.?confirm|bypass.?sandbox|disable.?safety)'
     severity: critical
     title: "Sandbox/approval bypass instruction"
     taxonomy_id: MCP-T09
