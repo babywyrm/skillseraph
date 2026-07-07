@@ -104,6 +104,15 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **False positives from a benign-config QA sweep** — `sandbox_bypass` no longer
+  flags `auto_approve` config keys (only the instruction form);
+  `broad_monitoring_exception` no longer flags VS Code `files.exclude`/generic
+  exclude globs; and `mcp_server_stdio_arbitrary_command` no longer flags normal
+  stdio launchers (`node`/`npx`/`uvx`/`python`).
+- **Dead rule patterns** — `j3_broad_write_permissions` used an unmatchable
+  multiline regex and `mcp_server_raw_ip` only matched an IP at the very end of
+  a URL; both now fire correctly. Added `tests/test_rule_coverage.py` as a guard
+  that every rule fires on a crafted positive sample.
 - **MCP rule scoping** — MCP server rules now run only on MCP config files, so
   VS Code task/debug configs no longer receive MCP-specific findings.
 - **Watch mode `NameError`** — `cli.py` referenced `platforms` before it was
