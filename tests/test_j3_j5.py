@@ -21,6 +21,24 @@ def test_j3_shell_exec_in_automation():
         f"Expected shell-exec or tool-abuse finding: {checks}"
 
 
+def test_j3_broad_write_permissions_write_all():
+    from skillseraph.checks.automation_triggers import check_automation_triggers
+    findings = check_automation_triggers(Path("wf.yml"), "permissions: write-all")
+    assert any(f.check == "j3_broad_write_permissions" for f in findings)
+
+
+def test_j3_broad_write_permissions_id_token():
+    from skillseraph.checks.automation_triggers import check_automation_triggers
+    findings = check_automation_triggers(Path("wf.yml"), "  id-token: write")
+    assert any(f.check == "j3_broad_write_permissions" for f in findings)
+
+
+def test_j3_common_contents_write_not_flagged():
+    from skillseraph.checks.automation_triggers import check_automation_triggers
+    findings = check_automation_triggers(Path("wf.yml"), "  contents: write")
+    assert not any(f.check == "j3_broad_write_permissions" for f in findings)
+
+
 def test_j5_parent_traversal():
     findings = scan_file(FIXTURES / "j5_parent_include.md")
     j5_ids = [f for f in findings if f.atlas_id and f.atlas_id.startswith("J5")]

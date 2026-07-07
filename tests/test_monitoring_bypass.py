@@ -17,7 +17,11 @@ class TestMonitoringBypass:
         assert any(f.check == "monitoring_disabled" for f in findings)
 
     def test_wildcard_exception_detected(self):
-        findings = check_monitoring_bypass(DUMMY, 'exceptions: ["*"]')
+        findings = check_monitoring_bypass(DUMMY, 'security_exceptions: ["*"]')
+        assert any(f.check == "broad_monitoring_exception" for f in findings)
+
+    def test_rule_exception_wildcard_detected(self):
+        findings = check_monitoring_bypass(DUMMY, 'rule_exception: "*"')
         assert any(f.check == "broad_monitoring_exception" for f in findings)
 
     def test_rule_disable_detected(self):
@@ -29,3 +33,9 @@ class TestMonitoringBypass:
             DUMMY, '{"logging": true, "audit": "enabled", "level": "info"}'
         )
         assert findings == []
+
+    def test_vscode_files_exclude_not_flagged(self):
+        findings = check_monitoring_bypass(
+            DUMMY, '{"files.exclude": {"**/__pycache__": true, "**/*.pyc": true}}'
+        )
+        assert not any(f.check == "broad_monitoring_exception" for f in findings)

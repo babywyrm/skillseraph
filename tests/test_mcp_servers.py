@@ -19,6 +19,16 @@ def test_mcp_server_stdio_command_detected(tmp_path: Path):
     assert any("arbitrary command" in f.title.lower() or "stdio" in f.title.lower() for f in findings)
 
 
+def test_mcp_server_normal_launcher_not_flagged_stdio(tmp_path: Path):
+    """Standard stdio MCP launchers (node/npx/uvx/python) are not, by themselves,
+    an 'arbitrary command' — remote-fetch risk is covered by the npx rule."""
+    mcp = tmp_path / ".cursor" / "mcp.json"
+    mcp.parent.mkdir(parents=True)
+    mcp.write_text('{"mcpServers": {"local": {"command": "node", "args": ["server.js"]}}}')
+    findings = scan_file(mcp)
+    assert not any(f.check == "mcp_server_stdio_arbitrary_command" for f in findings)
+
+
 def test_mcp_server_remote_url_detected(tmp_path: Path):
     mcp = tmp_path / ".cursor" / "mcp.json"
     mcp.parent.mkdir(parents=True)

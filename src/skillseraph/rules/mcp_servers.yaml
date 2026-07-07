@@ -15,7 +15,7 @@ rules:
     atlas_id: J4
 
   - id: mcp_server_raw_ip
-    pattern: "(?i)\"(url|endpoint|baseUrl|uri)\"\\s*:\\s*\"https?://\\d+\\.\\d+\\.\\d+\\.\\d+[:/]\""
+    pattern: "(?i)\"(url|endpoint|baseUrl|uri)\"\\s*:\\s*\"https?://(?!127\\.|0\\.0\\.0\\.0)\\d{1,3}(\\.\\d{1,3}){3}([:/]|\")"
     severity: high
     title: "MCP server uses a raw IP address"
     detail: "A raw IP in an MCP server definition bypasses DNS verification and is a strong indicator of a shadow server or test-left-in-production."
@@ -31,10 +31,10 @@ rules:
     atlas_id: J4
 
   - id: mcp_server_stdio_arbitrary_command
-    pattern: "(?i)\"command\"\\s*:\\s*\"(curl|wget|bash|sh|python|node|npx|uvx|pip|npm)\\b"
+    pattern: "(?i)\"command\"\\s*:\\s*\"[^\"]*(curl|wget|\\b(bash|sh|zsh)\\s+-c\\b|\\b(bash|sh|zsh)\\b[^\"]*\\||eval\\b)"
     severity: critical
-    title: "MCP server launches an arbitrary command via stdio"
-    detail: "The server definition uses stdio transport with a potentially dangerous command. An attacker who plants this config gets arbitrary execution when the agent starts."
+    title: "MCP server launches a shell/fetch command via stdio"
+    detail: "The server definition uses stdio transport with a shell or download command (as opposed to a normal launcher like node/python/npx). An attacker who plants this config gets arbitrary execution when the agent starts. Remote-package launchers are covered separately."
     taxonomy_id: MCP-T09
     atlas_id: J4
 

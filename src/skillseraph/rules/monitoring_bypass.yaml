@@ -19,7 +19,7 @@ rules:
     atlas_id: J3
 
   - id: broad_monitoring_exception
-    pattern: '(?i)(exception|exclude|exempt|ignore|allowlist)[^\n]{0,40}(["'']?\*["'']?|all\b|any\b|\.\*)'
+    pattern: '(?i)(security[_-]?exception|exempt(ion)?|allowlist|whitelist|(rule|policy|detection|monitor(ing)?|audit|falco)[_-]?exception)s?"?\s*[:=][^\n]{0,40}(["'']?\*["'']?|all\b|any\b|\.\*)'
     severity: medium
     confidence: low
     title: "Broad wildcard monitoring/security exception"

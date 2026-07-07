@@ -26,9 +26,9 @@ rules:
     atlas_id: J3
 
   - id: j3_broad_write_permissions
-    pattern: "(?i)permissions:\\s*\\n\\s*(contents|actions|packages|id-token):\\s*write"
+    pattern: "(?i)(permissions\\s*:\\s*write-all\\b|\\b(actions|packages|id-token|deployments|security-events|statuses)\\s*:\\s*write\\b)"
     severity: medium
-    title: "Automation requests broad write permissions"
-    detail: "Write permissions on a broadly-triggered automation expand the blast radius."
+    title: "Automation requests broad/sensitive write permissions"
+    detail: "An automation grants write-all or sensitive write scopes (actions, packages, id-token, deployments). On a broadly-triggered automation this expands the blast radius; the common contents:write scope is intentionally excluded to reduce noise."
     taxonomy_id: MCP-T09
     atlas_id: J3
