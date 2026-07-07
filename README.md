@@ -191,6 +191,10 @@ skillseraph auto-detects and scans config surfaces for these platforms:
 | `extensions` | Installed IDE extension manifests (structural parse): wildcard activation, lifecycle scripts fetching remote code, entry points escaping the install dir, and (opt-in) non-allowlisted publishers |
 | `lifecycle` | `devcontainer.json` / `hooks.json` lifecycle commands (structural parse): remote-fetch-to-interpreter payloads split across array/object command forms |
 | `jetbrains` | JetBrains `.idea` run configs / external tools / `.iml`: remote-fetch commands and secret env injection in run configurations |
+| `supply_chain_trust` | Skill/plugin/tool sources that auto-deploy or skip human review, remote sources flagged `trusted`/`verified`, and remote skill feeds/registries (Atlas D3/J5) |
+| `runtime_escape` | Container/orchestrator escape surface: runtime sockets (`docker.sock`, `containerd.sock`), kubelet API, service-account token paths, host-namespace/privileged markers (Atlas J4) |
+| `approver_manipulation` | Indirect prompt injection aimed at an automated reviewer/LLM-judge (mark-as-safe, forced ALLOW verdict, "you are the security filter") (OWASP LLM01, Atlas J2/I3) |
+| `monitoring_bypass` | Config that disables audit/logging, adds wildcard security exceptions, or disables detection rules (Atlas J3) |
 
 Findings carry a severity (`critical`/`high`/`medium`/`low`), a confidence level
 (`high`/`medium`/`low`, filterable with `--min-confidence`), a taxonomy ID

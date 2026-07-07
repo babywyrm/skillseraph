@@ -8,6 +8,20 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **Supply-chain trust detection (`supply_chain_trust`)** — flags skill/plugin/
+  tool sources that auto-deploy or skip human review, remote sources marked
+  `trusted`/`verified` (unearned scrutiny reduction), and remote skill feeds/
+  registries (Atlas D3/J5).
+- **Runtime escape-surface detection (`runtime_escape`)** — flags container
+  runtime sockets (`docker.sock`, `containerd.sock`, `crio.sock`), kubelet API
+  references, service-account token paths, and host-namespace/privileged
+  markers (Atlas J4).
+- **Approver-manipulation detection (`approver_manipulation`)** — flags indirect
+  prompt injection aimed at an automated reviewer/LLM-judge (mark-as-safe,
+  forced ALLOW verdicts, "you are the security filter") (OWASP LLM01, Atlas J2/I3).
+- **Monitoring blind-spot detection (`monitoring_bypass`)** — flags configs that
+  disable audit/logging, add wildcard security exceptions, or disable detection
+  rules (Atlas J3).
 - **Baseline expiry** — `save_baseline` now records a creation timestamp and
   `--baseline-max-age <days>` fails the run when the baseline is older than the
   limit (or predates timestamping), so accepted findings can't be suppressed

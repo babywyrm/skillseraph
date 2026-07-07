@@ -1,0 +1,37 @@
+# Monitoring-exception blind-spot detection.
+#
+# Runtime-security and audit tooling is only effective if it is enabled and not
+# broadly exempted. Config that disables audit/logging, adds wildcard workload
+# exceptions, or turns off specific detection rules creates blind spots that
+# attackers rely on to operate undetected.
+#
+# These are generic hardening checks. Atlas: J3 (automation/monitoring evasion).
+# OWASP MCP: MCP08 (insufficient monitoring).
+category: monitoring_bypass
+rules:
+  - id: monitoring_disabled
+    pattern: '(?i)((audit|logging|telemetry|monitoring|detection)"?\s*[:=]\s*"?(false|off|disabled|none|no)\b|disable[_-]?(audit|logging|monitoring|telemetry)\b)'
+    severity: medium
+    confidence: medium
+    title: "Audit/monitoring disabled in config"
+    detail: "The config disables audit, logging, or runtime monitoring. Disabled observability removes the ability to detect and investigate malicious activity."
+    taxonomy_id: MCP-T13
+    atlas_id: J3
+
+  - id: broad_monitoring_exception
+    pattern: '(?i)(exception|exclude|exempt|ignore|allowlist)[^\n]{0,40}(["'']?\*["'']?|all\b|any\b|\.\*)'
+    severity: medium
+    confidence: low
+    title: "Broad wildcard monitoring/security exception"
+    detail: "A security or monitoring exception matches all workloads via wildcard. Broad exceptions are a common way legitimate tuning becomes an attacker blind spot."
+    taxonomy_id: MCP-T13
+    atlas_id: J3
+
+  - id: monitoring_rule_disabled
+    pattern: '(?i)(disable[_-]?rule|rule[_-]?disabled|disabled[_-]?rules?)\b\s*[:=]?'
+    severity: medium
+    confidence: medium
+    title: "Specific detection rule disabled"
+    detail: "The config disables a named detection rule. Selectively disabling rules narrows monitoring coverage; verify the disabled rule is not one an attacker would need silenced."
+    taxonomy_id: MCP-T13
+    atlas_id: J3

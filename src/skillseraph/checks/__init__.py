@@ -31,6 +31,7 @@ def run_all_checks(path: Path, content: str, line_offset: int = 0) -> list[Findi
     from .supply_chain_trust import check_supply_chain_trust
     from .runtime_escape import check_runtime_escape
     from .approver_manipulation import check_approver_manipulation
+    from .monitoring_bypass import check_monitoring_bypass
 
     findings: list[Finding] = []
     for checker in [
@@ -56,6 +57,7 @@ def run_all_checks(path: Path, content: str, line_offset: int = 0) -> list[Findi
         check_supply_chain_trust,
         check_runtime_escape,
         check_approver_manipulation,
+        check_monitoring_bypass,
     ]:
         findings.extend(checker(path, content))
     return findings
