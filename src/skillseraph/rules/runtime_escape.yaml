@@ -1,0 +1,43 @@
+# Container / orchestrator runtime escape-surface detection.
+#
+# Agent and skill configs that reference container runtime sockets, the kubelet
+# API, service-account token paths, or host-namespace/privileged markers expose
+# well-known container-escape and privilege-escalation surfaces. Using a runtime
+# socket via its raw API (rather than a named CLI binary) is a common way to
+# evade process-name-based monitoring.
+#
+# These are public, textbook hardening patterns. OWASP MCP: MCP02 (privilege
+# escalation), MCP09 (excessive capability). Atlas: J4 (execution/escape).
+category: runtime_escape
+rules:
+  - id: container_runtime_socket
+    pattern: '(?i)(/var/run/docker\.sock|/run/docker\.sock|\bdocker\.sock\b|--unix-socket\s+\S*docker\.sock|/run/containerd/containerd\.sock|containerd\.sock|/var/run/crio/crio\.sock|crio\.sock|/run/podman/podman\.sock)'
+    severity: critical
+    title: "Container runtime socket access (host takeover surface)"
+    detail: "The config references a container runtime socket. Access to the runtime socket is equivalent to root on the host and is a primary container-escape vector; raw-API access also evades process-name monitoring."
+    taxonomy_id: MCP-T09
+    atlas_id: J4
+
+  - id: kubelet_api_access
+    pattern: '(?i)(:10250(/|\b)|:10255(/|\b)|kubelet\s+api|/pods\b.*:10250)'
+    severity: high
+    title: "Kubelet API access referenced"
+    detail: "The config references the kubelet API port. An exposed or reachable kubelet API allows command execution in pods and is a lateral-movement and escape surface."
+    taxonomy_id: MCP-T09
+    atlas_id: J4
+
+  - id: sa_token_access
+    pattern: '(?i)(/var/run/secrets/kubernetes\.io/serviceaccount|/run/secrets/kubernetes\.io/serviceaccount|serviceaccount/token\b)'
+    severity: high
+    title: "Kubernetes service-account token path access"
+    detail: "The config reads the in-pod service-account token. A stolen SA token enables cluster API access scoped to that account's RBAC — a common post-foothold escalation step."
+    taxonomy_id: MCP-T07
+    atlas_id: J4
+
+  - id: host_namespace_or_privileged
+    pattern: '(?i)((host(PID|Network|IPC|Path))"?\s*[:=]\s*"?(true|1|yes)\b|privileged"?\s*[:=]\s*"?(true|1|yes)\b|\bnsenter\b\s+.*(--target|-t)\s|allowPrivilegeEscalation"?\s*[:=]\s*"?(true|1|yes)\b)'
+    severity: high
+    title: "Host namespace share / privileged execution marker"
+    detail: "The config requests host namespaces, privileged mode, or uses nsenter to enter host namespaces. These remove container isolation and enable host escape."
+    taxonomy_id: MCP-T09
+    atlas_id: J4
