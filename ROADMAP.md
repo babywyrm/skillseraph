@@ -19,7 +19,7 @@ Domain J (config & automation).
 | Demo / smoke-test flows | **Done** — `demo-fixture` + `smoke-test` |
 | Output (console / JSON / SARIF) | **Strong** — JSON includes confidence |
 | CI integration (Action + workflow + PR diff mode) | **Strong** |
-| Distribution (PyPI, container image, installer) | **Strong** |
+| Distribution (PyPI, container image, installer) | **Thin** — `install.sh` and git installs work; the v0.2.0 PyPI upload failed at OIDC (no trusted publisher), and the container image job has never built |
 | Kubernetes gating | **Strong** — init-container + admission webhook (opt-in) |
 | Policy generation (nullfield) | **Done** |
 | Atlas Domain J coverage | **Strong** — J1–J8 done |
@@ -32,6 +32,10 @@ Domain J (config & automation).
 
 ## Near-term
 
+- **Repair distribution.** Register the PyPI trusted publisher and re-run the
+  `v0.2.0` publish. Fix the Dockerfile: the builder runs `uv sync
+  --no-editable` before `README.md` and `src/` are copied, so the package
+  cannot build.
 - **Provenance / signature checks** — flag skills and rules lacking a trusted
   source or signature; optional allowlist of trusted publishers.
 
@@ -53,11 +57,10 @@ Domain J (config & automation).
 
 ### Shipped (previously roadmap items)
 
-- ~~PyPI publish~~ (`uv tool install skillseraph` / `uvx skillseraph`)
 - ~~Inline ignores + `.skillseraphignore`~~
 - ~~Confidence scores + `--min-confidence`~~
 - ~~Watch mode~~ (`--watch`)
-- ~~Atlas J3/J5~~, ~~nullfield policy generation~~, ~~container image~~, ~~diff mode~~
+- ~~Atlas J3/J5~~, ~~nullfield policy generation~~, ~~diff mode~~
 - ~~VS Code-compatible IDE scanning + `audit-local` + extension manifest auditing~~
 - ~~Structural parsers for MCP configs + devcontainer/hooks lifecycle commands~~
 - ~~Extension publisher allowlist (`--allow-extension-publisher`)~~

@@ -47,23 +47,19 @@ Installs `uv` if it isn't present, then puts `skillseraph` on your PATH via
 Pin to a release:
 
 ```bash
-SKILLSERAPH_REF=v0.1.0 curl -fsSL https://raw.githubusercontent.com/babywyrm/skillseraph/main/install.sh | sh
+SKILLSERAPH_REF=v0.2.0 curl -fsSL https://raw.githubusercontent.com/babywyrm/skillseraph/main/install.sh | sh
 ```
 
-### PyPI
+### From git (no clone required)
 
 ```bash
 # Requires uv (https://docs.astral.sh/uv/getting-started/installation/)
-uv tool install skillseraph          # global install → skillseraph on PATH
-pip install skillseraph              # pip also works (Python 3.11+)
+uv tool install git+https://github.com/babywyrm/skillseraph@v0.2.0   # skillseraph on PATH
+uvx --from git+https://github.com/babywyrm/skillseraph skillseraph .  # ephemeral run of main
 ```
 
-### Run without installing (no clone required)
-
-```bash
-uvx skillseraph .                    # ephemeral run, nothing persisted
-uvx --from git+https://github.com/babywyrm/skillseraph skillseraph .   # latest main
-```
+skillseraph is not on PyPI yet, and there is no public container image.
+See [ROADMAP.md](ROADMAP.md).
 
 ### From source (development)
 
@@ -236,8 +232,9 @@ Findings map to:
 
 ## Project status & direction
 
-`v0.1.0` released. Available via `install.sh`, PyPI (`uv tool install skillseraph`),
-`uvx`, and Docker (GHCR). See:
+`v0.2.0` released. Available via `install.sh`, a git install
+(`uv tool install git+https://github.com/babywyrm/skillseraph`), or a local
+checkout. PyPI and the container image are not published yet. See:
 
 - [CHANGELOG.md](CHANGELOG.md) — release history
 - [ROADMAP.md](ROADMAP.md) — what's planned and current maturity

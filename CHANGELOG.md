@@ -6,6 +6,13 @@ uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- **README and ROADMAP no longer claim PyPI or a container image.** The
+  v0.2.0 PyPI upload failed at OIDC and the image job has never built.
+  Install paths now list `install.sh`, a git install, and a local
+  checkout; distribution is rated thin until both are repaired.
+
 ### Added
 
 - **Supply-chain trust detection (`supply_chain_trust`)** — flags skill/plugin/
