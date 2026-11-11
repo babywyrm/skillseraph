@@ -31,6 +31,26 @@ LOCAL_IDE_FILES: dict[Platform, tuple[str, ...]] = {
         ".config/Cursor/User/keybindings.json",
         ".config/Cursor/User/snippets",
         ".cursor/extensions",
+        ".cursor/mcp.json",
+        ".cursor/hooks.json",
+        ".cursor/cli-config.json",
+        ".cursor/argv.json",
+    ),
+    Platform.CODEX: (
+        ".codex/config.toml",
+        ".codex/rules",
+        ".codex/skills",
+    ),
+    Platform.CLAUDE: (
+        ".claude/settings.json",
+        ".claude/settings.local.json",
+        ".claude/CLAUDE.md",
+        "Library/Application Support/Claude/claude_desktop_config.json",
+        ".config/Claude/claude_desktop_config.json",
+    ),
+    Platform.CLINE: (
+        ".continue/config.json",
+        ".continue/config.yaml",
     ),
     Platform.WINDSURF: (
         "Library/Application Support/Windsurf/User/settings.json",

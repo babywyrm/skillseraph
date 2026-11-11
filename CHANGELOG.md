@@ -26,6 +26,17 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **Workstation agents on both layouts.** `audit-local` reads Claude Code
+  (`~/.claude/settings.json`), Claude Desktop on macOS and Linux, and Continue
+  config. Pretty-printed APM endpoints are detected, and endpoint evidence
+  keeps the host and drops URL userinfo.
+- **Codex and Cursor user-config audit.** `audit-local` reads
+  `~/.codex/config.toml`, `~/.codex/rules`, `~/.codex/skills`, and Cursor's
+  `~/.cursor/mcp.json`, `hooks.json`, `cli-config.json`, and `argv.json` on
+  Linux and macOS.
+- **APM collector assignments in JSON, YAML, and TOML.** The same external
+  collector check now matches quoted JSON, YAML, and TOML. Localhost,
+  `127.0.0.1`, and `0.0.0.0` stay unflagged.
 - **Codex MCP servers in `config.toml`.** `[mcp_servers]` tables are checked
   for remote URLs, shell/fetch commands, and remote `npx`/`uvx` packages.
   Credential findings list env key names and omit values.

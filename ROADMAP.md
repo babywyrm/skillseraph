@@ -15,7 +15,7 @@ Domain J (config & automation).
 | Structural (non-regex) parsers | **Strong** — extension manifests, extensions.json, mcp.json env/allowlist fields, and devcontainer/hooks lifecycle commands |
 | Confidence scores + `--min-confidence` | **Strong** — every rule pack carries calibrated confidence; filterable + SARIF rank |
 | Baseline / allowlist / ignores | **Strong** — baselines with expiry, inline ignores, `.skillseraphignore`, governed exceptions on any failing gate |
-| Local developer self-check (`audit-local`) | **Strong** — user-level IDE configs, installed extension manifests, opt-in publisher allowlist |
+| Local developer self-check (`audit-local`) | **Strong** — VS Code, Cursor, Windsurf, Codex, Claude, and Continue user configs on Linux and macOS, installed extension manifests, opt-in publisher allowlist |
 | Demo / smoke-test flows | **Done** — `demo-fixture` + `smoke-test` |
 | Output (console / JSON / SARIF) | **Strong** — JSON includes confidence |
 | CI integration (Action + workflow + PR diff mode) | **Strong** |

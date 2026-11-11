@@ -92,7 +92,7 @@ skillseraph . --no-deps
 # Machine-readable output
 skillseraph . --json-out findings.json --sarif results.sarif
 
-# Developer self-check for local VS Code-compatible IDE config
+# Developer self-check for local VS Code, Cursor, and Codex config
 skillseraph audit-local --json-out ide-audit.json
 
 # Flag installed extensions from any publisher outside your trusted allowlist
@@ -155,7 +155,13 @@ skillseraph . --baseline .skillseraph-baseline.json --baseline-max-age 90
 
 ## What it scans
 
-skillseraph auto-detects and scans config surfaces for these platforms:
+skillseraph auto-detects and scans config surfaces for these platforms.
+`audit-local` also reads Linux and macOS user config for VS Code, Cursor,
+Windsurf, Codex, Claude, and Continue. Shared dot paths (`~/.codex`,
+`~/.claude`, `~/.continue`, `~/.cursor`) are the same on both systems. Claude
+Desktop is `Library/Application Support/Claude` on macOS and
+`.config/Claude` on Linux. APM endpoint evidence keeps the host and drops URL
+userinfo.
 
 | Platform | Files |
 |----------|-------|
@@ -194,7 +200,7 @@ skillseraph auto-detects and scans config surfaces for these platforms:
 | `automation_triggers` | Wildcard event triggers, shell exec in automations, broad write perms (Atlas J3) |
 | `config_inheritance` | Parent traversal, absolute-path includes, remote config fetch, recursive globs (Atlas J5) |
 | `skill_invocation` | **Skill invocation hijack** (Atlas J2): callback/redirect on invoke, self-modification, invocation-time override, silent invocation, remote skill pull |
-| `ide_integrations` | VS Code-compatible task/debug/user config abuse: remote shell pipes, secret env injection, runtime preloads, extension trust, APM/telemetry collector redirects |
+| `ide_integrations` | VS Code, Cursor, and Codex task/debug/user config abuse: remote shell pipes, secret env injection, runtime preloads, extension trust, APM/telemetry collector redirects in JSON, YAML, and TOML |
 | `extensions` | Installed IDE extension manifests (structural parse): wildcard activation, lifecycle scripts fetching remote code, entry points escaping the install dir, and (opt-in) non-allowlisted publishers |
 | `lifecycle` | `devcontainer.json` / `hooks.json` lifecycle commands (structural parse): remote-fetch-to-interpreter payloads split across array/object command forms |
 | `jetbrains` | JetBrains `.idea` run configs / external tools / `.iml`: remote-fetch commands and secret env injection in run configurations |

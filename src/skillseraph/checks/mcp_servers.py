@@ -53,7 +53,13 @@ def _is_mcp_config(path: Path) -> bool:
     )
 
 
+def _is_claude_code_settings(path: Path) -> bool:
+    return path.name in {"settings.json", "settings.local.json"} and ".claude" in path.parts
+
+
 def check_mcp_servers(path: Path, content: str) -> list[Finding]:
+    if _is_claude_code_settings(path):
+        return _claude_settings_checks(path, content)
     if not _is_mcp_config(path):
         return []
     findings = run_category("mcp_servers", path, content)
@@ -170,6 +176,23 @@ def _inspect_toml_server(
                 "MCP-T07",
                 "J4",
             )
+
+
+def _claude_settings_checks(path: Path, content: str) -> list[Finding]:
+    """Claude Code stores MCP servers in settings.json, not mcp.json."""
+    try:
+        data = json.loads(content)
+    except json.JSONDecodeError:
+        return []
+    servers = data.get("mcpServers")
+    if not isinstance(servers, dict):
+        return []
+    findings: list[Finding] = []
+    seen: set[str] = set()
+    for server in servers.values():
+        if isinstance(server, dict):
+            _inspect_toml_server(path, server, findings, seen)
+    return findings
 
 
 def _toml_checks(path: Path, content: str, seen: set[str]) -> list[Finding]:
