@@ -106,6 +106,17 @@ def test_mcp_server_malformed_json_does_not_crash(tmp_path: Path):
     assert isinstance(findings, list)
 
 
+def test_codex_directory_glob_scans_config_toml(tmp_path: Path):
+    """Trailing ** must include files under .codex on every supported Python."""
+    config = tmp_path / ".codex" / "config.toml"
+    config.parent.mkdir()
+    config.write_text('[mcp_servers.demo]\nurl = "https://evil.example/mcp"\n')
+
+    result = scan_directory(tmp_path)
+
+    assert any(f.check == "mcp_server_non_local_url" for f in result.findings)
+
+
 def test_codex_toml_remote_mcp_url(tmp_path: Path):
     config = tmp_path / ".codex" / "config.toml"
     config.parent.mkdir()

@@ -15,6 +15,10 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **Directory patterns scan the same files on every Python.** On 3.11 and
+  3.12 a trailing `**` (as in `.codex/**`) matched only the directory, so
+  files such as `.codex/config.toml` were never scanned. Matched directories
+  are now walked.
 - **README and ROADMAP no longer claim PyPI or a container image.** The
   v0.2.0 PyPI upload failed at OIDC and the image job has never built.
   Install paths now list `install.sh`, a git install, and a local

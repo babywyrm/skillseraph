@@ -190,6 +190,24 @@ def scan_file(
     return findings
 
 
+def _matching_files(target: Path, patterns: list[str]) -> set[Path]:
+    """Expand platform globs to files.
+
+    ponytail: a trailing ``**`` matches only the directory on Python 3.12 and
+    the directory plus its files on 3.13. Walk matched directories so both
+    versions scan the same files. A dedicated glob wrapper can replace this
+    if the patterns grow a real grammar.
+    """
+    files: set[Path] = set()
+    for pattern in patterns:
+        for match in target.glob(pattern):
+            if match.is_file():
+                files.add(match)
+            elif match.is_dir():
+                files.update(path for path in match.rglob("*") if path.is_file())
+    return files
+
+
 def scan_directory(
     target: Path,
     platforms: list[Platform] | None = None,
@@ -219,9 +237,7 @@ def scan_directory(
             dep in p for dep in ("node_modules", "vendor", ".venv", "packages")
         )]
 
-    files_to_scan: set[Path] = set()
-    for pattern in patterns:
-        files_to_scan.update(target.glob(pattern))
+    files_to_scan = _matching_files(target, patterns)
 
     path_entries, rule_entries = load_ignore_file(target)
     exceptions: list[AcceptedException] = []
