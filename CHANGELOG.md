@@ -26,6 +26,9 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **Linux container integration.** CI and `SKILLSERAPH_CONTAINER=1` run the
+  image and scan both the macOS `Library` home layout and the Linux `.config`
+  home layout inside it. The host suite still runs on Ubuntu and macOS.
 - **Workstation agents on both layouts.** `audit-local` reads Claude Code
   (`~/.claude/settings.json`), Claude Desktop on macOS and Linux, and Continue
   config. Pretty-printed APM endpoints are detected, and endpoint evidence
