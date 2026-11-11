@@ -113,13 +113,11 @@ Exit codes: `0` clean, `1` findings at/above `--fail-on`, non-zero on error.
 
 ### Suppressing accepted findings
 
-Inline, on the offending line (suppresses one named rule):
+`--fail-on none` is a local triage scan. A bare suppression still counts:
 
 ```markdown
-This doc quotes "ignore previous instructions". <!-- skillseraph: ignore prompt_injection_override -->
+This doc quotes "ignore previous instructions". skillseraph: ignore prompt_injection_override
 ```
-
-Repo-wide, via a `.skillseraphignore` file at the scan root:
 
 ```text
 # path globs exclude files entirely
@@ -129,6 +127,19 @@ docs/examples/**
 # rule: lines disable a rule everywhere
 rule:hypothetical_framing
 ```
+
+Any other `--fail-on` value is a gate, and so is the admission webhook. A gate honors a suppression only when it names the rule or path, a reason, a role, and an expiry date. The date is inclusive and compared in UTC. `owner` is a role identifier such as `repo-maintainer`. Do not put a personal name, an email address, or a secret in `owner` or `reason`.
+
+```markdown
+This doc quotes "ignore previous instructions". skillseraph: ignore prompt_injection_override reason="quoted in project docs" owner=repo-maintainer until=2026-12-31
+```
+
+```text
+path:fixtures/** reason="vendored project docs" owner=repo-maintainer until=2026-12-31
+rule:hypothetical_framing reason="quoted in project docs" owner=repo-maintainer until=2026-12-31
+```
+
+The fields are `reason`, then `owner`, then `until`, in that order. A bare comment, a wrong rule id, an email in `owner`, or a past `until` leaves the finding in place. Honored exceptions are listed in the JSON report under `exceptions`.
 
 Or accept a reviewed snapshot with a baseline (only *new* findings surface after):
 

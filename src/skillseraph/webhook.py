@@ -54,7 +54,7 @@ def _scan_configmap_data(data: dict[str, str]) -> list[dict]:
                        for suffix in (".md", ".mdc", ".json", ".yaml", ".yml")):
                 continue
             (td_path / key).write_text(content)
-        result = scan_directory(td_path)
+        result = scan_directory(td_path, governed=True)
         sev = THRESHOLD.get(FAIL_ON)
         for f in result.findings:
             if sev and f.severity.score >= sev.score:

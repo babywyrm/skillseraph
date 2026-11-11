@@ -130,11 +130,13 @@ def main(
         else:
             changed = []
 
+    governed = fail_on != "none"
     if audit_local:
         from .local_audit import audit_local_ide_configs
         result = audit_local_ide_configs(
             home=target_path,
             allowed_publishers=set(allow_extension_publisher),
+            governed=governed,
         )
     else:
         result = scan_directory(
@@ -142,6 +144,7 @@ def main(
             platforms=platforms,
             include_deps=include_deps,
             changed_files=changed,
+            governed=governed,
         )
 
     if correlate:
@@ -180,6 +183,10 @@ def main(
         _print_results(result, fail_on)
         if suppressed:
             console.print(f"  [dim]({suppressed} finding(s) suppressed by baseline)[/dim]")
+        if result.exceptions:
+            console.print(
+                f"  [dim]({len(result.exceptions)} governed exception(s) honored)[/dim]"
+            )
 
     if json_out:
         _write_json(result, Path(json_out))
@@ -244,6 +251,18 @@ def _write_json(result, path: Path) -> None:
         "platforms": [p.value for p in result.platforms_detected],
         "files_scanned": result.files_scanned,
         "risk_score": result.risk_score,
+        "exceptions": [
+            {
+                "kind": exc.kind,
+                "scope": exc.scope,
+                "reason": exc.reason,
+                "owner": exc.owner,
+                "until": exc.until,
+                "path": exc.path,
+                "line": exc.line,
+            }
+            for exc in result.exceptions
+        ],
         "findings": [
             {
                 "path": str(f.path),

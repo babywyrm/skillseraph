@@ -58,7 +58,12 @@ def watch_and_scan(
                 if changed and not quiet:
                     console.print(f"[dim]  changed: {', '.join(str(p.name) for p in changed[:5])}{'…' if len(changed) > 5 else ''}[/dim]")
 
-                result = scan_directory(target, platforms=platforms, include_deps=include_deps)
+                result = scan_directory(
+                    target,
+                    platforms=platforms,
+                    include_deps=include_deps,
+                    governed=fail_on != "none",
+                )
 
                 if len(result.findings) != last_finding_count:
                     last_finding_count = len(result.findings)

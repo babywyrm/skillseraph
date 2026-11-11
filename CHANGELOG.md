@@ -6,6 +6,13 @@ uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- **Breaking: gates ignore bare suppressions.** With any `--fail-on` other
+  than `none`, in `--watch`, and in the admission webhook, an ignore comment
+  or `.skillseraphignore` line counts only with `reason`, `owner` (a role id),
+  and an unexpired `until`. Add those fields, or the finding fails the gate.
+
 ### Fixed
 
 - **README and ROADMAP no longer claim PyPI or a container image.** The
@@ -15,6 +22,11 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **Governed exceptions.** When `--fail-on` is not `none`, and in the admission
+  webhook, a suppression counts only with a reason, a role identifier, and an
+  expiry. Bare ignores and path globs still apply to `--fail-on none`. Honored
+  exceptions are included in the JSON report. `owner` is a role id; the field
+  rejects an email address.
 - **Supply-chain trust detection (`supply_chain_trust`)** — flags skill/plugin/
   tool sources that auto-deploy or skip human review, remote sources marked
   `trusted`/`verified` (unearned scrutiny reduction), and remote skill feeds/

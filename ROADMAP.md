@@ -14,7 +14,7 @@ Domain J (config & automation).
 | Supply-chain / runtime-escape / approver-manipulation / monitoring coverage | **Strong** — config-plane detections mapped to Atlas D3/J4/J2/J3 |
 | Structural (non-regex) parsers | **Strong** — extension manifests, extensions.json, mcp.json env/allowlist fields, and devcontainer/hooks lifecycle commands |
 | Confidence scores + `--min-confidence` | **Strong** — every rule pack carries calibrated confidence; filterable + SARIF rank |
-| Baseline / allowlist / ignores | **Strong** — baselines with expiry, inline ignores, `.skillseraphignore` |
+| Baseline / allowlist / ignores | **Strong** — baselines with expiry, inline ignores, `.skillseraphignore`, governed exceptions on any failing gate |
 | Local developer self-check (`audit-local`) | **Strong** — user-level IDE configs, installed extension manifests, opt-in publisher allowlist |
 | Demo / smoke-test flows | **Done** — `demo-fixture` + `smoke-test` |
 | Output (console / JSON / SARIF) | **Strong** — JSON includes confidence |
@@ -68,6 +68,7 @@ Domain J (config & automation).
 - ~~SARIF confidence mapping (`rank` + confidence properties)~~
 - ~~Rule confidence tuning pass across all packs~~
 - ~~Baseline expiry (`--baseline-max-age`)~~
+- ~~Governed exceptions (reason, role, expiry) on failing gates, with JSON evidence~~
 
 ---
 

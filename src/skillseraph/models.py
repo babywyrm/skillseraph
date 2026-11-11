@@ -69,6 +69,19 @@ class Finding:
         return str(self.path)
 
 
+@dataclass(frozen=True)
+class AcceptedException:
+    """A suppression a gate accepted. `owner` is a role id, not a personal name."""
+
+    kind: str
+    scope: str
+    reason: str
+    owner: str
+    until: str
+    path: str = ""
+    line: int | None = None
+
+
 @dataclass
 class ScanResult:
     """Aggregate result of a full scan."""
@@ -77,6 +90,7 @@ class ScanResult:
     findings: list[Finding] = field(default_factory=list)
     files_scanned: int = 0
     platforms_detected: list[Platform] = field(default_factory=list)
+    exceptions: list[AcceptedException] = field(default_factory=list)
 
     @property
     def critical_count(self) -> int:

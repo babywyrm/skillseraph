@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from pathlib import Path
 
-from .models import Finding, Platform, ScanResult
+from .models import AcceptedException, Finding, Platform, ScanResult
 from .scanner import scan_file
 
 
@@ -60,6 +61,7 @@ def _iter_existing_files(root: Path) -> list[Path]:
 def audit_local_ide_configs(
     home: Path | None = None,
     allowed_publishers: set[str] | None = None,
+    governed: bool = False,
 ) -> ScanResult:
     """Audit user-level IDE configuration files on the local machine.
 
@@ -75,6 +77,7 @@ def audit_local_ide_configs(
     target = (home or Path.home()).resolve()
     allowed_publishers = allowed_publishers or set()
     findings: list[Finding] = []
+    exceptions: list[AcceptedException] = []
     files_scanned = 0
     platforms_detected: list[Platform] = []
 
@@ -84,9 +87,13 @@ def audit_local_ide_configs(
             for path in _iter_existing_files(target / rel_path):
                 files_scanned += 1
                 platform_seen = True
-                for finding in scan_file(path):
+                inline: list[AcceptedException] = []
+                for finding in scan_file(path, governed=governed, exceptions=inline):
                     finding.platform = platform
                     findings.append(finding)
+                exceptions.extend(
+                    replace(exc, path=path.relative_to(target).as_posix()) for exc in inline
+                )
                 if allowed_publishers:
                     try:
                         content = path.read_text(encoding="utf-8", errors="replace")
@@ -103,4 +110,5 @@ def audit_local_ide_configs(
         findings=findings,
         files_scanned=files_scanned,
         platforms_detected=platforms_detected or [Platform.GENERIC],
+        exceptions=exceptions,
     )
