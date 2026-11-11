@@ -22,6 +22,9 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **Codex MCP servers in `config.toml`.** `[mcp_servers]` tables are checked
+  for remote URLs, shell/fetch commands, and remote `npx`/`uvx` packages.
+  Credential findings list env key names and omit values.
 - **Governed exceptions.** When `--fail-on` is not `none`, and in the admission
   webhook, a suppression counts only with a reason, a role identifier, and an
   expiry. Bare ignores and path globs still apply to `--fail-on none`. Honored

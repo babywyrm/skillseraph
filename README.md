@@ -190,7 +190,7 @@ skillseraph auto-detects and scans config surfaces for these platforms:
 | `authority_fabrication` | Fake maintenance windows, fabricated approvals, pre-authorization claims |
 | `runtime_bypass` | Language-runtime evasion of command blocklists, encoded-pipe-to-shell |
 | `breakglass` | Embedded override tokens, admission/policy bypass instructions |
-| `mcp_servers` | Poisoned MCP server defs (remote/raw-IP URLs, env-credential injection, stdio command exec, TLS disable, wildcard tools) + **tool schema smuggling** (Atlas I3) |
+| `mcp_servers` | Poisoned MCP server defs in JSON and Codex `config.toml` (remote/raw-IP URLs, env-credential injection, stdio command exec, TLS disable, wildcard tools) + **tool schema smuggling** (Atlas I3) |
 | `automation_triggers` | Wildcard event triggers, shell exec in automations, broad write perms (Atlas J3) |
 | `config_inheritance` | Parent traversal, absolute-path includes, remote config fetch, recursive globs (Atlas J5) |
 | `skill_invocation` | **Skill invocation hijack** (Atlas J2): callback/redirect on invoke, self-modification, invocation-time override, silent invocation, remote skill pull |
