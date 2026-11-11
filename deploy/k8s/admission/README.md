@@ -13,6 +13,15 @@ etc.) with findings at or above the severity threshold.
 5. If findings at/above `FAIL_ON` (default: `high`) are found, the request is
    rejected with a 403 and a message listing the findings.
 
+The webhook is always a gate. An inline `skillseraph: ignore <rule>` comment
+inside a ConfigMap value counts only when it gives a reason, a role, and an
+unexpired date (`reason="…" owner=<role> until=YYYY-MM-DD`). A bare ignore
+does not stop a rejection.
+
+Build the image first and load it into the cluster
+(`docker build -t skillseraph:local .`), then set that image in
+`manifests.yaml`. No release image is published yet.
+
 ## Deploy
 
 Requires cert-manager (for automatic TLS) or manual cert provisioning.

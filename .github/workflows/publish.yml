@@ -9,11 +9,12 @@ name: publish
 #   3. Create a GitHub environment named "pypi" in repo Settings → Environments.
 #      (No secrets needed — uses OIDC trusted publishing.)
 #
-# Then cut a release:
-#   git tag v0.1.0 && git push origin v0.1.0
+# Then cut a release (version must match pyproject.toml):
+#   git tag vX.Y.Z && git push origin vX.Y.Z
 #
 # The "release" job also creates a GitHub Release with auto-generated notes
-# and a floating "v1" major tag for action consumers (uses: babywyrm/skillseraph@v1).
+# and moves the floating major tag for action consumers. For 0.x that tag is
+# v0 (uses: babywyrm/skillseraph@v0).
 
 on:
   push:

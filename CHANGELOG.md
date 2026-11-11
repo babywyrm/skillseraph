@@ -15,6 +15,12 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **Docs match the tool.** QUICKSTART had PyPI installs, a `-v` flag that does
+  not exist, `@v1` action refs (the release workflow creates `v0` for 0.x),
+  and a Cursor hook in an unsupported format. QUICKSTART, `scan.yml`,
+  `install.sh`, and the admission README are corrected, and QUICKSTART now
+  covers `audit-local`. `tests/test_docs.py` fails if a documented flag,
+  action ref, or Cursor hook example stops matching.
 - **Directory patterns scan the same files on every Python.** On 3.11 and
   3.12 a trailing `**` (as in `.codex/**`) matched only the directory, so
   files such as `.codex/config.toml` were never scanned. Matched directories

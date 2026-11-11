@@ -1,41 +1,29 @@
 # skillseraph Quickstart
 
-Get from zero to a passing security gate in five minutes.
+From install to a working gate on a repo, a workstation, CI, and a cluster.
+Linux and macOS only.
 
 ---
 
-## 1. Install & first scan
+## 1. Install
 
-skillseraph is uv-native — `uv` is the runtime engine.
-
-### One-liner (macOS / Linux — fastest)
+skillseraph runs on `uv`. It is not on PyPI yet.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/babywyrm/skillseraph/main/install.sh | sh
+# Installs uv if missing, then skillseraph from the v0.2.0 tag
+SKILLSERAPH_REF=v0.2.0 curl -fsSL https://raw.githubusercontent.com/babywyrm/skillseraph/main/install.sh | sh
+
+# Or, with uv already installed
+uv tool install git+https://github.com/babywyrm/skillseraph@v0.2.0
+
+# Or run once without installing
+uvx --from git+https://github.com/babywyrm/skillseraph@v0.2.0 skillseraph .
 ```
 
-Installs `uv` if missing, then puts `skillseraph` on your PATH. Done in ~10 s.
+Without `SKILLSERAPH_REF`, `install.sh` installs `main`. Features listed under
+`[Unreleased]` in [CHANGELOG.md](CHANGELOG.md) are on `main` and not in `v0.2.0`.
 
-Pin to a specific release:
-
-```bash
-SKILLSERAPH_REF=v0.1.0 curl -fsSL https://raw.githubusercontent.com/babywyrm/skillseraph/main/install.sh | sh
-```
-
-### PyPI
-
-```bash
-uv tool install skillseraph          # global install via uv (recommended)
-pip install skillseraph              # pip also works (Python 3.11+)
-```
-
-### Run without installing
-
-```bash
-uvx skillseraph .                    # ephemeral run via uv, nothing persisted
-```
-
-### From source
+From source:
 
 ```bash
 git clone https://github.com/babywyrm/skillseraph
@@ -45,86 +33,147 @@ uv tool install .
 
 ---
 
-After installing, run your first scan:
+## 2. Scan a repo
 
 ```bash
-skillseraph .                      # scan current repo
+skillseraph .
 ```
 
-You'll get a table of findings grouped by severity, plus a summary line with the
-risk score and the `--fail-on` threshold.
+The console shows each finding's severity, rule id, file and line, and title,
+then a summary with the risk score and the `--fail-on` threshold. Platforms
+are auto-detected from the files present (`.cursor/`, `.codex/`, `.claude/`,
+`.vscode/`, `AGENTS.md`, `SKILL.md`, and the rest in [README.md](README.md)).
 
-Try it against a known-bad sample to see output:
+Exit codes: `0` when nothing is at or above `--fail-on`, `1` when something is.
+A missing target or bad option also exits non-zero, so check the output before
+treating a `1` as a finding.
+
+For a report a tool can read:
 
 ```bash
-skillseraph . --platform cursor -v
+skillseraph . --fail-on none --json-out findings.json --sarif findings.sarif
 ```
 
 ---
 
-## 2. Tune the gate
+## 3. Check your workstation
+
+`audit-local` reads agent, IDE, and APM settings in your home directory. It is
+the same scan, pointed at user-level config instead of a repo.
 
 ```bash
-# Only fail on critical findings (loosest gate)
-skillseraph . --fail-on critical
-
-# Fail on any finding at all (strictest)
-skillseraph . --fail-on any
-
-# Never fail; report only (for dashboards)
-skillseraph . --fail-on none --json-out findings.json
+skillseraph audit-local
+skillseraph audit-local --json-out workstation.json
 ```
 
-Severity ladder: `critical` > `high` > `medium` > `low`. `--fail-on high`
-(the default) trips on `high` and `critical`.
+It reads these files and no others:
+
+| Client | macOS | Linux |
+|--------|-------|-------|
+| VS Code, Cursor, Windsurf | `~/Library/Application Support/<App>/User/` settings, tasks, keybindings, snippets | `~/.config/<App>/User/` (same files) |
+| Installed IDE extensions | `~/.vscode`, `~/.cursor`, `~/.windsurf` `extensions/*/package.json` | same |
+| Cursor agent | `~/.cursor/mcp.json`, `hooks.json`, `cli-config.json`, `argv.json` | same |
+| Codex | `~/.codex/config.toml`, `~/.codex/rules/`, `~/.codex/skills/` | same |
+| Claude Code | `~/.claude/settings.json`, `settings.local.json`, `CLAUDE.md` | same |
+| Claude Desktop | `~/Library/Application Support/Claude/claude_desktop_config.json` | `~/.config/Claude/claude_desktop_config.json` |
+| Continue | `~/.continue/config.json`, `config.yaml` | same |
+
+It does not read session logs, auth files, history, or databases. Reports list
+credential env var names, never their values, and drop the user:password part
+of collector URLs.
+
+On a workstation it flags MCP servers that are remote or launch shell
+commands, credentials passed to MCP servers, runtime preloads such as
+`NODE_OPTIONS=--require`, and APM endpoints (OpenTelemetry, Sentry, Datadog,
+New Relic, Honeycomb, Elastic) that point anywhere other than localhost.
+
+To flag extensions from publishers you do not trust:
+
+```bash
+skillseraph audit-local --allow-extension-publisher microsoft --allow-extension-publisher ms-python
+```
+
+For an incident, keep the report with the time it was taken:
+
+```bash
+skillseraph audit-local --fail-on none --json-out "workstation-$(date -u +%Y%m%dT%H%M%SZ).json"
+```
 
 ---
 
-## 3. GitHub Actions (recommended)
+## 4. Tune the gate
 
-### Option A — GitHub Marketplace action (drop-in)
+```bash
+skillseraph . --fail-on critical          # loosest gate
+skillseraph . --fail-on any               # strictest
+skillseraph . --min-confidence high       # drop heuristic findings
+skillseraph . --fail-on none              # report only
+```
+
+`--fail-on high` (the default) trips on `high` and `critical`.
+
+When `--fail-on` is anything except `none`, a suppression counts only if it
+gives a reason, a role, and an expiry date:
+
+```markdown
+This page quotes "ignore previous instructions". skillseraph: ignore prompt_injection_override reason="quoted in project docs" owner=repo-maintainer until=2026-12-31
+```
+
+A bare `skillseraph: ignore <rule>` still works with `--fail-on none`. Details,
+`.skillseraphignore`, and baselines are in [README.md](README.md).
+
+---
+
+## 5. GitHub Actions
+
+`@v0` is the major tag the release workflow moves on each `0.x` release.
+
+### Option A — composite action
 
 ```yaml
 name: skillseraph
 on:
   pull_request:
-    paths:
-      - "**/AGENTS.md"
-      - "**/CLAUDE.md"
-      - "**/SKILL.md"
-      - ".cursor/**"
-      - ".github/copilot-instructions.md"
-      - "**/*.mdc"
   push:
     branches: [main]
 
 permissions:
   contents: read
-  security-events: write   # for SARIF upload
+  security-events: write   # SARIF upload
 
 jobs:
   scan:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: babywyrm/skillseraph@v1
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0   # changed-only diff needs the base commit
+      - uses: babywyrm/skillseraph@v0
         with:
           fail-on: high
+      - if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: skillseraph.sarif
 ```
 
-Findings show up inline on the PR via GitHub Code Scanning.
+The action writes `skillseraph.sarif` and `skillseraph.json`. On a pull
+request it scans only the changed files.
 
-### Option B — uvx (no action required)
+### Option B — uv, no action
 
 ```yaml
 jobs:
   scan:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.3.3
       - run: |
-          uvx skillseraph . \
+          uvx --from git+https://github.com/babywyrm/skillseraph@v0.2.0 skillseraph . \
             --fail-on high \
             --sarif skillseraph.sarif \
             --json-out skillseraph.json
@@ -141,7 +190,7 @@ name: agent-config-security
 on: [pull_request]
 jobs:
   skillseraph:
-    uses: babywyrm/skillseraph/.github/workflows/scan.yml@v1
+    uses: babywyrm/skillseraph/.github/workflows/scan.yml@v0
     with:
       fail-on: high
       paths: "."
@@ -149,9 +198,7 @@ jobs:
 
 ---
 
-## 4. Pre-commit hook (catch it before it's committed)
-
-Add to `.pre-commit-config.yaml`:
+## 6. Pre-commit hook
 
 ```yaml
 repos:
@@ -163,64 +210,103 @@ repos:
         args: ["--fail-on", "high", "--quiet"]
         language: system
         pass_filenames: false
-        files: '(AGENTS\.md|CLAUDE\.md|SKILL\.md|\.mdc|\.cursor/.*|copilot-instructions\.md)$'
+        files: '(AGENTS\.md|CLAUDE\.md|SKILL\.md|\.mdc|\.cursor/.*|\.codex/.*|\.claude/.*|\.vscode/.*|copilot-instructions\.md)$'
 ```
 
 ```bash
 pre-commit install
 ```
 
-Now poisoned configs are blocked at commit time.
+The hook scans the whole repo when a matching file is staged. It uses the
+gate rules from section 4.
 
 ---
 
-## 5. Kubernetes (agentic workloads)
+## 7. Kubernetes
 
-If your agents load skills/configs from mounted `ConfigMap`s or fetched at
-runtime, scan them in an init container before the agent boots:
+Build the image and load it into your cluster. CI builds it on every pull
+request; no release image is published yet.
+
+```bash
+docker build -t skillseraph:local .
+kind load docker-image skillseraph:local   # or your cluster's image import
+```
+
+Scan mounted agent configs before the agent starts. If the init container
+exits non-zero, the pod never starts.
 
 ```yaml
 initContainers:
   - name: skillseraph-gate
-    image: ghcr.io/babywyrm/skillseraph:latest
+    image: skillseraph:local
     args: ["/configs", "--fail-on", "high"]
     volumeMounts:
       - name: agent-configs
         mountPath: /configs
         readOnly: true
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 65534
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop: ["ALL"]
 ```
 
-If skillseraph exits non-zero, the init container fails and the agent pod never
-starts with poisoned configs.
+That security context is exercised in CI by
+`tests/test_container_integration.py`. A full example is in
+`deploy/k8s/init-container-example.yaml`, and `deploy/k8s/test-gate.sh` checks
+it on a live cluster. To reject poisoned ConfigMaps at admission time, see
+[deploy/k8s/admission/README.md](deploy/k8s/admission/README.md).
 
-> For continuous monitoring of configs fetched at runtime, run skillseraph in a
-> sidecar `--watch` loop (planned) or trigger it from your agent's
-> `beforeAgentStart` hook.
+For configs that change at runtime, run `skillseraph /configs --watch` in a
+sidecar. It re-scans on change and exits non-zero when a finding crosses
+`--fail-on`.
 
 ---
 
-## 6. IDE agent hook (Cursor example)
+## 8. Cursor hook
 
-Scan the workspace before an agentic session begins. In `.cursor/hooks.json`:
+Block the agent's shell commands while the workspace has a critical finding.
+`.cursor/hooks.json`:
 
 ```json
 {
-  "hooks": [
-    {
-      "event": "beforeAgentStart",
-      "command": "skillseraph . --fail-on critical --quiet"
-    }
-  ]
+  "version": 1,
+  "hooks": {
+    "beforeShellExecution": [
+      {
+        "command": ".cursor/hooks/skillseraph-gate.sh"
+      }
+    ]
+  }
 }
 ```
 
-A non-zero exit blocks the session if a critical poisoning pattern is present.
+`.cursor/hooks/skillseraph-gate.sh`:
+
+```bash
+#!/bin/sh
+cat >/dev/null
+if skillseraph . --fail-on critical --quiet; then
+  echo '{"permission":"allow"}'
+else
+  echo '{"permission":"deny","user_message":"skillseraph blocked shell: a critical finding is in this workspace. Run skillseraph . --fail-on critical to see it.","agent_message":"Shell blocked by the skillseraph workspace gate."}'
+fi
+```
+
+```bash
+chmod +x .cursor/hooks/skillseraph-gate.sh
+```
+
+The scan runs before every agent shell command. If `skillseraph` is not on
+the hook's `PATH`, the script denies, so install it before enabling the hook.
 
 ---
 
 ## Where to go next
 
-- [README.md](README.md) — full detection category reference
-- [Attack Path Atlas](https://github.com/babywyrm/agentic-sec/blob/main/docs/attack-path-atlas.md) — Domain J (config & automation) threat map
-- Contribute detection rules: add patterns under `src/skillseraph/rules/*.yaml`
-  and a fixture + test under `tests/`.
+- [README.md](README.md) — platforms, detection categories, suppressions, output formats
+- [CHANGELOG.md](CHANGELOG.md) — what is released and what is on `main`
+- [Attack Path Atlas](https://github.com/babywyrm/agentic-sec/blob/main/docs/attack-path-atlas.md) — the threat map rules are tagged with
+- New rules go in `src/skillseraph/rules/*.yaml`, with a test under `tests/`

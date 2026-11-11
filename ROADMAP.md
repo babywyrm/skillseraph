@@ -32,10 +32,15 @@ Domain J (config & automation).
 
 ## Near-term
 
-- **Repair distribution.** Register the PyPI trusted publisher and re-run the
-  `v0.2.0` publish. Fix the Dockerfile: the builder runs `uv sync
-  --no-editable` before `README.md` and `src/` are copied, so the package
-  cannot build.
+- **Repair distribution.** Register the PyPI trusted publisher and cut the
+  next release, which also moves `v0` past the June `v0.2.0` commit. Decide
+  whether the GHCR image is public, then point the Kubernetes examples at it.
+  The Dockerfile build order is fixed.
+- **Docs and reporting gaps.** Document the JSON report fields; give errors
+  an exit code distinct from findings; add `SECURITY.md` and
+  `CONTRIBUTING.md`; add `min-confidence` and `baseline-max-age` inputs to
+  the action; put OWASP LLM ids on findings, or drop the README claim that
+  they map to the OWASP LLM Top 10.
 - **Provenance / signature checks** — flag skills and rules lacking a trusted
   source or signature; optional allowlist of trusted publishers.
 

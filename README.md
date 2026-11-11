@@ -225,10 +225,11 @@ cross-domain C1/I3/D1/D3/D4 where statically detectable).
 
 skillseraph is designed to run as a gate. See [QUICKSTART.md](QUICKSTART.md) for:
 
-- GitHub Actions (reusable workflow + composite action + GitHub Marketplace)
+- Workstation self-check (`audit-local`) and what it reads on macOS and Linux
+- GitHub Actions (composite action and reusable workflow at `@v0`)
 - Pre-commit hook
 - Kubernetes init-container / admission scanning of mounted configs
-- IDE agent hooks (scan before an agentic session starts)
+- Cursor `beforeShellExecution` hook that blocks agent shell commands while a critical finding is present
 
 ---
 

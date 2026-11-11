@@ -18,7 +18,7 @@
 set -eu
 
 REPO="https://github.com/babywyrm/skillseraph"
-GIT_REF="${SKILLSERAPH_REF:-main}"   # override with SKILLSERAPH_REF=v0.1.0 to pin
+GIT_REF="${SKILLSERAPH_REF:-main}"   # override with SKILLSERAPH_REF=v0.2.0 to pin
 
 # ── helpers ─────────────────────────────────────────────────────────────────
 
@@ -88,7 +88,7 @@ printf '\033[1;32mDone!\033[0m Try it:\n'
 printf '\n'
 printf '  skillseraph .                          # scan current directory\n'
 printf '  skillseraph . --fail-on high           # CI gate (default threshold)\n'
-printf '  skillseraph . --platform cursor -v     # verbose Cursor scan\n'
+printf '  skillseraph audit-local                # check this workstation\n'
 printf '  skillseraph --help                     # full usage\n'
 printf '\n'
 printf 'Docs: %s\n' "$REPO"

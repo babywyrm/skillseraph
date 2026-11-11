@@ -4,7 +4,7 @@ name: skillseraph scan
 #
 #   jobs:
 #     skillseraph:
-#       uses: babywyrm/skillseraph/.github/workflows/scan.yml@v1
+#       uses: babywyrm/skillseraph/.github/workflows/scan.yml@v0
 #       with:
 #         fail-on: high
 
@@ -45,13 +45,13 @@ jobs:
   scan:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: skillseraph
         id: scan
-        uses: babywyrm/skillseraph@v1
+        uses: babywyrm/skillseraph@v0
         with:
           path: ${{ inputs.paths }}
           fail-on: ${{ inputs.fail-on }}
