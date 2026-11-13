@@ -8,6 +8,10 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Security
 
+- **Admission webhook rejects unsafe data keys.** Keys were joined straight
+  onto the scan directory, so a request posted directly to the webhook with a
+  key such as `../name` wrote outside it (CWE-22). Keys that are not valid
+  ConfigMap keys now deny the request and are never written.
 - **Composite action no longer interpolates inputs into shell.** `path`,
   `fail-on`, `baseline`, and the other inputs reach the run step through
   environment variables, so a crafted input value cannot run commands

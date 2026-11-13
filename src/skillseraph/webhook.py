@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import ssl
 import tempfile
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -34,6 +35,8 @@ AGENT_CONFIG_KEYS = {
     "devin.md", "system_prompt.md",
 }
 
+_CONFIGMAP_KEY = re.compile(r"[-._a-zA-Z0-9]{1,253}")
+
 THRESHOLD = {
     "critical": Severity.CRITICAL,
     "high": Severity.HIGH,
@@ -50,6 +53,10 @@ def _scan_configmap_data(data: dict[str, str]) -> list[dict[str, str]]:
     with tempfile.TemporaryDirectory(prefix="seraph-") as td:
         td_path = Path(td)
         for key, content in data.items():
+            if not _CONFIGMAP_KEY.fullmatch(key) or key in (".", ".."):
+                findings.append({"check": "invalid_configmap_key", "severity": "critical",
+                                 "title": "Data key is not a valid ConfigMap key", "key": key[:64]})
+                continue
             if not any(key.endswith(suffix) or key in AGENT_CONFIG_KEYS
                        for suffix in (".md", ".mdc", ".json", ".yaml", ".yml")):
                 continue
