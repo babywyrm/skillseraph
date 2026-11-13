@@ -163,11 +163,14 @@ skillseraph . --baseline .skillseraph-baseline.json --baseline-max-age 90
 
 skillseraph auto-detects and scans config surfaces for these platforms.
 `audit-local` also reads Linux and macOS user config for VS Code, Cursor,
-Windsurf, Codex, Claude, and Continue. Shared dot paths (`~/.codex`,
-`~/.claude`, `~/.continue`, `~/.cursor`) are the same on both systems. Claude
-Desktop is `Library/Application Support/Claude` on macOS and
-`.config/Claude` on Linux. APM endpoint evidence keeps the host and drops URL
-userinfo.
+Windsurf, Codex, Claude, Continue, Copilot CLI, Gemini CLI, Zed, and opencode.
+Shared dot paths (`~/.codex`, `~/.claude`, `~/.continue`, `~/.cursor`,
+`~/.copilot`, `~/.gemini`) are the same on both systems, and Zed and opencode
+use `~/.config` on both. Claude Desktop is `Library/Application Support/Claude`
+on macOS and `.config/Claude` on Linux. APM endpoint evidence keeps the host
+and drops URL userinfo. JSON config with comments or trailing commas (JSONC,
+as in VS Code, Zed, opencode, and devcontainers) gets the same structural
+checks as plain JSON.
 
 | Platform | Files |
 |----------|-------|
@@ -175,7 +178,10 @@ userinfo.
 | VS Code-compatible IDEs | `.vscode/{settings,tasks,launch,extensions}.json`, `*.code-workspace`, `.devcontainer/**` |
 | JetBrains IDEs | `.idea/**/*.xml` (run configurations, external tools), `*.iml` |
 | Codex | `AGENTS.md`, `.codex/**`, `codex.{json,yaml}` |
-| GitHub Copilot | `.github/copilot-instructions.md`, `.github/copilot/**` |
+| GitHub Copilot | `.github/copilot-instructions.md`, `.github/{copilot,instructions,prompts,chatmodes,agents}/**`, `.github/mcp.json`, `.vscode/mcp.json` |
+| Gemini CLI | `GEMINI.md`, `.gemini/**` (settings, commands, extensions) |
+| opencode | `opencode.json(c)`, `.opencode/**` |
+| Zed | `.zed/settings.json` (`context_servers`), `.zed/tasks.json`, `.rules` |
 | Claude | `CLAUDE.md`, `.claude/**`, `claude_desktop_config.json`, `.mcp.json` |
 | Windsurf | `.windsurfrules`, `.windsurf/**` |
 | Cline / Continue | `.clinerules`, `.continue/**` |
@@ -202,7 +208,7 @@ userinfo.
 | `authority_fabrication` | Fake maintenance windows, fabricated approvals, pre-authorization claims |
 | `runtime_bypass` | Language-runtime evasion of command blocklists, encoded-pipe-to-shell |
 | `breakglass` | Embedded override tokens, admission/policy bypass instructions |
-| `mcp_servers` | Poisoned MCP server defs in JSON and Codex `config.toml` (remote/raw-IP URLs, env-credential injection, stdio command exec, TLS disable, wildcard tools) + **tool schema smuggling** (Atlas I3) |
+| `mcp_servers` | Poisoned MCP server defs in JSON/JSONC, Codex `config.toml`, and servers embedded in Claude, Gemini CLI, Zed, opencode, and Copilot CLI settings (remote/raw-IP URLs, env-credential injection, stdio command exec, TLS disable, wildcard tools, `trust: true` approval bypass) + **tool schema smuggling** (Atlas I3) |
 | `automation_triggers` | Wildcard event triggers, shell exec in automations, broad write perms (Atlas J3) |
 | `config_inheritance` | Parent traversal, absolute-path includes, remote config fetch, recursive globs (Atlas J5) |
 | `skill_invocation` | **Skill invocation hijack** (Atlas J2): callback/redirect on invoke, self-modification, invocation-time override, silent invocation, remote skill pull |

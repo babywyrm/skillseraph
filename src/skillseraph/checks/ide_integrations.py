@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-import json
 import re
 from pathlib import Path
 from urllib.parse import urlparse
 
 from ..models import Finding, Platform, Severity
 from ..rules_engine import run_category
+from . import load_jsonc
 
 _APM_KEYS = {
     "OTEL_EXPORTER_OTLP_ENDPOINT",
@@ -52,9 +52,8 @@ def _check_apm_endpoints(path: Path, content: str, seen: set[str]) -> list[Findi
     """Pretty-printed settings put the endpoint on its own line, which the regex misses."""
     if "ide_apm_external_collector" in seen:
         return []
-    try:
-        data = json.loads(content)
-    except json.JSONDecodeError:
+    data = load_jsonc(content)
+    if data is None:
         return []
 
     found: str | None = None
@@ -95,9 +94,8 @@ def _check_extension_recommendations(path: Path, content: str) -> list[Finding]:
     if path.name != "extensions.json":
         return []
 
-    try:
-        data = json.loads(content)
-    except json.JSONDecodeError:
+    data = load_jsonc(content)
+    if not isinstance(data, dict):
         return []
 
     recommendations = data.get("recommendations", [])

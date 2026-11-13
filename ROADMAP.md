@@ -9,13 +9,13 @@ Domain J (config & automation).
 
 | Area | State |
 |------|-------|
-| Multi-platform detection (13 platforms incl. VS Code + JetBrains IDEs) | **Strong** |
+| Multi-platform detection (16 platforms incl. VS Code, JetBrains, Zed, Gemini CLI, opencode) | **Strong** |
 | Data-driven YAML rules (20 packs) | **Strong** — all regex categories YAML-driven |
 | Supply-chain / runtime-escape / approver-manipulation / monitoring coverage | **Strong** — config-plane detections mapped to Atlas D3/J4/J2/J3 |
 | Structural (non-regex) parsers | **Strong** — extension manifests, extensions.json, mcp.json env/allowlist fields, and devcontainer/hooks lifecycle commands |
 | Confidence scores + `--min-confidence` | **Strong** — every rule pack carries calibrated confidence; filterable + SARIF rank |
 | Baseline / allowlist / ignores | **Strong** — baselines with expiry, inline ignores, `.skillseraphignore`, governed exceptions on any failing gate |
-| Local developer self-check (`audit-local`) | **Strong** — VS Code, Cursor, Windsurf, Codex, Claude, and Continue user configs on Linux and macOS, installed extension manifests, opt-in publisher allowlist |
+| Local developer self-check (`audit-local`) | **Strong** — VS Code, Cursor, Windsurf, Codex, Claude, Continue, Copilot CLI, Gemini CLI, Zed, and opencode user configs on Linux and macOS, installed extension manifests, opt-in publisher allowlist |
 | Demo / smoke-test flows | **Done** — `demo-fixture` + `smoke-test` |
 | Output (console / JSON / SARIF) | **Strong** — JSON includes confidence |
 | CI integration (Action + workflow + PR diff mode) | **Strong** |

@@ -81,10 +81,48 @@ PLATFORMS: dict[Platform, PlatformSpec] = {
     ),
     Platform.COPILOT: PlatformSpec(
         name=Platform.COPILOT,
-        description="GitHub Copilot custom instructions",
+        description="GitHub Copilot instructions, prompts, agents, and MCP config",
         file_patterns=[
             ".github/copilot-instructions.md",
             ".github/copilot/**",
+            ".github/instructions/**",
+            ".github/prompts/**",
+            ".github/chatmodes/**",
+            ".github/agents/**",
+            ".github/mcp.json",
+            ".vscode/mcp.json",
+        ],
+        dep_plant_paths=[],
+    ),
+    Platform.GEMINI: PlatformSpec(
+        name=Platform.GEMINI,
+        description="Gemini CLI context, settings, commands, and extensions",
+        file_patterns=[
+            "GEMINI.md",
+            "**/GEMINI.md",
+            ".gemini/**",
+        ],
+        dep_plant_paths=[
+            "node_modules/**/GEMINI.md",
+        ],
+    ),
+    Platform.OPENCODE: PlatformSpec(
+        name=Platform.OPENCODE,
+        description="opencode config, agents, and commands",
+        file_patterns=[
+            "opencode.json",
+            "opencode.jsonc",
+            ".opencode/**",
+        ],
+        dep_plant_paths=[],
+    ),
+    Platform.ZED: PlatformSpec(
+        name=Platform.ZED,
+        description="Zed project settings (context servers) and rules",
+        file_patterns=[
+            ".zed/settings.json",
+            ".zed/tasks.json",
+            ".rules",
         ],
         dep_plant_paths=[],
     ),

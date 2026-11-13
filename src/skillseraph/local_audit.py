@@ -18,6 +18,8 @@ LOCAL_IDE_FILES: dict[Platform, tuple[str, ...]] = {
         ".config/Code/User/tasks.json",
         ".config/Code/User/keybindings.json",
         ".config/Code/User/snippets",
+        "Library/Application Support/Code/User/mcp.json",
+        ".config/Code/User/mcp.json",
         ".vscode/extensions",
     ),
     Platform.CURSOR: (
@@ -51,6 +53,29 @@ LOCAL_IDE_FILES: dict[Platform, tuple[str, ...]] = {
         ".continue/config.json",
         ".continue/config.yaml",
     ),
+    Platform.COPILOT: (
+        ".copilot/mcp-config.json",
+    ),
+    Platform.GEMINI: (
+        ".gemini/settings.json",
+        ".gemini/GEMINI.md",
+        ".gemini/commands",
+        ".gemini/extensions",
+    ),
+    # Zed and opencode use ~/.config on macOS as well as Linux.
+    Platform.ZED: (
+        ".config/zed/settings.json",
+        ".config/zed/tasks.json",
+    ),
+    Platform.OPENCODE: (
+        ".config/opencode/opencode.json",
+        ".config/opencode/opencode.jsonc",
+        ".config/opencode/AGENTS.md",
+        ".config/opencode/agents",
+        ".config/opencode/agent",
+        ".config/opencode/commands",
+        ".config/opencode/command",
+    ),
     Platform.WINDSURF: (
         "Library/Application Support/Windsurf/User/settings.json",
         "Library/Application Support/Windsurf/User/tasks.json",
@@ -72,7 +97,7 @@ def _iter_existing_files(root: Path) -> list[Path]:
         # Extension trees hold thousands of files per extension; only the
         # manifests carry the config we audit.
         if root.name == "extensions":
-            return sorted(root.glob("*/package.json"))
+            return sorted([*root.glob("*/package.json"), *root.glob("*/gemini-extension.json")])
         return sorted(path for path in root.rglob("*") if path.is_file())
     return []
 

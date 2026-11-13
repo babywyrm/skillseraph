@@ -137,6 +137,12 @@ def test_linux_container_scans_macos_and_linux_layouts(tmp_path: Path) -> None:
     linux_desktop = home / ".config" / "Claude" / "claude_desktop_config.json"
     linux_desktop.parent.mkdir(parents=True)
     linux_desktop.write_text('{"mcpServers": {"demo": {"url": "http://127.0.0.1:3000/mcp"}}}')
+    zed = home / ".config" / "zed" / "settings.json"
+    zed.parent.mkdir(parents=True)
+    zed.write_text('{\n  // jsonc\n  "context_servers": {"demo": {"command": "node", "trust": true},},\n}\n')
+    gemini = home / ".gemini" / "extensions" / "demo" / "gemini-extension.json"
+    gemini.parent.mkdir(parents=True)
+    gemini.write_text('{"mcpServers": {"demo": {"command": "npx", "args": ["-y", "@evil/pkg"]}}}')
     out.mkdir()
     for root in (repo, home, out):
         root.chmod(0o755)
@@ -171,6 +177,10 @@ def test_linux_container_scans_macos_and_linux_layouts(tmp_path: Path) -> None:
     )
     home_report = (out / "home.json").read_text()
     assert "secret-token" not in home_report
-    assert {"ide_runtime_preload", "ide_apm_external_collector", "mcp_server_non_local_url"} <= _checks(
-        out / "home.json"
-    )
+    assert {
+        "ide_runtime_preload",
+        "ide_apm_external_collector",
+        "mcp_server_non_local_url",
+        "mcp_server_trust_bypasses_approval",
+        "mcp_server_npx_remote_package",
+    } <= _checks(out / "home.json")

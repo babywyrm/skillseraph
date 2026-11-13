@@ -2,9 +2,51 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from ..models import Finding
+
+
+def load_jsonc(content: str) -> object | None:
+    """Parse JSON that may carry // and /* */ comments and trailing commas."""
+    out: list[str] = []
+    i, n, in_string = 0, len(content), False
+    while i < n:
+        ch = content[i]
+        if in_string:
+            out.append(ch)
+            if ch == "\\" and i + 1 < n:
+                out.append(content[i + 1])
+                i += 1
+            elif ch == '"':
+                in_string = False
+        elif ch == '"':
+            in_string = True
+            out.append(ch)
+        elif content.startswith("//", i):
+            i = content.find("\n", i)
+            if i == -1:
+                break
+            continue
+        elif content.startswith("/*", i):
+            end = content.find("*/", i + 2)
+            i = n if end == -1 else end + 2
+            continue
+        elif ch in "]}":
+            while out and out[-1].isspace():
+                out.pop()
+            if out and out[-1] == ",":
+                out.pop()
+            out.append(ch)
+        else:
+            out.append(ch)
+        i += 1
+    try:
+        parsed: object = json.loads("".join(out))
+    except json.JSONDecodeError:
+        return None
+    return parsed
 
 
 def run_all_checks(path: Path, content: str, line_offset: int = 0) -> list[Finding]:

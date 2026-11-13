@@ -44,6 +44,12 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **Commented JSON was skipped.** The structural MCP, devcontainer
+  lifecycle, and IDE checks used strict `json.loads`, so a JSONC file (with
+  `//` comments or trailing commas, normal in VS Code and devcontainers) was
+  only seen by the line rules and split commands went unflagged. They now
+  share one JSONC-tolerant parser, and a non-object `extensions.json` no
+  longer crashes the scan.
 - **Docs match the tool.** QUICKSTART had PyPI installs, a `-v` flag that does
   not exist, `@v1` action refs (the release workflow creates `v0` for 0.x),
   and a Cursor hook in an unsupported format. QUICKSTART, `scan.yml`,
@@ -61,6 +67,21 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **Gemini CLI, Zed, opencode, and more Copilot surfaces.** New platforms
+  `gemini`, `zed`, and `opencode`. Repo scans read `GEMINI.md`, `.gemini/**`,
+  `.zed/settings.json`, `.rules`, `opencode.json(c)`, `.opencode/**`, and
+  Copilot's `.github/{instructions,prompts,chatmodes,agents}/**`,
+  `.github/mcp.json`, and `.vscode/mcp.json`. `audit-local` reads
+  `~/.gemini` (settings, commands, extension manifests), `~/.config/zed`,
+  `~/.config/opencode`, `~/.copilot/mcp-config.json`, and the VS Code user
+  `mcp.json` on macOS and Linux.
+- **One structural pass for MCP servers embedded in client settings.** Claude
+  `mcpServers`, Gemini `mcpServers`, Zed `context_servers`, opencode `mcp` /
+  `mcp.servers` (argv-array `command`, `environment`), and Copilot CLI
+  `mcpServers` all get the remote-URL, shell-command, remote-package, and
+  credential-env checks.
+- **`mcp_server_trust_bypasses_approval`** flags `trust: true`, which makes
+  Gemini CLI run a server's tools without confirmation.
 - **`SECURITY.md` and `CONTRIBUTING.md`.** Private vulnerability reporting,
   scope, the local checks CI runs, how to add a detection, and what a public
   contribution must not contain.

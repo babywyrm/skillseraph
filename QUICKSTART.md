@@ -77,13 +77,19 @@ It reads these files and no others:
 | Claude Code | `~/.claude/settings.json`, `settings.local.json`, `CLAUDE.md` | same |
 | Claude Desktop | `~/Library/Application Support/Claude/claude_desktop_config.json` | `~/.config/Claude/claude_desktop_config.json` |
 | Continue | `~/.continue/config.json`, `config.yaml` | same |
+| VS Code / Copilot MCP | `~/Library/Application Support/Code/User/mcp.json` | `~/.config/Code/User/mcp.json` |
+| Copilot CLI | `~/.copilot/mcp-config.json` | same |
+| Gemini CLI | `~/.gemini/settings.json`, `GEMINI.md`, `commands/`, `extensions/*/gemini-extension.json` | same |
+| Zed | `~/.config/zed/settings.json`, `tasks.json` | same |
+| opencode | `~/.config/opencode/opencode.json(c)`, `AGENTS.md`, `agents/`, `commands/` | same |
 
 It does not read session logs, auth files, history, or databases. Reports list
 credential env var names, never their values, and drop the user:password part
 of collector URLs.
 
 On a workstation it flags MCP servers that are remote or launch shell
-commands, credentials passed to MCP servers, runtime preloads such as
+commands, servers marked `trust: true` (Gemini CLI skips every tool
+confirmation for them), credentials passed to MCP servers, runtime preloads such as
 `NODE_OPTIONS=--require`, and APM endpoints (OpenTelemetry, Sentry, Datadog,
 New Relic, Honeycomb, Elastic) that point anywhere other than localhost.
 

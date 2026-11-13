@@ -8,11 +8,11 @@ the JSON and reassembles each command before matching.
 
 from __future__ import annotations
 
-import json
 import re
 from pathlib import Path
 
 from ..models import Finding, Severity
+from . import load_jsonc
 
 _LIFECYCLE_FILES = ("devcontainer.json", "hooks.json")
 _LIFECYCLE_KEYS = (
@@ -70,9 +70,8 @@ def check_lifecycle(path: Path, content: str) -> list[Finding]:
     if not _is_lifecycle_file(path):
         return []
 
-    try:
-        data = json.loads(content)
-    except json.JSONDecodeError:
+    data = load_jsonc(content)
+    if data is None:
         return []
 
     findings: list[Finding] = []

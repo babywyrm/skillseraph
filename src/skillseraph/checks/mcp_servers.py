@@ -3,12 +3,13 @@
 Combines the line-regex rules in rules/mcp_servers.yaml with a structural
 pass for fields the line engine cannot see. JSON covers multi-line ``env``
 blocks. Codex ``.codex/config.toml`` stores the same servers as TOML tables,
-so those files get a ``tomllib`` pass. Evidence lists key names, never values.
+so those files get a ``tomllib`` pass. Clients that embed servers in their
+own settings (Claude Code, Gemini CLI, Zed, opencode, Copilot CLI) get a
+pass over just that key. Evidence lists key names, never values.
 """
 
 from __future__ import annotations
 
-import json
 import re
 import tomllib
 from pathlib import Path
@@ -16,6 +17,7 @@ from urllib.parse import urlparse
 
 from ..models import Finding, Severity
 from ..rules_engine import run_category
+from . import load_jsonc
 
 MCP_CONFIG_NAMES = {
     "mcp.json",
@@ -25,11 +27,12 @@ MCP_CONFIG_NAMES = {
 
 _CREDENTIAL_KEY = re.compile(r"(TOKEN|KEY|SECRET|PASSWORD|CREDENTIAL|AUTH)", re.IGNORECASE)
 _TOOL_LIST_KEYS = ("allowedTools", "tools", "enabledTools")
-_URL_FIELDS = ("url", "endpoint", "baseUrl", "uri")
+_URL_FIELDS = ("url", "httpUrl", "endpoint", "baseUrl", "uri")
 _SHELL_COMMAND = re.compile(
     r"(curl|wget|\b(?:bash|sh|zsh)\s+-c\b|\b(?:bash|sh|zsh)\b.*\||\beval\b)",
     re.IGNORECASE,
 )
+_SHELLS = {"sh", "bash", "zsh", "dash"}
 _REMOTE_LAUNCH = re.compile(r"(npx|uvx|pip install|npm exec)", re.IGNORECASE)
 _REMOTE_REF = re.compile(r"(@|git\+|https?://)", re.IGNORECASE)
 _LOCAL_URL = re.compile(
@@ -53,13 +56,26 @@ def _is_mcp_config(path: Path) -> bool:
     )
 
 
-def _is_claude_code_settings(path: Path) -> bool:
-    return path.name in {"settings.json", "settings.local.json"} and ".claude" in path.parts
+def _embedded_servers_key(path: Path) -> str | None:
+    """Top-level key holding MCP servers in a client's own settings file."""
+    name, parent = path.name, path.parent.name
+    if name in {"settings.json", "settings.local.json"} and ".claude" in path.parts:
+        return "mcpServers"
+    if (name == "settings.json" and parent == ".gemini") or name == "gemini-extension.json":
+        return "mcpServers"
+    if name == "mcp-config.json" and parent == ".copilot":
+        return "mcpServers"
+    if name == "settings.json" and parent in {".zed", "zed"}:
+        return "context_servers"
+    if name in {"opencode.json", "opencode.jsonc"}:
+        return "mcp"
+    return None
 
 
 def check_mcp_servers(path: Path, content: str) -> list[Finding]:
-    if _is_claude_code_settings(path):
-        return _claude_settings_checks(path, content)
+    key = _embedded_servers_key(path)
+    if key:
+        return _embedded_server_checks(path, content, key)
     if not _is_mcp_config(path):
         return []
     findings = run_category("mcp_servers", path, content)
@@ -103,6 +119,8 @@ def _command_line(server: dict[str, object]) -> str:
     command = server.get("command")
     if isinstance(command, str):
         parts.append(command)
+    elif isinstance(command, list):
+        parts.extend(item for item in command if isinstance(item, str))
     args = server.get("args")
     if isinstance(args, str):
         parts.append(args)
@@ -111,26 +129,39 @@ def _command_line(server: dict[str, object]) -> str:
     return " ".join(parts)
 
 
-def _inspect_toml_server(
+def _inspect_server(
     path: Path,
     server: dict[str, object],
     findings: list[Finding],
     seen: set[str],
 ) -> None:
-    command = server.get("command")
-    if isinstance(command, str) and _SHELL_COMMAND.search(command):
+    launched = _command_line(server)
+    argv0 = launched.split(" ", 1)[0]
+    shell_target = launched if Path(argv0).name in _SHELLS else argv0
+    if _SHELL_COMMAND.search(shell_target):
         _emit(
             findings, seen, path,
             "mcp_server_stdio_arbitrary_command",
             Severity.CRITICAL,
             "MCP server launches a shell/fetch command via stdio",
             "The server definition uses stdio transport with a shell or download command.",
-            command,
+            launched,
             "MCP-T09",
             "J4",
         )
 
-    launched = _command_line(server)
+    if server.get("trust") is True:
+        _emit(
+            findings, seen, path,
+            "mcp_server_trust_bypasses_approval",
+            Severity.HIGH,
+            "MCP server is trusted, so its tool calls skip confirmation",
+            "trust: true lets every tool this server exposes run without asking the user.",
+            "trust=true",
+            "MCP-T03",
+            "J2",
+        )
+
     if _REMOTE_LAUNCH.search(launched) and _REMOTE_REF.search(launched):
         _emit(
             findings, seen, path,
@@ -162,7 +193,7 @@ def _inspect_toml_server(
         )
         break
 
-    env = server.get("env")
+    env = server.get("env", server.get("environment"))
     if isinstance(env, dict):
         keys = sorted(name for name in env if isinstance(name, str) and _CREDENTIAL_KEY.search(name))
         if keys:
@@ -178,20 +209,18 @@ def _inspect_toml_server(
             )
 
 
-def _claude_settings_checks(path: Path, content: str) -> list[Finding]:
-    """Claude Code stores MCP servers in settings.json, not mcp.json."""
-    try:
-        data = json.loads(content)
-    except json.JSONDecodeError:
-        return []
-    servers = data.get("mcpServers")
+def _embedded_server_checks(path: Path, content: str, key: str) -> list[Finding]:
+    data = load_jsonc(content)
+    servers = data.get(key) if isinstance(data, dict) else None
+    if isinstance(servers, dict) and isinstance(servers.get("servers"), dict):
+        servers = servers["servers"]  # opencode v2 nests names under mcp.servers
     if not isinstance(servers, dict):
         return []
     findings: list[Finding] = []
     seen: set[str] = set()
     for server in servers.values():
         if isinstance(server, dict):
-            _inspect_toml_server(path, server, findings, seen)
+            _inspect_server(path, server, findings, seen)
     return findings
 
 
@@ -209,15 +238,14 @@ def _toml_checks(path: Path, content: str, seen: set[str]) -> list[Finding]:
     findings: list[Finding] = []
     for server in servers.values():
         if isinstance(server, dict):
-            _inspect_toml_server(path, server, findings, seen)
+            _inspect_server(path, server, findings, seen)
     return findings
 
 
 def _structural_checks(path: Path, content: str, seen: set[str]) -> list[Finding]:
     """JSON-aware pass for fields the line-based regex rules miss."""
-    try:
-        data = json.loads(content)
-    except json.JSONDecodeError:
+    data = load_jsonc(content)
+    if data is None:
         return []
 
     findings: list[Finding] = []
