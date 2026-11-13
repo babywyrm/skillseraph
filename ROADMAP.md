@@ -36,11 +36,8 @@ Domain J (config & automation).
   next release, which also moves `v0` past the June `v0.2.0` commit. Decide
   whether the GHCR image is public, then point the Kubernetes examples at it.
   The Dockerfile build order is fixed.
-- **Docs and reporting gaps.** Document the JSON report fields; give errors
-  an exit code distinct from findings; add `SECURITY.md` and
-  `CONTRIBUTING.md`; add `min-confidence` and `baseline-max-age` inputs to
-  the action; put OWASP LLM ids on findings, or drop the README claim that
-  they map to the OWASP LLM Top 10.
+- **Community gaps.** Add `SECURITY.md` and `CONTRIBUTING.md`; add
+  `min-confidence` and `baseline-max-age` inputs to the action.
 - **Provenance / signature checks** — flag skills and rules lacking a trusted
   source or signature; optional allowlist of trusted publishers.
 

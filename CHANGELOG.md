@@ -25,6 +25,14 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- **Breaking: errors exit 2.** A bad option, missing target, unreadable or
+  expired baseline, or internal error now exits `2` with a one-line message
+  instead of `1` or a traceback, so CI can tell "findings" (`1`) from "no
+  verdict" (`2`). Gates that fail on any non-zero code are unaffected.
+- **README documents the JSON report and exit codes.** Every report field is
+  listed, `tests/test_docs.py` fails if the list drifts from the output, and
+  the standards section now names the ids findings carry (`MCP-T01`–`MCP-T14`
+  and Atlas) instead of claiming an OWASP LLM mapping they do not emit.
 - **Strict typing.** The package passes `mypy --strict`, and CI runs it on
   every Python and OS in the matrix. Rules loaded from YAML have a typed
   shape (`Rule`), and `write_policy` no longer takes unused keyword

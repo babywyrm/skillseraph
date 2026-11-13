@@ -44,9 +44,9 @@ then a summary with the risk score and the `--fail-on` threshold. Platforms
 are auto-detected from the files present (`.cursor/`, `.codex/`, `.claude/`,
 `.vscode/`, `AGENTS.md`, `SKILL.md`, and the rest in [README.md](README.md)).
 
-Exit codes: `0` when nothing is at or above `--fail-on`, `1` when something is.
-A missing target or bad option also exits non-zero, so check the output before
-treating a `1` as a finding.
+Exit codes: `0` when nothing is at or above `--fail-on`, `1` when something is,
+and `2` when there is no verdict (bad option, missing target, unreadable or
+expired baseline). Treat `2` as a failed gate.
 
 For a report a tool can read:
 

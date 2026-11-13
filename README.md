@@ -114,7 +114,8 @@ skillseraph . --min-confidence high
 skillseraph . --quiet --json-out findings.json
 ```
 
-Exit codes: `0` clean, `1` findings at/above `--fail-on`, non-zero on error.
+Exit codes: `0` clean, `1` findings at/above `--fail-on`, `2` error (see
+[Exit codes](#exit-codes)).
 
 ### Suppressing accepted findings
 
@@ -215,8 +216,8 @@ userinfo.
 | `monitoring_bypass` | Config that disables audit/logging, adds wildcard security exceptions, or disables detection rules (Atlas J3) |
 
 Findings carry a severity (`critical`/`high`/`medium`/`low`), a confidence level
-(`high`/`medium`/`low`, filterable with `--min-confidence`), a taxonomy ID
-(OWASP MCP / MCP-T), and an Attack Path Atlas domain ID (Domain J primary;
+(`high`/`medium`/`low`, filterable with `--min-confidence`), an MCP threat
+id (`MCP-T01`–`MCP-T14`), and an Attack Path Atlas domain ID (Domain J primary;
 cross-domain C1/I3/D1/D3/D4 where statically detectable).
 
 ---
@@ -241,15 +242,83 @@ skillseraph is designed to run as a gate. See [QUICKSTART.md](QUICKSTART.md) for
   carries a `rank` (severity × confidence) and a `confidence` property so Code
   Scanning can sort by it
 
+### Exit codes
+
+| Code | Meaning |
+|------|---------|
+| `0` | No finding at or above `--fail-on` (or `--fail-on none`) |
+| `1` | At least one finding at or above `--fail-on` |
+| `2` | No verdict: bad option, missing target, unreadable or expired baseline, or an internal error |
+
+Treat `2` as a failed gate too; the Cursor hook in QUICKSTART denies on any
+non-zero code.
+
+### JSON report
+
+`--json-out` writes one object. Top-level fields:
+
+| Field | Type | Meaning |
+|-------|------|---------|
+| `version` | string | skillseraph version |
+| `target` | string | Absolute path scanned (the home directory for `audit-local`) |
+| `platforms` | list of strings | Platforms detected or requested |
+| `files_scanned` | int | Files read |
+| `risk_score` | int | Severity-weighted sum of findings |
+| `exceptions` | list | Governed suppressions that were honored |
+| `findings` | list | Findings after confidence, baseline, and ignore filtering |
+
+Each `findings` entry:
+
+| Field | Type | Meaning |
+|-------|------|---------|
+| `path` | string | File containing the finding |
+| `line` | int or null | 1-based line, when known |
+| `check` | string | Rule id, e.g. `mcp_remote_server` |
+| `severity` | string | `critical`, `high`, `medium`, `low`, or `info` |
+| `title` | string | One-line summary |
+| `detail` | string | Matched context |
+| `evidence` | string | Redacted excerpt (env values and URL userinfo removed) |
+| `platform` | string | Platform the file belongs to |
+| `taxonomy_id` | string | MCP threat id (`MCP-T01`–`MCP-T14`, see below) |
+| `atlas_id` | string | Attack Path Atlas id, e.g. `J2` |
+| `confidence` | string | `high`, `medium`, or `low` |
+
+Each `exceptions` entry (recorded only when a gate is active, i.e. `--fail-on`
+is not `none`):
+
+| Field | Type | Meaning |
+|-------|------|---------|
+| `kind` | string | `rule` (a rule id is suppressed) or `path` (a path pattern is skipped) |
+| `scope` | string | The rule id or path pattern |
+| `reason` | string | Why it is accepted |
+| `owner` | string | Role id accountable for it |
+| `until` | string | Expiry date, `YYYY-MM-DD` (inclusive, UTC) |
+| `path` | string | File holding the ignore: the scanned file for inline ignores, `.skillseraphignore` otherwise |
+| `line` | int or null | Line of an inline ignore, else null |
+
 ---
 
 ## Standards alignment
 
-Findings map to:
+Every finding carries two ids:
 
-- [OWASP Top 10 for LLM Applications](https://owasp.org/www-project-top-10-for-large-language-model-applications/)
-- OWASP MCP Top 10 (MCP01–MCP10)
-- The agentic-sec [Attack Path Atlas](https://github.com/babywyrm/agentic-sec/blob/main/docs/attack-path-atlas.md) (Domain J: config & automation)
+- `atlas_id`: the agentic-sec [Attack Path Atlas](https://github.com/babywyrm/agentic-sec/blob/main/docs/attack-path-atlas.md)
+  domain (Domain J, config and automation, is primary).
+- `taxonomy_id`: one of these MCP threat categories.
+
+| Id | Threat | Id | Threat |
+|----|--------|----|--------|
+| `MCP-T01` | Direct prompt injection | `MCP-T08` | Supply chain via content |
+| `MCP-T02` | Indirect prompt injection | `MCP-T09` | Agent config tampering |
+| `MCP-T03` | Confused deputy | `MCP-T10` | Hallucination-driven destruction |
+| `MCP-T04` | Token audience bypass | `MCP-T11` | Cross-tenant memory leak |
+| `MCP-T05` | Cross-tool context poisoning | `MCP-T12` | Exfiltration via chaining |
+| `MCP-T06` | SSRF via tool | `MCP-T13` | Audit log evasion |
+| `MCP-T07` | Secrets in tool output | `MCP-T14` | Persistence via webhook |
+
+Rule packs also cite the related [OWASP Top 10 for LLM Applications](https://owasp.org/www-project-top-10-for-large-language-model-applications/)
+and OWASP MCP Top 10 entries in their header comments. Those references are
+not emitted on findings.
 
 ---
 

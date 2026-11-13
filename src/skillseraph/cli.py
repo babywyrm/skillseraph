@@ -25,7 +25,23 @@ SEVERITY_COLORS = {
 }
 
 
-@click.command()
+class ScanError(click.ClickException):
+    """Error that prevented a verdict. Exit 2 keeps it distinct from findings (1)."""
+
+    exit_code = 2
+
+
+class _Command(click.Command):
+    def invoke(self, ctx: click.Context) -> object:
+        try:
+            return super().invoke(ctx)
+        except (click.ClickException, click.exceptions.Exit, click.exceptions.Abort):
+            raise
+        except Exception as exc:
+            raise ScanError(f"{type(exc).__name__}: {exc}") from exc
+
+
+@click.command(cls=_Command)
 @click.argument("target", default=".", type=click.Path())
 @click.option("--platform", "-p", type=click.Choice([p.value for p in Platform]), multiple=True, help="Target platform(s). Default: auto-detect.")
 @click.option("--include-deps/--no-deps", default=True, help="Scan dependency trees (node_modules, vendor, etc.)")
@@ -79,11 +95,11 @@ def main(
         from .demo import create_demo_fixture
 
         if not output:
-            raise click.ClickException("demo-fixture requires --output <directory>")
+            raise ScanError("demo-fixture requires --output <directory>")
         try:
             fixture = create_demo_fixture(Path(output), force=force)
         except ValueError as exc:
-            raise click.ClickException(str(exc)) from exc
+            raise ScanError(str(exc)) from exc
         console.print(f"[green]Demo fixture written → {fixture.root}[/green]")
         console.print(f"  Repo fixture: {fixture.repo}")
         console.print(f"  Home fixture: {fixture.home}")
@@ -97,7 +113,7 @@ def main(
         try:
             checks = run_smoke_test()
         except RuntimeError as exc:
-            raise click.ClickException(str(exc)) from exc
+            raise ScanError(str(exc)) from exc
         console.print("[green bold]Smoke test passed[/green bold]")
         console.print("  Checks observed: " + ", ".join(sorted(checks)))
         return
@@ -113,7 +129,7 @@ def main(
         target_path = Path(target).resolve()
 
     if not audit_local and not target_path.exists():
-        raise click.ClickException(f"Target does not exist: {target}")
+        raise ScanError(f"Target does not exist: {target}")
 
     # Watch mode: enter the polling loop and never return (until Ctrl-C or fail).
     if watch:
@@ -170,7 +186,7 @@ def main(
         from .baseline import is_baseline_expired
         baseline_path = Path(baseline)
         if baseline_max_age is not None and is_baseline_expired(baseline_path, baseline_max_age):
-            raise click.ClickException(
+            raise ScanError(
                 f"Baseline {baseline} is expired (older than {baseline_max_age} days "
                 "or has no creation timestamp). Re-review findings and regenerate it "
                 "with --save-baseline."
