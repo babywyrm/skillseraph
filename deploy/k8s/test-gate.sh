@@ -5,7 +5,7 @@
 # asserts: poisoned -> init fails; clean -> pod starts.
 #
 # Prerequisites: kubectl access to a cluster with the skillseraph image available
-# (ghcr.io/babywyrm/skillseraph:latest, or build locally and import to k3s/kind).
+# (ghcr.io/babywyrm/skillseraph:latest, or build locally and load it into your local cluster).
 #
 # Usage:
 #   IMAGE=skillseraph:local ./test-gate.sh   # local image
