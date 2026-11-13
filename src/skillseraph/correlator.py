@@ -13,8 +13,7 @@ from __future__ import annotations
 
 import re
 
-from .models import Finding, Severity, ScanResult
-
+from .models import Finding, ScanResult, Severity
 
 # Cross-reference patterns: one file points at another.
 _REFERENCE_PATTERNS = [

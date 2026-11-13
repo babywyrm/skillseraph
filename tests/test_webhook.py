@@ -1,8 +1,8 @@
 import json
 import tempfile
 import threading
-import uuid
 import urllib.request
+import uuid
 from http.server import HTTPServer
 from pathlib import Path
 

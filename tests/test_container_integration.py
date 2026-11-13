@@ -19,15 +19,15 @@ IMAGE = os.environ.get("SKILLSERAPH_IMAGE", "skillseraph:ci")
 
 
 def _run(args: list[str]) -> None:
-    result = subprocess.run(args, text=True, capture_output=True)
+    result = subprocess.run(args, check=False, text=True, capture_output=True)
     if result.returncode != 0:
         pytest.fail(f"{' '.join(args)}\nstdout:\n{result.stdout}\nstderr:\n{result.stderr}")
 
 
 def _docker_ready() -> None:
-    if subprocess.run(["docker", "info"], capture_output=True).returncode != 0:
+    if subprocess.run(["docker", "info"], check=False, capture_output=True).returncode != 0:
         pytest.fail("docker daemon not available")
-    if subprocess.run(["docker", "image", "inspect", IMAGE], capture_output=True).returncode != 0:
+    if subprocess.run(["docker", "image", "inspect", IMAGE], check=False, capture_output=True).returncode != 0:
         pytest.fail(f"image {IMAGE} is not built; run: docker build -t {IMAGE} .")
 
 
@@ -64,6 +64,7 @@ def test_init_container_security_context_gates(tmp_path: Path) -> None:
                 "-v", f"{configs.resolve()}:/configs:ro",
                 IMAGE, "/configs", "--fail-on", "high", "--quiet",
             ],
+            check=False,
             capture_output=True,
             text=True,
         )

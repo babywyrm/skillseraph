@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from .models import Finding, ScanResult
@@ -41,7 +41,7 @@ def save_baseline(result: ScanResult, path: Path) -> int:
     path.write_text(json.dumps({
         "version": 1,
         "target": str(result.target),
-        "created": datetime.now(timezone.utc).isoformat(),
+        "created": datetime.now(UTC).isoformat(),
         "fingerprints": fps,
     }, indent=2))
     return len(fps)
@@ -63,7 +63,7 @@ def baseline_created(path: Path) -> datetime | None:
     except ValueError:
         return None
     if created.tzinfo is None:
-        created = created.replace(tzinfo=timezone.utc)
+        created = created.replace(tzinfo=UTC)
     return created
 
 
@@ -76,7 +76,7 @@ def is_baseline_expired(path: Path, max_age_days: int) -> bool:
     created = baseline_created(path)
     if created is None:
         return True
-    age = datetime.now(timezone.utc) - created
+    age = datetime.now(UTC) - created
     return age.days > max_age_days
 
 

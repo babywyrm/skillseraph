@@ -78,7 +78,7 @@ def check_extension_manifest(path: Path, content: str) -> list[Finding]:
                 ))
 
     main = data.get("main")
-    if isinstance(main, str) and (main.startswith("..") or main.startswith("/")):
+    if isinstance(main, str) and main.startswith(("..", "/")):
         findings.append(Finding(
             path=path,
             check="ext_main_path_escape",

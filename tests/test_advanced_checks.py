@@ -3,8 +3,8 @@
 from pathlib import Path
 
 from skillseraph.checks.authority_fabrication import check_authority_fabrication
-from skillseraph.checks.runtime_bypass import check_runtime_bypass
 from skillseraph.checks.breakglass import check_breakglass
+from skillseraph.checks.runtime_bypass import check_runtime_bypass
 from skillseraph.models import Severity
 
 DUMMY_PATH = Path("test.md")

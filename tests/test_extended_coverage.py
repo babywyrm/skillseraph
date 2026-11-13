@@ -3,8 +3,8 @@ I3 tool schema smuggling, J8 encoding extras, and T04 supply chain."""
 
 from pathlib import Path
 
-from skillseraph.checks.injection import check_injection
 from skillseraph.checks.encoding import check_encoding
+from skillseraph.checks.injection import check_injection
 from skillseraph.checks.mcp_servers import check_mcp_servers
 from skillseraph.checks.skill_invocation import check_skill_invocation
 from skillseraph.checks.tool_abuse import check_tool_abuse

@@ -8,7 +8,6 @@ from pathlib import Path
 from .models import AcceptedException, Finding, Platform, ScanResult
 from .scanner import scan_file
 
-
 LOCAL_IDE_FILES: dict[Platform, tuple[str, ...]] = {
     Platform.VSCODE: (
         "Library/Application Support/Code/User/settings.json",

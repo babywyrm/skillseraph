@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import replace
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from pathlib import Path
 
 from .checks import run_all_checks
@@ -28,7 +28,7 @@ _IgnoreEntry = tuple[str, str, str, date | None]
 
 
 def _as_of(today: date | None) -> date:
-    return today or datetime.now(timezone.utc).date()
+    return today or datetime.now(UTC).date()
 
 
 def _parse_until(value: str | None) -> date | None:

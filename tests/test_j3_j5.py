@@ -4,7 +4,6 @@ from pathlib import Path
 
 from skillseraph.scanner import scan_file
 
-
 FIXTURES = Path(__file__).parent / "fixtures"
 
 

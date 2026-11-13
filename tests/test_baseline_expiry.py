@@ -1,7 +1,7 @@
 """Tests for baseline expiry (--baseline-max-age)."""
 
 import json
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from click.testing import CliRunner
@@ -27,7 +27,7 @@ def _result(tmp_path: Path) -> ScanResult:
 
 def _write_aged_baseline(path: Path, result: ScanResult, days_old: int) -> None:
     from skillseraph.baseline import fingerprint
-    created = datetime.now(timezone.utc) - timedelta(days=days_old)
+    created = datetime.now(UTC) - timedelta(days=days_old)
     path.write_text(json.dumps({
         "version": 1,
         "target": str(result.target),

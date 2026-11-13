@@ -2,15 +2,14 @@
 
 from pathlib import Path
 
-
-from skillseraph.checks.injection import check_injection
-from skillseraph.checks.exfiltration import check_exfiltration
-from skillseraph.checks.permission_bypass import check_permission_bypass
 from skillseraph.checks.encoding import check_encoding
-from skillseraph.checks.urls import check_urls
-from skillseraph.checks.suppression import check_suppression
+from skillseraph.checks.exfiltration import check_exfiltration
+from skillseraph.checks.injection import check_injection
+from skillseraph.checks.permission_bypass import check_permission_bypass
 from skillseraph.checks.persistence import check_persistence
+from skillseraph.checks.suppression import check_suppression
 from skillseraph.checks.tool_abuse import check_tool_abuse
+from skillseraph.checks.urls import check_urls
 from skillseraph.models import Severity
 
 FIXTURES = Path(__file__).parent / "fixtures"

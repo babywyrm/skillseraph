@@ -89,7 +89,7 @@ def _poll_changes(
     include_deps: bool,
 ) -> list[Path]:
     """Return files whose mtime changed since last check."""
-    from .platforms import get_all_patterns, detect_platforms
+    from .platforms import detect_platforms, get_all_patterns
 
     if platforms is None:
         platforms = detect_platforms(str(target))
