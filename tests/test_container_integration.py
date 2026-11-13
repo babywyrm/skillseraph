@@ -143,9 +143,11 @@ def test_linux_container_scans_macos_and_linux_layouts(tmp_path: Path) -> None:
             path.chmod(0o755 if path.is_dir() else 0o644)
 
     _run(["docker", "run", "--rm", IMAGE, "--version"])
+    # Linux bind mounts keep host ownership; the image user cannot write /out.
+    host_user = f"{os.getuid()}:{os.getgid()}"
     _run(
         [
-            "docker", "run", "--rm",
+            "docker", "run", "--rm", "--user", host_user,
             "-v", f"{repo.resolve()}:/scan:ro",
             "-v", f"{out.resolve()}:/out",
             IMAGE,
@@ -154,7 +156,7 @@ def test_linux_container_scans_macos_and_linux_layouts(tmp_path: Path) -> None:
     )
     _run(
         [
-            "docker", "run", "--rm",
+            "docker", "run", "--rm", "--user", host_user,
             "-v", f"{home.resolve()}:/home/fixture:ro",
             "-v", f"{out.resolve()}:/out",
             IMAGE,

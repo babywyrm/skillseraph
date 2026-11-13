@@ -235,6 +235,15 @@ docker build -t skillseraph:local .
 kind load docker-image skillseraph:local   # or your cluster's image import
 ```
 
+To run the image directly and write a report into a mounted directory, run
+it as your own user. On Linux the mount keeps host ownership, and the image's
+default user cannot write to it.
+
+```bash
+docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/scan:ro" -v "$PWD/out:/out" \
+  skillseraph:local /scan --fail-on high --json-out /out/skillseraph.json
+```
+
 Scan mounted agent configs before the agent starts. If the init container
 exits non-zero, the pod never starts.
 
