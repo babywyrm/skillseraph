@@ -85,7 +85,7 @@ Detection patterns live in `src/skillseraph/rules/*.yaml`. To add one:
    optional `confidence`).
 2. Add a fixture under `tests/fixtures/` and a test asserting it fires (and that
    a benign sample does not).
-3. Run `uv run pytest` and `uv run ruff check`.
+3. Run `uv run pytest`, `uv run ruff check`, and `uv run mypy`.
 
 Every rule should map to a public standard (OWASP LLM / OWASP MCP / Atlas domain)
 and must not encode any non-public or environment-specific attack details.

@@ -11,7 +11,7 @@ from rich.console import Console
 from rich.table import Table
 
 from . import __version__
-from .models import Platform, Severity
+from .models import Finding, Platform, ScanResult, Severity
 from .scanner import scan_directory
 
 console = Console()
@@ -204,7 +204,7 @@ def main(
     sys.exit(exit_code)
 
 
-def _print_results(result, fail_on: str) -> None:
+def _print_results(result: ScanResult, fail_on: str) -> None:
     console.print()
     console.print(f"[bold]skillseraph v{__version__}[/bold] — agent config security scanner")
     console.print(f"  Target: {result.target}")
@@ -244,7 +244,7 @@ def _print_results(result, fail_on: str) -> None:
     console.print()
 
 
-def _write_json(result, path: Path) -> None:
+def _write_json(result: ScanResult, path: Path) -> None:
     data = {
         "version": __version__,
         "target": str(result.target),
@@ -286,13 +286,13 @@ def _write_json(result, path: Path) -> None:
 _CONFIDENCE_FACTOR = {"high": 1.0, "medium": 0.7, "low": 0.4}
 
 
-def _sarif_rank(finding) -> float:
+def _sarif_rank(finding: Finding) -> float:
     """Map severity + confidence to a SARIF rank (0.0–100.0) for sorting."""
     factor = _CONFIDENCE_FACTOR.get(finding.confidence, 1.0)
     return round(min(finding.severity.score * 10 * factor, 100.0), 1)
 
 
-def _write_sarif(result, path: Path) -> None:
+def _write_sarif(result: ScanResult, path: Path) -> None:
     sarif_doc = {
         "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/main/sarif-2.1/schema/sarif-schema-2.1.0.json",
         "version": "2.1.0",
@@ -330,7 +330,7 @@ def _write_sarif(result, path: Path) -> None:
     path.write_text(json.dumps(sarif_doc, indent=2))
 
 
-def _check_threshold(result, fail_on: str) -> int:
+def _check_threshold(result: ScanResult, fail_on: str) -> int:
     if fail_on == "none":
         return 0
     threshold = {

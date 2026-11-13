@@ -32,6 +32,9 @@ jobs:
       - name: Lint
         run: uv run --extra dev ruff check src/ tests/
 
+      - name: Typecheck
+        run: uv run --extra dev mypy
+
       - name: Run tests
         run: uv run --extra dev pytest tests/ -v
 

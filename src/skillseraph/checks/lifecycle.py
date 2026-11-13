@@ -61,10 +61,7 @@ def _flatten(value: object) -> list[str]:
                 parts.extend(_flatten(item))
         return parts
     if isinstance(value, dict):
-        parts: list[str] = []
-        for sub in value.values():
-            parts.extend(_flatten(sub))
-        return parts
+        return [part for sub in value.values() for part in _flatten(sub)]
     return []
 
 

@@ -40,7 +40,7 @@ def generate_policy(
     name: str = "skillseraph-generated",
     namespace: str = "default",
     selector_labels: dict[str, str] | None = None,
-) -> dict:
+) -> dict[str, object]:
     """Generate a NullfieldPolicy dict from scan findings."""
     deny_tools: set[str] = set()
     hold_tools: set[str] = set()
@@ -60,7 +60,7 @@ def generate_policy(
 
     hold_tools -= deny_tools
 
-    rules = []
+    rules: list[dict[str, object]] = []
     if deny_tools:
         rules.append({
             "action": "DENY",
@@ -83,7 +83,7 @@ def generate_policy(
         "reason": "default deny (skillseraph safe-by-default policy)",
     })
 
-    policy = {
+    policy: dict[str, object] = {
         "apiVersion": "nullfield.io/v1alpha1",
         "kind": "NullfieldPolicy",
         "metadata": {
@@ -103,8 +103,8 @@ def generate_policy(
     return policy
 
 
-def write_policy(result: ScanResult, path: Path, **kwargs) -> int:
+def write_policy(result: ScanResult, path: Path) -> int:
     """Generate and write a NullfieldPolicy YAML file. Returns finding count."""
-    policy = generate_policy(result, **kwargs)
+    policy = generate_policy(result)
     path.write_text(yaml.dump(policy, default_flow_style=False, sort_keys=False))
     return len(result.findings)

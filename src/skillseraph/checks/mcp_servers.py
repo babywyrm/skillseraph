@@ -98,7 +98,7 @@ def _emit(
     ))
 
 
-def _command_line(server: dict) -> str:
+def _command_line(server: dict[str, object]) -> str:
     parts: list[str] = []
     command = server.get("command")
     if isinstance(command, str):
@@ -113,7 +113,7 @@ def _command_line(server: dict) -> str:
 
 def _inspect_toml_server(
     path: Path,
-    server: dict,
+    server: dict[str, object],
     findings: list[Finding],
     seen: set[str],
 ) -> None:

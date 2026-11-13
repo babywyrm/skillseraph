@@ -20,16 +20,29 @@ import functools
 import re
 from importlib import resources
 from pathlib import Path
+from typing import NotRequired, TypedDict
 
 import yaml
 
 from .models import Finding, Severity
 
 
+class Rule(TypedDict):
+    id: str
+    pattern: str
+    severity: str
+    title: str
+    category: str
+    _compiled: re.Pattern[str]
+    taxonomy_id: NotRequired[str]
+    atlas_id: NotRequired[str]
+    confidence: NotRequired[str]
+
+
 @functools.lru_cache(maxsize=1)
-def _load_all_rules() -> dict[str, list[dict]]:
+def _load_all_rules() -> dict[str, list[Rule]]:
     """Load and cache every rule file, keyed by category."""
-    catalogue: dict[str, list[dict]] = {}
+    catalogue: dict[str, list[Rule]] = {}
     rules_pkg = resources.files("skillseraph.rules")
     for entry in rules_pkg.iterdir():
         if not entry.name.endswith((".yaml", ".yml")):

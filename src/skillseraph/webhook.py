@@ -44,7 +44,7 @@ THRESHOLD = {
 }
 
 
-def _scan_configmap_data(data: dict[str, str]) -> list[dict]:
+def _scan_configmap_data(data: dict[str, str]) -> list[dict[str, str]]:
     """Write data keys to a temp dir and scan them."""
     findings = []
     with tempfile.TemporaryDirectory(prefix="seraph-") as td:
@@ -63,7 +63,7 @@ def _scan_configmap_data(data: dict[str, str]) -> list[dict]:
 
 
 class WebhookHandler(BaseHTTPRequestHandler):
-    def do_POST(self):
+    def do_POST(self) -> None:
         length = int(self.headers.get("Content-Length", 0))
         body = json.loads(self.rfile.read(length)) if length else {}
 
@@ -76,30 +76,28 @@ class WebhookHandler(BaseHTTPRequestHandler):
         findings = _scan_configmap_data(data) if data else []
         allowed = len(findings) == 0
 
-        response = {
-            "apiVersion": "admission.k8s.io/v1",
-            "kind": "AdmissionReview",
-            "response": {
-                "uid": review.get("uid", ""),
-                "allowed": allowed,
-            },
-        }
+        verdict: dict[str, object] = {"uid": review.get("uid", ""), "allowed": allowed}
         if not allowed:
             msg = f"skillseraph: {len(findings)} finding(s) in {ns}/{name}: " + "; ".join(
                 f"[{f['severity']}] {f['check']}: {f['title']} (key={f['key']})" for f in findings[:5]
             )
-            response["response"]["status"] = {"code": 403, "message": msg}
+            verdict["status"] = {"code": 403, "message": msg}
+        response = {
+            "apiVersion": "admission.k8s.io/v1",
+            "kind": "AdmissionReview",
+            "response": verdict,
+        }
 
         self.send_response(200)
         self.send_header("Content-Type", "application/json")
         self.end_headers()
         self.wfile.write(json.dumps(response).encode())
 
-    def log_message(self, format, *args):
+    def log_message(self, format: str, *args: object) -> None:
         pass
 
 
-def serve():
+def serve() -> None:
     server = HTTPServer(("0.0.0.0", LISTEN_PORT), WebhookHandler)
     if os.path.exists(TLS_CERT) and os.path.exists(TLS_KEY):
         ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)

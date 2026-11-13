@@ -21,6 +21,10 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- **Strict typing.** The package passes `mypy --strict`, and CI runs it on
+  every Python and OS in the matrix. Rules loaded from YAML have a typed
+  shape (`Rule`), and `write_policy` no longer takes unused keyword
+  arguments.
 - **Breaking: gates ignore bare suppressions.** With any `--fail-on` other
   than `none`, in `--watch`, and in the admission webhook, an ignore comment
   or `.skillseraphignore` line counts only with `reason`, `owner` (a role id),
