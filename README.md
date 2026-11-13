@@ -212,7 +212,7 @@ checks as plain JSON.
 | `automation_triggers` | Wildcard event triggers, shell exec in automations, broad write perms (Atlas J3) |
 | `config_inheritance` | Parent traversal, absolute-path includes, remote config fetch, recursive globs (Atlas J5) |
 | `skill_invocation` | **Skill invocation hijack** (Atlas J2): callback/redirect on invoke, self-modification, invocation-time override, silent invocation, remote skill pull |
-| `ide_integrations` | VS Code, Cursor, and Codex task/debug/user config abuse: remote shell pipes, secret env injection, runtime preloads, extension trust, APM/telemetry collector redirects in JSON, YAML, and TOML |
+| `ide_integrations` | VS Code, Cursor, and Codex task/debug/user config abuse: remote shell pipes, secret env injection, runtime preloads, extension trust, APM/telemetry collector redirects (including per-signal OTLP endpoints) and inline credentials in OTLP exporter headers (evidence names the headers, never the value) in JSON, YAML, and TOML |
 | `extensions` | Installed IDE extension manifests (structural parse): wildcard activation, lifecycle scripts fetching remote code, entry points escaping the install dir, and (opt-in) non-allowlisted publishers |
 | `lifecycle` | `devcontainer.json` / `hooks.json` lifecycle commands (structural parse): remote-fetch-to-interpreter payloads split across array/object command forms |
 | `jetbrains` | JetBrains `.idea` run configs / external tools / `.iml`: remote-fetch commands and secret env injection in run configurations |

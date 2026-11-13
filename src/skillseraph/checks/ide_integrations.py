@@ -12,6 +12,9 @@ from . import load_jsonc
 
 _APM_KEYS = {
     "OTEL_EXPORTER_OTLP_ENDPOINT",
+    "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT",
+    "OTEL_EXPORTER_OTLP_METRICS_ENDPOINT",
+    "OTEL_EXPORTER_OTLP_LOGS_ENDPOINT",
     "DD_TRACE_AGENT_URL",
     "DD_AGENT_HOST",
     "SENTRY_DSN",
@@ -21,6 +24,14 @@ _APM_KEYS = {
 }
 _LOCAL_HOSTS = {"localhost", "127.0.0.1", "0.0.0.0"}
 _USERINFO = re.compile(r"(https?://)[^/\s\"']+@")
+_OTLP_HEADERS_KEY = re.compile(r"OTEL_EXPORTER_OTLP(?:_(?:TRACES|METRICS|LOGS))?_HEADERS", re.IGNORECASE)
+_OTLP_HEADERS_LINE = re.compile(
+    rf"[\"']?({_OTLP_HEADERS_KEY.pattern})[\"']?\s*[:=]\s*[\"']([^\"'\n]*)", re.IGNORECASE
+)
+_CREDENTIAL_HEADER = re.compile(
+    r"(authorization|api[-_]?key|token|secret|x-honeycomb-team|dd-api-key)", re.IGNORECASE
+)
+_ENV_REFERENCE = re.compile(r"\$\{?[\w:]+\}?|\{env:\w+\}")
 
 
 def check_ide_integrations(path: Path, content: str) -> list[Finding]:
@@ -32,7 +43,52 @@ def check_ide_integrations(path: Path, content: str) -> list[Finding]:
     findings.extend(_check_extension_recommendations(path, content))
     seen = {finding.check for finding in findings}
     findings.extend(_check_apm_endpoints(path, content, seen))
+    findings.extend(_check_otlp_headers(path, content))
     return findings
+
+
+def _inline_credential_headers(value: str) -> list[str]:
+    """Header names in an OTLP ``k=v,k2=v2`` string whose value is a literal secret."""
+    names = []
+    for pair in value.split(","):
+        name, sep, secret = pair.partition("=")
+        secret = secret.strip()
+        if sep and secret and _CREDENTIAL_HEADER.search(name) and not _ENV_REFERENCE.fullmatch(secret):
+            names.append(name.strip())
+    return names
+
+
+def _check_otlp_headers(path: Path, content: str) -> list[Finding]:
+    """Evidence names the headers only; the value is the secret."""
+    hits: list[tuple[str, list[str]]] = []
+    for match in _OTLP_HEADERS_LINE.finditer(content):
+        hits.append((match.group(1), _inline_credential_headers(match.group(2))))
+
+    def walk(node: object) -> None:
+        if isinstance(node, dict):
+            for key, value in node.items():
+                if isinstance(key, str) and _OTLP_HEADERS_KEY.fullmatch(key) and isinstance(value, str):
+                    hits.append((key, _inline_credential_headers(value)))
+                walk(value)
+        elif isinstance(node, list):
+            for item in node:
+                walk(item)
+
+    if path.suffix in {".json", ".jsonc"}:
+        walk(load_jsonc(content))
+    for key, names in hits:
+        if names:
+            return [Finding(
+                path=path,
+                check="ide_apm_inline_credential",
+                severity=Severity.HIGH,
+                title="OTLP exporter headers hold an inline credential",
+                detail="A collector credential is written into config instead of read from the environment.",
+                evidence=f"{key}: {', '.join(names[:5])}",
+                taxonomy_id="MCP-T07",
+                atlas_id="J4",
+            )]
+    return []
 
 
 def _scrub_userinfo(text: str) -> str:

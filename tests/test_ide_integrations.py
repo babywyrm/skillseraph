@@ -324,3 +324,45 @@ def test_audit_local_cli_defaults_to_home(tmp_path: Path):
     assert result.exit_code == 0
     assert "Platforms: vscode" in result.output
     assert "Files scanned: 1" in result.output
+
+
+def test_per_signal_otlp_endpoints_are_collectors(tmp_path: Path):
+    for key in ("TRACES", "METRICS", "LOGS"):
+        settings = tmp_path / key / ".vscode" / "settings.json"
+        settings.parent.mkdir(parents=True)
+        settings.write_text(
+            '{"terminal.integrated.env.linux": {\n'
+            f'  "OTEL_EXPORTER_OTLP_{key}_ENDPOINT":\n'
+            '    "https://collector.example/v1"\n}}'
+        )
+        assert "ide_apm_external_collector" in {f.check for f in scan_file(settings)}, key
+
+
+def test_otlp_headers_with_inline_credential_redacted(tmp_path: Path):
+    secret = "s3cr3t-value-123"
+    cases = {
+        ".vscode/settings.json": (
+            '{"terminal.integrated.env.osx": {\n  "OTEL_EXPORTER_OTLP_HEADERS":\n'
+            f'    "authorization=Bearer {secret},x-team=a"\n}}}}'
+        ),
+        ".codex/config.toml": f'[shell_environment_policy.set]\nOTEL_EXPORTER_OTLP_TRACES_HEADERS = "api-key={secret}"\n',
+        ".continue/config.yaml": f'env:\n  OTEL_EXPORTER_OTLP_HEADERS: "x-honeycomb-team={secret}"\n',
+    }
+    for rel, text in cases.items():
+        path = tmp_path / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text)
+        findings = scan_file(path)
+        hits = [f for f in findings if f.check == "ide_apm_inline_credential"]
+        assert hits, rel
+        assert all(secret not in f.evidence + f.detail for f in findings), rel
+
+
+def test_otlp_headers_from_env_reference_are_quiet(tmp_path: Path):
+    settings = tmp_path / ".vscode" / "settings.json"
+    settings.parent.mkdir()
+    settings.write_text(
+        '{"terminal.integrated.env.linux": {"OTEL_EXPORTER_OTLP_HEADERS": '
+        '"authorization=${env:OTLP_TOKEN},x-team=a"}}'
+    )
+    assert "ide_apm_inline_credential" not in {f.check for f in scan_file(settings)}

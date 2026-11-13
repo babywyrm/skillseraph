@@ -67,6 +67,15 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **OTLP per-signal endpoints and inline header credentials.** The collector
+  check covers `OTEL_EXPORTER_OTLP_{TRACES,METRICS,LOGS}_ENDPOINT`. New
+  `ide_apm_inline_credential` (high) flags `OTEL_EXPORTER_OTLP*_HEADERS`
+  that carry a literal auth header; env references are ignored and the
+  report names the headers only.
+- **Wildcard tools and TLS-off for Codex TOML and embedded servers.** The
+  shared server inspector now flags `["*"]` tool lists (including
+  `enabled_tools`) and disabled TLS verification, which the JSON-only
+  regexes missed.
 - **Gemini CLI, Zed, opencode, and more Copilot surfaces.** New platforms
   `gemini`, `zed`, and `opencode`. Repo scans read `GEMINI.md`, `.gemini/**`,
   `.zed/settings.json`, `.rules`, `opencode.json(c)`, `.opencode/**`, and

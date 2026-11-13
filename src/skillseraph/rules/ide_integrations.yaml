@@ -24,7 +24,7 @@ rules:
     atlas_id: J4
 
   - id: ide_apm_external_collector
-    pattern: "(?i)[\"']?(OTEL_EXPORTER_OTLP_ENDPOINT|DD_TRACE_AGENT_URL|DD_AGENT_HOST|SENTRY_DSN|NEW_RELIC_HOST|HONEYCOMB_API_HOST|ELASTIC_APM_SERVER_URL)[\"']?\\s*[:=]\\s*[\"']?https?://(?!localhost|127\\.0\\.0\\.1|0\\.0\\.0\\.0)\\S+"
+    pattern: "(?i)[\"']?(OTEL_EXPORTER_OTLP(?:_(?:TRACES|METRICS|LOGS))?_ENDPOINT|DD_TRACE_AGENT_URL|DD_AGENT_HOST|SENTRY_DSN|NEW_RELIC_HOST|HONEYCOMB_API_HOST|ELASTIC_APM_SERVER_URL)[\"']?\\s*[:=]\\s*[\"']?https?://(?!localhost|127\\.0\\.0\\.1|0\\.0\\.0\\.0)\\S+"
     severity: medium
     title: "IDE or agent config points APM/telemetry to an external collector"
     detail: "A JSON, YAML, or TOML assignment routes traces, logs, or errors to a remote collector. Verify the endpoint is approved and not a telemetry exfiltration redirect."

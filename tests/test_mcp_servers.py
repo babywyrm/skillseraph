@@ -233,3 +233,28 @@ def test_correlator_no_chain_on_clean(tmp_path: Path):
     result = correlate(result)
     chain_findings = [f for f in result.findings if "chain" in f.check]
     assert chain_findings == []
+
+
+def _codex(tmp_path: Path, body: str) -> set[str]:
+    config = tmp_path / ".codex" / "config.toml"
+    config.parent.mkdir(parents=True, exist_ok=True)
+    config.write_text(body)
+    return {f.check for f in scan_file(config)}
+
+
+def test_codex_toml_wildcard_tools_and_tls_off(tmp_path: Path):
+    checks = _codex(
+        tmp_path,
+        '[mcp_servers.a]\ncommand = "node"\nenabled_tools = ["*"]\n'
+        '[mcp_servers.b]\nurl = "http://127.0.0.1:9/mcp"\nverify = false\n'
+        '[mcp_servers.c]\ncommand = "node"\nenv = { NODE_TLS_REJECT_UNAUTHORIZED = "0" }\n',
+    )
+    assert {"mcp_server_wildcard_tool_allowlist", "mcp_server_disabled_tls_verify"} <= checks
+
+
+def test_codex_toml_scoped_tools_and_tls_on_are_quiet(tmp_path: Path):
+    checks = _codex(
+        tmp_path,
+        '[mcp_servers.a]\ncommand = "node"\nenabled_tools = ["read_file"]\nverify = true\n',
+    )
+    assert checks == set()

@@ -26,7 +26,8 @@ MCP_CONFIG_NAMES = {
 }
 
 _CREDENTIAL_KEY = re.compile(r"(TOKEN|KEY|SECRET|PASSWORD|CREDENTIAL|AUTH)", re.IGNORECASE)
-_TOOL_LIST_KEYS = ("allowedTools", "tools", "enabledTools")
+_TOOL_LIST_KEYS = ("allowedTools", "tools", "enabledTools", "enabled_tools", "includeTools")
+_TLS_KEYS = ("tls", "ssl", "verify", "verify_ssl", "tls_verify")
 _URL_FIELDS = ("url", "httpUrl", "endpoint", "baseUrl", "uri")
 _SHELL_COMMAND = re.compile(
     r"(curl|wget|\b(?:bash|sh|zsh)\s+-c\b|\b(?:bash|sh|zsh)\b.*\||\beval\b)",
@@ -150,6 +151,37 @@ def _inspect_server(
             "J4",
         )
 
+    for key in _TOOL_LIST_KEYS:
+        tools = server.get(key)
+        if isinstance(tools, list) and "*" in tools:
+            _emit(
+                findings, seen, path,
+                "mcp_server_wildcard_tool_allowlist",
+                Severity.MEDIUM,
+                "MCP server enables all tools via wildcard",
+                "A wildcard tool allowlist grants the server every capability.",
+                f'{key} = ["*"]',
+                "MCP-T09",
+                "J3",
+            )
+            break
+
+    env = server.get("env", server.get("environment"))
+    tls_off = [k for k in _TLS_KEYS if server.get(k) in (False, 0, "false", "0")]
+    if isinstance(env, dict) and str(env.get("NODE_TLS_REJECT_UNAUTHORIZED")) == "0":
+        tls_off.append("NODE_TLS_REJECT_UNAUTHORIZED")
+    if tls_off:
+        _emit(
+            findings, seen, path,
+            "mcp_server_disabled_tls_verify",
+            Severity.HIGH,
+            "MCP server definition disables TLS verification",
+            "TLS verification is off, so traffic to this server can be intercepted.",
+            f"{tls_off[0]} disabled",
+            "MCP-T06",
+            "J4",
+        )
+
     if server.get("trust") is True:
         _emit(
             findings, seen, path,
@@ -193,7 +225,6 @@ def _inspect_server(
         )
         break
 
-    env = server.get("env", server.get("environment"))
     if isinstance(env, dict):
         keys = sorted(name for name in env if isinstance(name, str) and _CREDENTIAL_KEY.search(name))
         if keys:
