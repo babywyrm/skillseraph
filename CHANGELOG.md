@@ -67,6 +67,13 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **Agent permission modes.** A parsed pass over Claude Code settings, Codex
+  `config.toml` (including profiles), Gemini CLI settings, and Cursor CLI
+  `cli.json` / `cli-config.json`. `agent_permission_bypass_mode` flags
+  Claude `bypassPermissions` (high) and Codex `approval_policy = "never"`
+  (medium); `agent_permission_sandbox_off` flags Codex `danger-full-access`;
+  `agent_permission_wildcard_shell` flags shell allow rules with no command,
+  a wildcard, or a shell interpreter. Repo scans now read `.cursor/cli.json`.
 - **OTLP per-signal endpoints and inline header credentials.** The collector
   check covers `OTEL_EXPORTER_OTLP_{TRACES,METRICS,LOGS}_ENDPOINT`. New
   `ide_apm_inline_credential` (high) flags `OTEL_EXPORTER_OTLP*_HEADERS`

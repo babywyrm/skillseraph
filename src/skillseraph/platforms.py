@@ -14,6 +14,7 @@ PLATFORMS: dict[Platform, PlatformSpec] = {
             ".cursor/skills/**/*.md",
             ".cursor/hooks.json",
             ".cursor/mcp.json",
+            ".cursor/cli.json",
             ".cursor/automations/**",
             "**/SKILL.md",
             "AGENTS.md",

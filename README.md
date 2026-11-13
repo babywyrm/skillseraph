@@ -199,7 +199,7 @@ checks as plain JSON.
 |--------|---------|
 | `injection` | Instruction override, persona hijack, jailbreak, token-boundary, hidden-comment, multi-language injection, **sleeper/conditional-trigger payloads** (Atlas C1) |
 | `exfiltration` | Credential harvesting, data push to URLs, secret-file/env access, DNS/clipboard exfil |
-| `permission_bypass` | Sandbox/approval bypass, consent bypass, arbitrary execution, privilege requests |
+| `permission_bypass` | Sandbox/approval bypass, consent bypass, arbitrary execution, privilege requests, plus parsed agent permission settings: Claude Code `bypassPermissions`, Codex `approval_policy = "never"` and `danger-full-access`, and unscoped shell allow rules (`Bash(*)`, `Shell(*)`, bare `run_shell_command`, or a shell interpreter) in Claude, Gemini CLI, and Cursor CLI |
 | `encoding` | Base64/hex blobs, data URIs, unicode-escape chains, `eval(atob())`, ROT13/charcode obfuscation |
 | `urls` | Known exfil services, raw-IP/metadata/loopback URLs, MCP server redirects |
 | `suppression` | Review/PR suppression, change concealment, stealth operation, user deception |

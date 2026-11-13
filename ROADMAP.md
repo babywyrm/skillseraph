@@ -38,9 +38,6 @@ Domain J (config & automation).
   The Dockerfile build order is fixed.
 - **Provenance / signature checks** — flag skills and rules lacking a trusted
   source or signature; optional allowlist of trusted publishers.
-- **Agent permission modes** — structural checks for approval-bypass modes,
-  wildcard shell allow rules (`Bash(*)`), and sandbox-off settings in Claude,
-  Codex, Gemini CLI, and Cursor configs. No rule covers these today.
 - **Hooks in client settings** — run Claude and Gemini `settings.json` hook
   commands through the same checks as `.cursor/hooks.json` and devcontainer
   lifecycle commands.
@@ -94,6 +91,7 @@ Domain J (config & automation).
 - ~~Rule confidence tuning pass across all packs~~
 - ~~Baseline expiry (`--baseline-max-age`)~~
 - ~~Governed exceptions (reason, role, expiry) on failing gates, with JSON evidence~~
+- ~~Agent permission modes (Claude, Codex, Gemini CLI, Cursor CLI)~~
 
 ---
 
