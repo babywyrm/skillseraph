@@ -330,6 +330,8 @@ checkout. PyPI and the container image are not published yet. See:
 
 - [CHANGELOG.md](CHANGELOG.md) — release history
 - [ROADMAP.md](ROADMAP.md) — what's planned and current maturity
+- [CONTRIBUTING.md](CONTRIBUTING.md) — checks, adding a detection, what a contribution must not contain
+- [SECURITY.md](SECURITY.md) — reporting a vulnerability privately
 
 ## License
 

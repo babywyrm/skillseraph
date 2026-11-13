@@ -30,6 +30,14 @@ inputs:
     description: "Path to a baseline file (suppress known/accepted findings)."
     required: false
     default: ""
+  baseline-max-age:
+    description: "Fail (exit 2) if the baseline is older than this many days. Empty = no limit."
+    required: false
+    default: ""
+  min-confidence:
+    description: "Drop findings below this confidence (low|medium|high)."
+    required: false
+    default: "low"
   sarif:
     description: "Path to write SARIF 2.1.0 output."
     required: false
@@ -80,9 +88,11 @@ runs:
         IN_PLATFORM: ${{ inputs.platform }}
         IN_INCLUDE_DEPS: ${{ inputs.include-deps }}
         IN_BASELINE: ${{ inputs.baseline }}
+        IN_BASELINE_MAX_AGE: ${{ inputs.baseline-max-age }}
+        IN_MIN_CONFIDENCE: ${{ inputs.min-confidence }}
         IN_FILES_FROM: ${{ steps.diff.outputs.files }}
       run: |
-        ARGS=("$IN_PATH" "--fail-on" "$IN_FAIL_ON")
+        ARGS=("$IN_PATH" "--fail-on" "$IN_FAIL_ON" "--min-confidence" "$IN_MIN_CONFIDENCE")
         ARGS+=("--sarif" "$IN_SARIF" "--json-out" "$IN_JSON")
         if [ -n "$IN_PLATFORM" ]; then
           ARGS+=("--platform" "$IN_PLATFORM")
@@ -92,6 +102,9 @@ runs:
         fi
         if [ -n "$IN_BASELINE" ]; then
           ARGS+=("--baseline" "$IN_BASELINE")
+        fi
+        if [ -n "$IN_BASELINE_MAX_AGE" ]; then
+          ARGS+=("--baseline-max-age" "$IN_BASELINE_MAX_AGE")
         fi
         if [ -n "$IN_FILES_FROM" ]; then
           ARGS+=("--files-from" "$IN_FILES_FROM")

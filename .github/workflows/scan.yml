@@ -36,6 +36,16 @@ on:
         required: false
         type: string
         default: ""
+      baseline-max-age:
+        description: "Fail if the baseline is older than this many days. Empty = no limit."
+        required: false
+        type: string
+        default: ""
+      min-confidence:
+        description: "Drop findings below this confidence (low|medium|high)."
+        required: false
+        type: string
+        default: "low"
 
 permissions:
   contents: read
@@ -59,6 +69,8 @@ jobs:
           include-deps: ${{ inputs.include-deps }}
           changed-only: ${{ inputs.changed-only }}
           baseline: ${{ inputs.baseline }}
+          baseline-max-age: ${{ inputs.baseline-max-age }}
+          min-confidence: ${{ inputs.min-confidence }}
 
       - name: Upload SARIF
         if: always()

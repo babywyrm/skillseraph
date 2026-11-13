@@ -61,6 +61,12 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **`SECURITY.md` and `CONTRIBUTING.md`.** Private vulnerability reporting,
+  scope, the local checks CI runs, how to add a detection, and what a public
+  contribution must not contain.
+- **Action inputs `min-confidence` and `baseline-max-age`**, on both the
+  composite action and the reusable workflow.
+- **Rule contract test.** Every YAML rule id must be exercised by a test.
 - **Linux container integration.** CI and `SKILLSERAPH_CONTAINER=1` run the
   image and scan both the macOS `Library` home layout and the Linux `.config`
   home layout inside it. The host suite still runs on Ubuntu and macOS.
@@ -165,6 +171,11 @@ uses [Semantic Versioning](https://semver.org/).
   existing base64/hex/unicode/data-URI checks.
 - 27 new tests (`test_extended_coverage.py`) + `poisoned_skill_invocation.md`
   fixture.
+
+### Removed
+
+- **The `sarif` extra.** It installed `sarif-om`, which nothing imports; SARIF
+  output is written with the standard library.
 
 ### Changed
 

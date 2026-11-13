@@ -152,13 +152,16 @@ jobs:
         with:
           fail-on: high
       - if: always()
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: skillseraph.sarif
 ```
 
 The action writes `skillseraph.sarif` and `skillseraph.json`. On a pull
-request it scans only the changed files.
+request it scans only the changed files. Other inputs: `path`, `platform`,
+`include-deps`, `changed-only`, `baseline`, `baseline-max-age` (days; an older
+baseline fails the run), and `min-confidence` (`low`, `medium`, `high`). See
+`action.yml` for defaults.
 
 ### Option B — uv, no action
 
@@ -178,7 +181,7 @@ jobs:
             --sarif skillseraph.sarif \
             --json-out skillseraph.json
       - if: always()
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: skillseraph.sarif
 ```

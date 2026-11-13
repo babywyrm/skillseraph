@@ -19,7 +19,7 @@ Domain J (config & automation).
 | Demo / smoke-test flows | **Done** — `demo-fixture` + `smoke-test` |
 | Output (console / JSON / SARIF) | **Strong** — JSON includes confidence |
 | CI integration (Action + workflow + PR diff mode) | **Strong** |
-| Distribution (PyPI, container image, installer) | **Thin** — `install.sh` and git installs work; the v0.2.0 PyPI upload failed at OIDC (no trusted publisher), and the container image job has never built |
+| Distribution (PyPI, container image, installer) | **Thin** — `install.sh` and git installs work; the v0.2.0 PyPI upload failed at OIDC (no trusted publisher); the image builds and is tested in CI, but GHCR visibility is undecided |
 | Kubernetes gating | **Strong** — init-container + admission webhook (opt-in) |
 | Policy generation (nullfield) | **Done** |
 | Atlas Domain J coverage | **Strong** — J1–J8 done |
@@ -36,15 +36,14 @@ Domain J (config & automation).
   next release, which also moves `v0` past the June `v0.2.0` commit. Decide
   whether the GHCR image is public, then point the Kubernetes examples at it.
   The Dockerfile build order is fixed.
-- **Community gaps.** Add `SECURITY.md` and `CONTRIBUTING.md`; add
-  `min-confidence` and `baseline-max-age` inputs to the action.
 - **Provenance / signature checks** — flag skills and rules lacking a trusted
   source or signature; optional allowlist of trusted publishers.
 
 ## Medium
 
 - **Rule packs** — versioned, shareable rule bundles (community + curated),
-  with a contract test that every rule has a fixture.
+  with a firing sample for every rule (today every rule id must appear in a
+  test, which `test_rule_coverage.py` enforces).
 - **Unicode / homoglyph deep analysis** — dedicated normalization pass for
   invisible-character and homoglyph injection beyond the current regex.
 
@@ -76,13 +75,4 @@ Domain J (config & automation).
 
 ## Contributing detections
 
-Detection patterns live in `src/skillseraph/rules/*.yaml`. To add one:
-
-1. Add a rule (`id`, `pattern`, `severity`, `title`, `taxonomy_id`, `atlas_id`,
-   optional `confidence`).
-2. Add a fixture under `tests/fixtures/` and a test asserting it fires (and that
-   a benign sample does not).
-3. Run `uv run pytest`, `uv run ruff check`, and `uv run mypy`.
-
-Every rule should map to a public standard (OWASP LLM / OWASP MCP / Atlas domain)
-and must not encode any non-public or environment-specific attack details.
+See [CONTRIBUTING.md](CONTRIBUTING.md).
