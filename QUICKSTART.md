@@ -73,7 +73,7 @@ It reads these files and no others:
 | VS Code, Cursor, Windsurf | `~/Library/Application Support/<App>/User/` settings, tasks, keybindings, snippets | `~/.config/<App>/User/` (same files) |
 | Installed IDE extensions | `~/.vscode`, `~/.cursor`, `~/.windsurf` `extensions/*/package.json` | same |
 | Cursor agent | `~/.cursor/mcp.json`, `hooks.json`, `cli-config.json`, `argv.json` | same |
-| Codex | `~/.codex/config.toml`, `~/.codex/rules/`, `~/.codex/skills/` | same |
+| Codex | `~/.codex/config.toml`, `~/.codex/hooks.json`, `~/.codex/rules/`, `~/.codex/skills/` | same |
 | Claude Code | `~/.claude/settings.json`, `settings.local.json`, `CLAUDE.md` | same |
 | Claude Desktop | `~/Library/Application Support/Claude/claude_desktop_config.json` | `~/.config/Claude/claude_desktop_config.json` |
 | Continue | `~/.continue/config.json`, `config.yaml` | same |

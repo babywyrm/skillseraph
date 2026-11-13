@@ -39,6 +39,7 @@ LOCAL_IDE_FILES: dict[Platform, tuple[str, ...]] = {
     ),
     Platform.CODEX: (
         ".codex/config.toml",
+        ".codex/hooks.json",
         ".codex/rules",
         ".codex/skills",
     ),

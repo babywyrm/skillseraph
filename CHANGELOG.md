@@ -67,6 +67,12 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **Hooks in agent client settings.** Claude Code and Gemini CLI settings
+  `hooks` and `statusLine`, Codex inline `[hooks]` and `notify`, and
+  `~/.codex/hooks.json` now go through the lifecycle remote-exec check. MCP
+  server commands in the same files stay with the MCP checks. New
+  `agent_hook_remote_http` (high) flags HTTP hooks that post tool events to
+  a non-local host; evidence is the host only.
 - **Agent permission modes.** A parsed pass over Claude Code settings, Codex
   `config.toml` (including profiles), Gemini CLI settings, and Cursor CLI
   `cli.json` / `cli-config.json`. `agent_permission_bypass_mode` flags

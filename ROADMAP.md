@@ -38,9 +38,6 @@ Domain J (config & automation).
   The Dockerfile build order is fixed.
 - **Provenance / signature checks** — flag skills and rules lacking a trusted
   source or signature; optional allowlist of trusted publishers.
-- **Hooks in client settings** — run Claude and Gemini `settings.json` hook
-  commands through the same checks as `.cursor/hooks.json` and devcontainer
-  lifecycle commands.
 - **More clients** — Roo Code, Kiro, Amazon Q Developer, Aider
   (`.aider.conf.yml`), and Goose, in repo scans and `audit-local`, reusing the
   embedded MCP server pass.
@@ -92,6 +89,7 @@ Domain J (config & automation).
 - ~~Baseline expiry (`--baseline-max-age`)~~
 - ~~Governed exceptions (reason, role, expiry) on failing gates, with JSON evidence~~
 - ~~Agent permission modes (Claude, Codex, Gemini CLI, Cursor CLI)~~
+- ~~Hooks in client settings (Claude, Gemini CLI, Codex), including HTTP hooks~~
 
 ---
 
