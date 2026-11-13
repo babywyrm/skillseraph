@@ -38,8 +38,28 @@ Domain J (config & automation).
   The Dockerfile build order is fixed.
 - **Provenance / signature checks** — flag skills and rules lacking a trusted
   source or signature; optional allowlist of trusted publishers.
+- **Agent permission modes** — structural checks for approval-bypass modes,
+  wildcard shell allow rules (`Bash(*)`), and sandbox-off settings in Claude,
+  Codex, Gemini CLI, and Cursor configs. No rule covers these today.
+- **Hooks in client settings** — run Claude and Gemini `settings.json` hook
+  commands through the same checks as `.cursor/hooks.json` and devcontainer
+  lifecycle commands.
+- **More clients** — Roo Code, Kiro, Amazon Q Developer, Aider
+  (`.aider.conf.yml`), and Goose, in repo scans and `audit-local`, reusing the
+  embedded MCP server pass.
+- **MCP server version pinning** — flag `npx`/`uvx` launches with no version
+  or `@latest`.
 
 ## Medium
+
+- **A2A agent cards** — static checks on `.well-known/agent.json` for injected
+  descriptions and external endpoints, as tool-schema smuggling does for MCP.
+- **Redacted literal-secret detection** — flag literal tokens in MCP `env`
+  blocks and client settings, reporting key names only, never values.
+- **Change-only `audit-local`** — snapshot a workstation and report only what
+  changed since, so a new MCP server or extension stands out.
+- **Inventory output** — `--inventory` lists every MCP server, extension, hook,
+  and rule file found, without judging them, for fleet audits.
 
 - **Rule packs** — versioned, shareable rule bundles (community + curated),
   with a firing sample for every rule (today every rule id must appear in a
@@ -55,6 +75,10 @@ Domain J (config & automation).
   to mcpnuke for an endpoint scan, bridging static config and live behavior.
 - **Extension binary diffing** — compare installed extension contents against
   marketplace-published hashes to catch post-install tampering.
+- **pre-commit hook** — ship `.pre-commit-hooks.yaml` so repos can gate on
+  skillseraph without CI changes.
+- **Rule test command** — `skillseraph rules test` runs a contributed rule's
+  positive and negative samples without the repo's pytest setup.
 
 ### Shipped (previously roadmap items)
 
