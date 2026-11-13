@@ -51,35 +51,49 @@ runs:
   using: "composite"
   steps:
     - name: Install uv
-      uses: astral-sh/setup-uv@v10.3.3
+      uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
 
     - name: Install skillseraph
       shell: bash
-      run: uv tool install "${{ github.action_path }}"
+      env:
+        ACTION_PATH: ${{ github.action_path }}
+      run: uv tool install "$ACTION_PATH"
 
     - name: Compute changed files (PR diff mode)
       id: diff
       if: inputs.changed-only == 'true' && github.event_name == 'pull_request'
       shell: bash
+      env:
+        BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        HEAD_SHA: ${{ github.sha }}
       run: |
-        git diff --name-only --diff-filter=ACMR "${{ github.event.pull_request.base.sha }}...${{ github.sha }}" > /tmp/skillseraph-changed.txt
-        echo "files=/tmp/skillseraph-changed.txt" >> "$GITHUB_OUTPUT"
+        git diff --name-only --diff-filter=ACMR "$BASE_SHA...$HEAD_SHA" > "$RUNNER_TEMP/skillseraph-changed.txt"
+        echo "files=$RUNNER_TEMP/skillseraph-changed.txt" >> "$GITHUB_OUTPUT"
 
     - name: Run skillseraph
       shell: bash
+      env:
+        IN_PATH: ${{ inputs.path }}
+        IN_FAIL_ON: ${{ inputs.fail-on }}
+        IN_SARIF: ${{ inputs.sarif }}
+        IN_JSON: ${{ inputs.json }}
+        IN_PLATFORM: ${{ inputs.platform }}
+        IN_INCLUDE_DEPS: ${{ inputs.include-deps }}
+        IN_BASELINE: ${{ inputs.baseline }}
+        IN_FILES_FROM: ${{ steps.diff.outputs.files }}
       run: |
-        ARGS=("${{ inputs.path }}" "--fail-on" "${{ inputs.fail-on }}")
-        ARGS+=("--sarif" "${{ inputs.sarif }}" "--json-out" "${{ inputs.json }}")
-        if [ -n "${{ inputs.platform }}" ]; then
-          ARGS+=("--platform" "${{ inputs.platform }}")
+        ARGS=("$IN_PATH" "--fail-on" "$IN_FAIL_ON")
+        ARGS+=("--sarif" "$IN_SARIF" "--json-out" "$IN_JSON")
+        if [ -n "$IN_PLATFORM" ]; then
+          ARGS+=("--platform" "$IN_PLATFORM")
         fi
-        if [ "${{ inputs.include-deps }}" = "false" ]; then
+        if [ "$IN_INCLUDE_DEPS" = "false" ]; then
           ARGS+=("--no-deps")
         fi
-        if [ -n "${{ inputs.baseline }}" ]; then
-          ARGS+=("--baseline" "${{ inputs.baseline }}")
+        if [ -n "$IN_BASELINE" ]; then
+          ARGS+=("--baseline" "$IN_BASELINE")
         fi
-        if [ -n "${{ steps.diff.outputs.files }}" ]; then
-          ARGS+=("--files-from" "${{ steps.diff.outputs.files }}")
+        if [ -n "$IN_FILES_FROM" ]; then
+          ARGS+=("--files-from" "$IN_FILES_FROM")
         fi
         skillseraph "${ARGS[@]}"

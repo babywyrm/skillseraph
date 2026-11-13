@@ -6,6 +6,19 @@ uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Security
+
+- **Composite action no longer interpolates inputs into shell.** `path`,
+  `fail-on`, `baseline`, and the other inputs reach the run step through
+  environment variables, so a crafted input value cannot run commands
+  (CWE-78).
+- **Pinned CI supply chain.** Every third-party action is pinned to a commit
+  SHA, the Docker base and `uv` images are pinned by digest, and Dependabot
+  (with a 7-day cooldown) keeps them current. Workflows default to read-only
+  tokens, checkouts drop persisted credentials, and the publish jobs each get
+  only the permission they use. The release job uses `gh` instead of a
+  third-party release action. CI runs `zizmor` on every workflow.
+
 ### Changed
 
 - **Breaking: gates ignore bare suppressions.** With any `--fail-on` other

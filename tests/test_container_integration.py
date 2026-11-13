@@ -26,7 +26,7 @@ def _run(args: list[str]) -> None:
 
 def _docker_ready() -> None:
     if subprocess.run(["docker", "info"], capture_output=True).returncode != 0:
-        pytest.skip("docker daemon not available")
+        pytest.fail("docker daemon not available")
     if subprocess.run(["docker", "image", "inspect", IMAGE], capture_output=True).returncode != 0:
         pytest.fail(f"image {IMAGE} is not built; run: docker build -t {IMAGE} .")
 
