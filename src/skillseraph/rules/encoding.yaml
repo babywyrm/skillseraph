@@ -17,6 +17,11 @@ rules:
     detail: "A base64-encoded string of 80+ chars was found in an agent config file. Adversaries embed instructions or payloads in base64 to evade keyword-based scanners."
     taxonomy_id: MCP-T05
     atlas_id: J8
+    examples:
+      match:
+        - "payload: QUJDQUJDQUJDQUJDQUJDQUJDQUJDQUJDQUJDQUJDQUJDQUJDQUJDQUJDQUJDQUJDQUJDQUJDQUJDQUJDQUJD"
+      no_match:
+        - "payload: QUJD"
 
   - id: hex_blob
     pattern: '\b[0-9a-fA-F]{64,}\b'
@@ -26,6 +31,11 @@ rules:
     detail: "A hex-encoded string of 64+ chars was found. This pattern is used to encode shell commands, URLs, or instruction overrides that bypass naive string matching."
     taxonomy_id: MCP-T05
     atlas_id: J8
+    examples:
+      match:
+        - "digest 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+      no_match:
+        - "digest 0123abcd"
 
   - id: unicode_escape_sequence
     pattern: '(\\u[0-9a-fA-F]{4}){6,}'
@@ -45,6 +55,9 @@ rules:
     detail: "Data URIs with embedded base64 are used to smuggle executable or instructional content past config validators."
     taxonomy_id: MCP-T05
     atlas_id: J8
+    examples:
+      match:
+        - "src: data:text/plain;base64,SGVsbG8="
 
   - id: eval_atob_pattern
     pattern: 'eval\s*\(\s*atob\s*\('
@@ -53,6 +66,9 @@ rules:
     detail: "This pattern decodes a base64 string and immediately executes it. Planted in a hook or automation config, it achieves arbitrary code execution."
     taxonomy_id: MCP-T05
     atlas_id: J8
+    examples:
+      match:
+        - "eval(atob('ZWNobw=='))"
 
   - id: rot13_pipe
     pattern: "tr\\s+['\"]?[A-Za-z-]+['\"]?\\s+['\"]?[A-Za-z-]+['\"]?\\s*\\|"
@@ -61,6 +77,9 @@ rules:
     detail: "tr-based character substitution piped to another command is a low-effort obfuscation technique used in agent config injection to evade keyword detectors."
     taxonomy_id: MCP-T05
     atlas_id: J8
+    examples:
+      match:
+        - "echo text | tr 'A-Za-z' 'N-ZA-Mn-za-m' | sh"
 
   - id: charcode_concat_obfuscation
     pattern: 'String\.fromCharCode\s*\(|\\x[0-9a-fA-F]{2}(\\x[0-9a-fA-F]{2}){5,}'
@@ -69,3 +88,6 @@ rules:
     detail: "JavaScript String.fromCharCode or hex-escape chains are used to assemble strings character-by-character, bypassing static string matching."
     taxonomy_id: MCP-T05
     atlas_id: J8
+    examples:
+      match:
+        - "String.fromCharCode(104, 105)"

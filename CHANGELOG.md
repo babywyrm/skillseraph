@@ -15,7 +15,7 @@ uses [Semantic Versioning](https://semver.org/).
     `audit-local` still follows symlinks, since dotfiles often are links.
   - Files are read up to 4 MiB; a larger agent config gets
     `agent_config_oversized` and only its first 4 MiB is checked (CWE-400).
-  - Eight patterns that backtracked polynomially on one long line (a scan
+  - Twelve patterns that backtracked polynomially on one long line (a scan
     could run for minutes) now match in linear time with identical results
     (CWE-1333). `rules-test` fails a pattern that is slow on long input, so
     a contributed rule cannot reintroduce this.
@@ -115,9 +115,9 @@ uses [Semantic Versioning](https://semver.org/).
   confidence, a pattern that compiles, ids that are unique and do not
   collide with packaged rules, and `examples.match` / `examples.no_match`
   samples that behave. Exits 1 on any failing rule, 2 on an unreadable file.
-  Rule examples now live in the rule YAML; the 22 samples from
-  `test_rule_coverage.py` moved there, and that test runs every example
-  through the scanner.
+  Rule examples now live in the rule YAML, every packaged rule has at
+  least one `match` example, and `test_rule_coverage.py` runs each
+  through the scanner and holds every packaged file to `rules-test`.
 - **Change-only audits with `--since FILE`.** Compares a run against an
   earlier `--inventory` file and lists MCP servers, extensions, hooks, and
   files that were added, changed (with field names), or removed. Anything

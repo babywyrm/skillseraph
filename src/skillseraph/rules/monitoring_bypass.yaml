@@ -17,6 +17,11 @@ rules:
     detail: "The config disables audit, logging, or runtime monitoring. Disabled observability removes the ability to detect and investigate malicious activity."
     taxonomy_id: MCP-T13
     atlas_id: J3
+    examples:
+      match:
+        - "audit: false"
+      no_match:
+        - "audit: true"
 
   - id: broad_monitoring_exception
     pattern: '(?i)(security[_-]?exception|exempt(ion)?|allowlist|whitelist|(rule|policy|detection|monitor(ing)?|audit)[_-]?exception)s?"?\s*[:=][^\n]{0,40}(["'']?\*["'']?|all\b|any\b|\.\*)'
@@ -26,6 +31,9 @@ rules:
     detail: "A security or monitoring exception matches all workloads via wildcard. Broad exceptions are a common way legitimate tuning becomes an attacker blind spot."
     taxonomy_id: MCP-T13
     atlas_id: J3
+    examples:
+      match:
+        - "security_exception: '*'"
 
   - id: monitoring_rule_disabled
     pattern: '(?i)(disable[_-]?rule|rule[_-]?disabled|disabled[_-]?rules?)\b\s*[:=]?'
@@ -35,3 +43,6 @@ rules:
     detail: "The config disables a named detection rule. Selectively disabling rules narrows monitoring coverage; verify the disabled rule is not one an attacker would need silenced."
     taxonomy_id: MCP-T13
     atlas_id: J3
+    examples:
+      match:
+        - "disabled_rules: [shell_spawn]"

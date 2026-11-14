@@ -121,6 +121,13 @@ OLD = {
     "mcp_server_npx_remote_package": (
         r"(?i)\"(command|args)\".*\"(npx|uvx|pip install|npm exec)\".*\"(git\+|https?://|(github|gitlab|bitbucket|gist):)"
     ),
+    "explicit_bypass_instruction": (
+        r"(use|prefer|instead\s+use|fall\s?back\s+to)\s+.*(runtime|interpreter|node\s+-e|python\s+-c)"
+        r".*(blocked|blocklist|forbidden|denied|restricted)"
+    ),
+    "env_secret_access": r"(environment|process\.env|os\.environ)\s*.*(token|secret|key|pass)",
+    "j5_parent_traversal": r"(?i)(extends|include|import|source|from)\s*[:\s].*\.\.",
+    "skill_tool_call_redirect": r"(?i)(tool_call|redirect|forward)\s*[=:].*(https?://|@[a-z0-9-]+\.[a-z]{2,})",
     "fake_ticket_reference": r"(ticket|change\s?request|CR|JIRA|INC)[-#\s]?\d{2,}.*?(approved|authorized|emergency)",
 }
 OLD_REMOTE_EXEC = (
@@ -130,7 +137,8 @@ OLD_REMOTE_EXEC = (
 PIECES = [
     "curl", "wget", "fetch", " ", "  ", "https://", "http://", "|", "bash", "sh", "zsh", "x", "<!--", "-->",
     "ignore", "system:", "extends", "from", ":", "/home/", "~", "\n", "-O-", ";", "&&", ".sh", "python3",
-    "node", '"command"', '"args"', '"npx"', '"uvx"', '"github:', '"git+', '"https://', "INC", "ticket", "change request", "#", "4821", "7", "approved", "emergency", "token", "api_key", "=", '"', "'", "abc12345", "Bearer ", ".", "-", "--", "{", "}", ",",
+    "node", "use", "instead", "prefer", "fall back to", "runtime", "python -c", "node -e", "blocked", "denied",
+    "..", "redirect", "tool_call", "forward", "@evil.example", "=", "environment", "process.env", "os.environ", "secret", "pass", '"command"', '"args"', '"npx"', '"uvx"', '"github:', '"git+', '"https://', "INC", "ticket", "change request", "#", "4821", "7", "approved", "emergency", "token", "api_key", "=", '"', "'", "abc12345", "Bearer ", ".", "-", "--", "{", "}", ",",
 ]
 
 

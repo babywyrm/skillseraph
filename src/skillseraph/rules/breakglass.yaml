@@ -9,6 +9,9 @@ rules:
     title: "Break-glass reference: emergency override mechanism in config"
     taxonomy_id: MCP-T09
     atlas_id: J1
+    examples:
+      match:
+        - "Use the break-glass account."
 
   - id: override_token_assignment
     pattern: '(override|bypass|emergency|master)[-_\s]?(token|key|code|password|secret)\s*[:=]'
@@ -16,6 +19,9 @@ rules:
     title: "Override token assignment: embeds an emergency-access credential"
     taxonomy_id: MCP-T09
     atlas_id: J1
+    examples:
+      match:
+        - "override_token = set-at-runtime"
 
   - id: override_usage_instruction
     pattern: '(use|include|append|add)\s+(this\s+)?(token|annotation|header|flag)\s+to\s+(bypass|override|escalate|approve)'
@@ -33,6 +39,9 @@ rules:
     title: "Policy/admission bypass token referenced in config"
     taxonomy_id: MCP-T09
     atlas_id: J1
+    examples:
+      match:
+        - "Add the admission bypass annotation."
 
   - id: admission_skip_instruction
     pattern: '(skip|disable|ignore)\s+(the\s+)?(admission|policy|approval|guardrail)\s+(check|gate|controller|webhook)'
@@ -40,3 +49,6 @@ rules:
     title: "Instruction to skip an admission/policy control"
     taxonomy_id: MCP-T09
     atlas_id: J1
+    examples:
+      match:
+        - "Skip the admission webhook for this deploy."

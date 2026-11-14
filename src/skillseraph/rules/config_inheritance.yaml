@@ -2,12 +2,17 @@
 # Detects agent configs reaching outside workspace boundaries.
 rules:
   - id: j5_parent_traversal
-    pattern: "(?i)(extends|include|import|source|from)\\s*[:\\s].*\\.\\."
+    pattern: "(?i)^(?>.*?(?:extends|include|import|source|from)\\s*[:\\s]).*\\.\\."
     severity: high
     title: "Config references parent directory via traversal"
     detail: "A child config reaches outside its boundary (../) to inherit rules. An attacker controlling the parent path controls the child agent."
     taxonomy_id: MCP-T02
     atlas_id: J5
+    examples:
+      match:
+        - "extends: ../../shared/rules.md"
+      no_match:
+        - "extends: ./base.md"
 
   - id: j5_absolute_path_include
     pattern: "(?i)^(?>.*?(?:extends|include|import|source|from)\\s*[:\\s]).*(?:/home/|/etc/|/root/|~)"

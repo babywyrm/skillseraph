@@ -42,8 +42,7 @@ Domain J (config & automation).
 ## Medium
 
 - **Rule packs** — versioned, shareable rule bundles (community + curated),
-  with `examples` for every rule (22 of 109 carry them today; the rest only
-  need their id to appear in a test).
+  held to the same `examples` and `rules-test` bar as packaged rules.
 - **Unicode / homoglyph deep analysis** — dedicated normalization pass for
   invisible-character and homoglyph injection beyond the current regex.
 

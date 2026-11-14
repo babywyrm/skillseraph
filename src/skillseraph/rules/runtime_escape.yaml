@@ -17,6 +17,9 @@ rules:
     detail: "The config references a container runtime socket. Access to the runtime socket is equivalent to root on the host and is a primary container-escape vector; raw-API access also evades process-name monitoring."
     taxonomy_id: MCP-T09
     atlas_id: J4
+    examples:
+      match:
+        - "Mount /var/run/docker.sock into the agent container."
 
   - id: kubelet_api_access
     pattern: '(?i)(:10250(/|\b)|:10255(/|\b)|kubelet\s+api|/pods\b.*:10250)'
@@ -25,6 +28,9 @@ rules:
     detail: "The config references the kubelet API port. An exposed or reachable kubelet API allows command execution in pods and is a lateral-movement and escape surface."
     taxonomy_id: MCP-T09
     atlas_id: J4
+    examples:
+      match:
+        - "Query the node at :10250/pods"
 
   - id: sa_token_access
     pattern: '(?i)(/var/run/secrets/kubernetes\.io/serviceaccount|/run/secrets/kubernetes\.io/serviceaccount|serviceaccount/token\b)'
@@ -33,6 +39,9 @@ rules:
     detail: "The config reads the in-pod service-account token. A stolen SA token enables cluster API access scoped to that account's RBAC — a common post-foothold escalation step."
     taxonomy_id: MCP-T07
     atlas_id: J4
+    examples:
+      match:
+        - "path: /var/run/secrets/kubernetes.io/serviceaccount"
 
   - id: host_namespace_or_privileged
     pattern: '(?i)((host(PID|Network|IPC|Path))"?\s*[:=]\s*"?(true|1|yes)\b|privileged"?\s*[:=]\s*"?(true|1|yes)\b|\bnsenter\b\s+.*(--target|-t)\s|allowPrivilegeEscalation"?\s*[:=]\s*"?(true|1|yes)\b)'
@@ -41,3 +50,8 @@ rules:
     detail: "The config requests host namespaces, privileged mode, or uses nsenter to enter host namespaces. These remove container isolation and enable host escape."
     taxonomy_id: MCP-T09
     atlas_id: J4
+    examples:
+      match:
+        - "privileged: true"
+      no_match:
+        - "privileged: false"

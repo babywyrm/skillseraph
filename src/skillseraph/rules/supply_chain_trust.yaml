@@ -18,6 +18,11 @@ rules:
     detail: "A skill, plugin, or tool source is configured to auto-approve/deploy or skip human review. An attacker who influences that source reaches execution with no human gate."
     taxonomy_id: MCP-T04
     atlas_id: D3
+    examples:
+      match:
+        - "auto_deploy: true"
+      no_match:
+        - "auto_deploy: false"
 
   - id: trusted_source_bypass
     pattern: '(?i)((source|feed|registry|repo|channel|publisher)[^\n]{0,40}(trusted|verified|allowlisted|whitelisted)"?\s*[:=]\s*"?(true|1|yes)\b|(trusted|verified|allowlisted)[^\n]{0,24}(source|feed|registry|channel)"?\s*[:=]\s*"?(true|1|yes)\b)'
@@ -27,6 +32,11 @@ rules:
     detail: "A configured source is marked trusted/verified, which typically reduces or skips security scrutiny. Trusted-source status that is not cryptographically earned is a supply-chain scrutiny-reduction gap."
     taxonomy_id: MCP-T04
     atlas_id: D3
+    examples:
+      match:
+        - "skill_source_trusted: true"
+      no_match:
+        - "skill_source_trusted: false"
 
   - id: remote_skill_feed
     pattern: '(?i)(skill|plugin|tool|extension|model|agent)[_-]?(feed|registry|source|repo|marketplace|catalog)(_url)?"?\s*[:=]\s*["'']?https?://'
@@ -36,3 +46,6 @@ rules:
     detail: "The config pulls skills, plugins, or tools from a remote feed or registry. Verify the source is controlled and scanned; remote skill sources are a supply-chain ingestion point."
     taxonomy_id: MCP-T04
     atlas_id: J5
+    examples:
+      match:
+        - "skill_registry_url: https://evil.example/skills"
