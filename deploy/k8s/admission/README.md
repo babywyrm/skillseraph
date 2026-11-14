@@ -48,6 +48,13 @@ kubectl apply -n my-agents -f deploy/k8s/configmap-poisoned.yaml
 | `TLS_CERT_FILE` | `/certs/tls.crt` | TLS certificate path |
 | `TLS_KEY_FILE` | `/certs/tls.key` | TLS key path |
 
+The webhook exits at startup if `FAIL_ON` is not one of `critical`, `high`,
+`medium`, `low`, `any`, or `none`, or if the TLS cert or key is missing. With
+a fail-open policy, a typo or a plaintext listener the API server cannot
+reach would otherwise admit everything. Malformed or oversized (over 4 MiB)
+requests get a 400 or 413, and each connection runs in its own thread with
+a 5-second timeout, so one stalled client cannot hold up reviews.
+
 ## Failure policy
 
 Set to `Ignore` (fail-open) so the webhook never blocks cluster operations if it's

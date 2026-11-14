@@ -35,6 +35,15 @@ uses [Semantic Versioning](https://semver.org/).
   key name that a pod mounts at an agent config path with `items[].path`,
   was admitted. Every `data` key and every base64-decoded `binaryData` key
   is now scanned; invalid base64 is denied.
+- **Admission webhook fails safe at startup and per request.** The shipped
+  configuration fails open, so anything that stopped a review admitted the
+  object. An unknown `FAIL_ON` (such as `High`) silently allowed everything,
+  a missing cert fell back to plaintext the API server cannot call, a
+  negative `Content-Length` hung the single-threaded server, and malformed
+  bodies crashed the handler. The webhook now exits on a bad `FAIL_ON` or
+  missing TLS files, requires TLS 1.2+, answers malformed or oversized
+  requests with 400/413, and serves each connection in its own thread with
+  a timeout, handshaking off the accept loop (CWE-400, CWE-636).
 - **Admission webhook rejects unsafe data keys.** Keys were joined straight
   onto the scan directory, so a request posted directly to the webhook with a
   key such as `../name` wrote outside it (CWE-22). Keys that are not valid

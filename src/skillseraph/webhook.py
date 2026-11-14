@@ -20,7 +20,7 @@ import os
 import re
 import ssl
 import tempfile
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 from .models import Severity
@@ -31,6 +31,7 @@ LISTEN_PORT = int(os.environ.get("LISTEN_PORT", "8443"))
 TLS_CERT = os.environ.get("TLS_CERT_FILE", "/certs/tls.crt")
 TLS_KEY = os.environ.get("TLS_KEY_FILE", "/certs/tls.key")
 
+MAX_BODY = 4 * 1024 * 1024
 _CONFIGMAP_KEY = re.compile(r"[-._a-zA-Z0-9]{1,253}")
 
 THRESHOLD = {
@@ -76,17 +77,56 @@ def _scan_configmap_data(data: dict[str, str], binary_data: dict[str, str] | Non
     return findings
 
 
-class WebhookHandler(BaseHTTPRequestHandler):
-    def do_POST(self) -> None:
-        length = int(self.headers.get("Content-Length", 0))
-        body = json.loads(self.rfile.read(length)) if length else {}
+class ReviewError(ValueError):
+    """The request is not a well-formed AdmissionReview."""
 
-        review = body.get("request", {})
-        obj = review.get("object", {})
-        data = obj.get("data") or {}
-        binary_data = obj.get("binaryData") or {}
+
+def _mapping(node: object, key: str) -> dict[str, object]:
+    value = node.get(key) if isinstance(node, dict) else None
+    if value is None:
+        return {}
+    if not isinstance(value, dict):
+        raise ReviewError(f"{key} must be an object")
+    return value
+
+
+def _strings(node: dict[str, object], key: str) -> dict[str, str]:
+    value = _mapping(node, key)
+    if not all(isinstance(v, str) for v in value.values()):
+        raise ReviewError(f"{key} values must be strings")
+    return {str(k): str(v) for k, v in value.items()}
+
+
+class WebhookHandler(BaseHTTPRequestHandler):
+    timeout = 5
+
+    def _error(self, code: int, message: str) -> None:
+        self.send_response(code)
+        self.send_header("Content-Type", "application/json")
+        self.end_headers()
+        self.wfile.write(json.dumps({"error": message}).encode())
+
+    def do_POST(self) -> None:
+        try:
+            length = int(self.headers.get("Content-Length", "0"))
+        except ValueError:
+            return self._error(400, "Content-Length must be an integer")
+        if length < 0:
+            return self._error(400, "Content-Length must not be negative")
+        if length > MAX_BODY:
+            return self._error(413, f"body over {MAX_BODY} bytes")
+        try:
+            body = json.loads(self.rfile.read(length)) if length else {}
+            if not isinstance(body, dict):
+                raise ReviewError("body must be an object")
+            review = _mapping(body, "request")
+            obj = _mapping(review, "object")
+            data = _strings(obj, "data")
+            binary_data = _strings(obj, "binaryData")
+        except ValueError as exc:  # json.JSONDecodeError is a ValueError
+            return self._error(400, str(exc))
         ns = review.get("namespace", "")
-        name = obj.get("metadata", {}).get("name", "")
+        name = _mapping(obj, "metadata").get("name", "")
 
         findings = _scan_configmap_data(data, binary_data) if data or binary_data else []
         allowed = len(findings) == 0
@@ -112,12 +152,28 @@ class WebhookHandler(BaseHTTPRequestHandler):
         pass
 
 
+def make_server(address: tuple[str, int]) -> ThreadingHTTPServer:
+    """One thread per connection, so a stalled client cannot hold up reviews.
+
+    ponytail: threads are unbounded; a flood of connections is left to the
+    API server's own limits. Upgrade: a bounded pool.
+    """
+    return ThreadingHTTPServer(address, WebhookHandler)
+
+
 def serve() -> None:
-    server = HTTPServer(("0.0.0.0", LISTEN_PORT), WebhookHandler)
-    if os.path.exists(TLS_CERT) and os.path.exists(TLS_KEY):
-        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-        ctx.load_cert_chain(TLS_CERT, TLS_KEY)
-        server.socket = ctx.wrap_socket(server.socket, server_side=True)
+    # The webhook configuration fails open, so a typo here or a gate the API
+    # server cannot reach would silently admit everything.
+    if FAIL_ON not in THRESHOLD:
+        raise SystemExit(f"FAIL_ON must be one of {', '.join(THRESHOLD)}, not {FAIL_ON!r}")
+    if not (os.path.isfile(TLS_CERT) and os.path.isfile(TLS_KEY)):
+        raise SystemExit(f"TLS cert and key are required: {TLS_CERT}, {TLS_KEY}")
+    server = make_server(("0.0.0.0", LISTEN_PORT))
+    ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    ctx.minimum_version = ssl.TLSVersion.TLSv1_2
+    ctx.load_cert_chain(TLS_CERT, TLS_KEY)
+    # Handshake in the connection's thread, not in the accept loop.
+    server.socket = ctx.wrap_socket(server.socket, server_side=True, do_handshake_on_connect=False)
     print(f"skillseraph webhook listening on :{LISTEN_PORT} (fail_on={FAIL_ON})")
     server.serve_forever()
 
