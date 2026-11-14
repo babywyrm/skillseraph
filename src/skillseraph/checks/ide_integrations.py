@@ -23,7 +23,6 @@ _APM_KEYS = {
     "ELASTIC_APM_SERVER_URL",
 }
 _LOCAL_HOSTS = {"localhost", "127.0.0.1", "0.0.0.0"}
-_USERINFO = re.compile(r"(https?://)[^/\s\"']+@")
 _OTLP_HEADERS_KEY = re.compile(r"OTEL_EXPORTER_OTLP(?:_(?:TRACES|METRICS|LOGS))?_HEADERS", re.IGNORECASE)
 _OTLP_HEADERS_LINE = re.compile(
     rf"[\"']?({_OTLP_HEADERS_KEY.pattern})[\"']?\s*[:=]\s*[\"']([^\"'\n]*)", re.IGNORECASE
@@ -36,10 +35,6 @@ _ENV_REFERENCE = re.compile(r"\$\{?[\w:]+\}?|\{env:\w+\}")
 
 def check_ide_integrations(path: Path, content: str) -> list[Finding]:
     findings = run_category("ide_integrations", path, content)
-    for finding in findings:
-        if finding.check == "ide_apm_external_collector":
-            finding.evidence = _scrub_userinfo(finding.evidence)
-            finding.detail = _scrub_userinfo(finding.detail)
     findings.extend(_check_extension_recommendations(path, content))
     seen = {finding.check for finding in findings}
     findings.extend(_check_apm_endpoints(path, content, seen))
@@ -89,10 +84,6 @@ def _check_otlp_headers(path: Path, content: str) -> list[Finding]:
                 atlas_id="J4",
             )]
     return []
-
-
-def _scrub_userinfo(text: str) -> str:
-    return _USERINFO.sub(r"\1", text)
 
 
 def _endpoint_host(value: str) -> str | None:

@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import re
 
+from .checks import redact
 from .models import Finding, ScanResult, Severity
 
 # Cross-reference patterns: one file points at another.
@@ -90,7 +91,7 @@ def _find_reference_chains(result: ScanResult) -> list[Finding]:
                                 f"may be loaded and executed through this reference."
                             ),
                             line=0,
-                            evidence=match.group(0)[:100],
+                            evidence=redact(match.group(0)[:100]),
                             taxonomy_id="MCP-T05",
                             atlas_id="J5",
                         ))

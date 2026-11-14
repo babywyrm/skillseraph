@@ -43,8 +43,6 @@ Domain J (config & automation).
 
 - **A2A agent cards** — static checks on `.well-known/agent.json` for injected
   descriptions and external endpoints, as tool-schema smuggling does for MCP.
-- **Redacted literal-secret detection** — flag literal tokens in MCP `env`
-  blocks and client settings, reporting key names only, never values.
 - **Change-only `audit-local`** — snapshot a workstation and report only what
   changed since, so a new MCP server or extension stands out.
 - **Inventory output** — `--inventory` lists every MCP server, extension, hook,
@@ -87,6 +85,7 @@ Domain J (config & automation).
 - ~~Hooks in client settings (Claude, Gemini CLI, Codex), including HTTP hooks~~
 - ~~MCP server version pinning~~
 - ~~Roo Code, Kiro, Amazon Q Developer, Aider, and Goose~~
+- ~~Redacted reports and literal-secret detection in MCP configs~~
 
 ---
 

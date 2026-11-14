@@ -7,7 +7,7 @@ from dataclasses import replace
 from datetime import UTC, date, datetime
 from pathlib import Path
 
-from .checks import run_all_checks
+from .checks import redact, run_all_checks
 from .models import AcceptedException, Finding, Platform, ScanResult
 from .platforms import PLATFORMS, detect_platforms, get_all_patterns
 
@@ -176,6 +176,8 @@ def scan_file(
         return []
 
     findings = run_all_checks(path, content)
+    for f in findings:
+        f.evidence, f.detail = redact(f.evidence), redact(f.detail)
     ignores = _inline_ignores(
         content,
         governed=governed,

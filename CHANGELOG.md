@@ -8,6 +8,14 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Security
 
+- **Reports no longer copy secret values (CWE-532).** Line rules stored the
+  matched line as `evidence` and `detail`, so a one-line `"API_TOKEN":
+  "<value>"`, an `Authorization: Bearer` header, or a token in a command
+  reached console, JSON, SARIF, and webhook output. Every finding is now
+  redacted before it leaves the scanner: credential-named key values,
+  auth-scheme values, common token shapes, and URL userinfo. `${VAR}`
+  references stay. Findings whose evidence held a secret get a new
+  fingerprint, so re-save baselines that covered them.
 - **Admission webhook rejects unsafe data keys.** Keys were joined straight
   onto the scan directory, so a request posted directly to the webhook with a
   key such as `../name` wrote outside it (CWE-22). Keys that are not valid
@@ -88,6 +96,10 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **Literal secrets in MCP server configs.** `mcp_server_literal_secret`
+  (high) flags credential-named or token-shaped `env` and `headers` values
+  that are not `${VAR}`/`{env:VAR}` references or placeholders, in every
+  format the server inspector reads. Evidence lists key names only.
 - **Roo Code, Kiro, Amazon Q Developer, Aider, and Goose.** New platforms
   `roo`, `kiro`, `amazonq`, `aider`, and `goose` in repo scans and
   `audit-local`, using each client's documented paths. Their MCP servers go

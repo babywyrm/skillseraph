@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 from ..models import Finding
@@ -47,6 +48,28 @@ def load_jsonc(content: str) -> object | None:
     except json.JSONDecodeError:
         return None
     return parsed
+
+
+_SECRET_KEY_VALUE = re.compile(
+    r"(?i)([\"']?[\w.-]*(?:token|secret|passw(?:or)?d|api[_-]?key|access[_-]?key|private[_-]?key"
+    r"|credential|authorization)[\w.-]*[\"']?\s*[:=]\s*[\"']?)"
+    r"(?!\$|\{env:|<redacted>)(?!(?:Bearer|Basic|Token)\s)([^\s\"',}\]]{4,})"
+)
+_AUTH_SCHEME = re.compile(r"(?i)\b(Bearer|Basic|Token)\s+(?!\$)[\w.~+/=-]{6,}")
+_URL_USERINFO = re.compile(r"(https?://)[^/\s\"'@]+@")
+TOKEN_SHAPES = re.compile(
+    r"\b(?:gh[pousr]_[A-Za-z0-9]{20,}|github_pat_\w{20,}|sk-[\w-]{16,}|xox[abprs]-[\w-]{10,}"
+    r"|AKIA[0-9A-Z]{16}|glpat-[\w-]{20,})"
+)
+
+
+def redact(text: str) -> str:
+    """Strip secret values from report text; key names and ${VAR} references stay."""
+    # ponytail: key-name and token-shape heuristics; an unusually named secret can still pass.
+    text = _URL_USERINFO.sub(r"\1", text)
+    text = TOKEN_SHAPES.sub("<redacted>", text)
+    text = _AUTH_SCHEME.sub(r"\1 <redacted>", text)
+    return _SECRET_KEY_VALUE.sub(r"\1<redacted>", text)
 
 
 def is_amazonq_agent(path: Path) -> bool:

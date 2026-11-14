@@ -215,7 +215,7 @@ checks as plain JSON.
 | `authority_fabrication` | Fake maintenance windows, fabricated approvals, pre-authorization claims |
 | `runtime_bypass` | Language-runtime evasion of command blocklists, encoded-pipe-to-shell |
 | `breakglass` | Embedded override tokens, admission/policy bypass instructions |
-| `mcp_servers` | Poisoned MCP server defs in JSON/JSONC, Codex `config.toml`, and servers embedded in Claude, Gemini CLI, Zed, opencode, Copilot CLI, and Amazon Q agent settings and Goose `extensions` (remote/raw-IP URLs, env-credential injection, stdio command exec, packages run straight from git or a URL, registry packages not pinned to an exact version, TLS disable, wildcard tools and Kiro `autoApprove: ["*"]`, `trust: true` approval bypass) + **tool schema smuggling** (Atlas I3) |
+| `mcp_servers` | Poisoned MCP server defs in JSON/JSONC, Codex `config.toml`, and servers embedded in Claude, Gemini CLI, Zed, opencode, Copilot CLI, and Amazon Q agent settings and Goose `extensions` (remote/raw-IP URLs, env-credential injection, literal secrets in `env` or `headers` instead of `${VAR}` references, stdio command exec, packages run straight from git or a URL, registry packages not pinned to an exact version, TLS disable, wildcard tools and Kiro `autoApprove: ["*"]`, `trust: true` approval bypass) + **tool schema smuggling** (Atlas I3) |
 | `automation_triggers` | Wildcard event triggers, shell exec in automations, broad write perms (Atlas J3) |
 | `config_inheritance` | Parent traversal, absolute-path includes, remote config fetch, recursive globs (Atlas J5) |
 | `skill_invocation` | **Skill invocation hijack** (Atlas J2): callback/redirect on invoke, self-modification, invocation-time override, silent invocation, remote skill pull |
@@ -290,7 +290,7 @@ Each `findings` entry:
 | `severity` | string | `critical`, `high`, `medium`, `low`, or `info` |
 | `title` | string | One-line summary |
 | `detail` | string | Matched context |
-| `evidence` | string | Redacted excerpt (env values and URL userinfo removed) |
+| `evidence` | string | Redacted excerpt: values of credential-named keys, `Bearer`/`Basic`/`Token` values, common token shapes, and URL userinfo become `<redacted>` or are dropped; `${VAR}` references stay |
 | `platform` | string | Platform the file belongs to |
 | `taxonomy_id` | string | MCP threat id (`MCP-T01`–`MCP-T14`, see below) |
 | `atlas_id` | string | Attack Path Atlas id, e.g. `J2` |

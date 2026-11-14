@@ -20,7 +20,7 @@ import yaml
 
 from ..models import Finding, Severity
 from ..rules_engine import run_category
-from . import is_amazonq_agent, load_jsonc
+from . import TOKEN_SHAPES, is_amazonq_agent, load_jsonc
 
 MCP_CONFIG_NAMES = {
     "mcp.json",
@@ -31,6 +31,9 @@ MCP_CONFIG_NAMES = {
 
 _CREDENTIAL_KEY = re.compile(r"(TOKEN|KEY|SECRET|PASSWORD|CREDENTIAL|AUTH)", re.IGNORECASE)
 _TOOL_LIST_KEYS = ("allowedTools", "tools", "enabledTools", "enabled_tools", "includeTools", "autoApprove")
+_AUTH_PREFIX = re.compile(r"(?i)^(?:bearer|basic|token)\s+")
+_VALUE_REFERENCE = re.compile(r"\$\{?[\w:.-]+\}?|\{env:[\w.-]+\}")
+_PLACEHOLDER = re.compile(r"(?i)^(?:<[^>]*>|your[_-].*|.*placeholder.*|changeme|x+|\*+|redacted|example.*)$")
 _TLS_KEYS = ("tls", "ssl", "verify", "verify_ssl", "tls_verify")
 _URL_FIELDS = ("url", "httpUrl", "endpoint", "baseUrl", "uri")
 _SHELL_COMMAND = re.compile(
@@ -327,6 +330,40 @@ def _inspect_server(
                 "MCP-T07",
                 "J4",
             )
+
+    literal = [
+        f"{field}: {', '.join(names[:5])}"
+        for field, names in (("env", _literal_secret_keys(env)), ("headers", _literal_secret_keys(server.get("headers"))))
+        if names
+    ]
+    if literal:
+        _emit(
+            findings, seen, path,
+            "mcp_server_literal_secret",
+            Severity.HIGH,
+            "MCP server config holds a literal secret",
+            "A credential is written into the config instead of referenced from the "
+            "environment, so anyone who can read or copy this file has it.",
+            "; ".join(literal),
+            "MCP-T07",
+            "J4",
+        )
+
+
+def _literal_secret_keys(block: object) -> list[str]:
+    """Credential-named or token-shaped keys whose value is not a reference or placeholder."""
+    if not isinstance(block, dict):
+        return []
+    names = []
+    for key, value in block.items():
+        if not isinstance(key, str) or not isinstance(value, str):
+            continue
+        bare = _AUTH_PREFIX.sub("", value.strip())
+        if len(bare) < 6 or _VALUE_REFERENCE.search(bare) or _PLACEHOLDER.match(bare):
+            continue
+        if _CREDENTIAL_KEY.search(key) or TOKEN_SHAPES.search(bare):
+            names.append(key)
+    return sorted(names)
 
 
 def _embedded_server_checks(path: Path, content: str, key: str) -> list[Finding]:
