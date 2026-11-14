@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -86,10 +87,4 @@ def apply_baseline(result: ScanResult, baseline_fps: set[str]) -> ScanResult:
         f for f in result.findings
         if fingerprint(f, result.target) not in baseline_fps
     ]
-    return ScanResult(
-        target=result.target,
-        findings=kept,
-        files_scanned=result.files_scanned,
-        platforms_detected=result.platforms_detected,
-        scanned_paths=result.scanned_paths,
-    )
+    return replace(result, findings=kept)

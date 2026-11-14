@@ -50,6 +50,10 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **`--baseline` dropped governed exceptions.** Applying a baseline rebuilt
+  the result without its `exceptions`, so the JSON report and the console
+  count lost the evidence for every honored exception. The baseline now
+  removes only matched findings.
 - **Correlation read files the scan never covered.** The reference-chain
   pass walked every `.md`/`.json`/`.yaml` under the target, so `audit-local`
   read the whole home directory and a repo scan read `node_modules`. It now
