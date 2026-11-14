@@ -13,7 +13,8 @@ uses [Semantic Versioning](https://semver.org/).
   "<value>"`, an `Authorization: Bearer` header, or a token in a command
   reached console, JSON, SARIF, and webhook output. Every finding is now
   redacted before it leaves the scanner: credential-named key values,
-  auth-scheme values, common token shapes, and URL userinfo. `${VAR}`
+  secret flag values (`--api-key VALUE`), auth-scheme values, common token
+  shapes, and URL userinfo. `${VAR}`
   references stay. Findings whose evidence held a secret get a new
   fingerprint, so re-save baselines that covered them.
 - **Admission webhook rejects unsafe data keys.** Keys were joined straight
@@ -96,6 +97,11 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **`--inventory FILE`.** Writes a verdict-free JSON list of the MCP servers,
+  extensions, hooks, and files a scan or `audit-local` read, for fleet
+  audits. Commands are redacted, env entries are key names only, URLs are
+  hosts only, paths are relative to the target, and absolute paths in
+  commands are shown as `<target>/…` or `~/…`.
 - **Literal secrets in MCP server configs.** `mcp_server_literal_secret`
   (high) flags credential-named or token-shaped `env` and `headers` values
   that are not `${VAR}`/`{env:VAR}` references or placeholders, in every

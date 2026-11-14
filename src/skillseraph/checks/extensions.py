@@ -7,6 +7,7 @@ import re
 from pathlib import Path
 
 from ..models import Finding, Platform, Severity
+from . import load_jsonc
 
 EXTENSION_DIR_MARKERS = (".vscode/extensions", ".cursor/extensions", ".windsurf/extensions")
 
@@ -22,6 +23,26 @@ def _is_extension_manifest(path: Path) -> bool:
         return False
     posix = path.as_posix()
     return any(marker in posix for marker in EXTENSION_DIR_MARKERS)
+
+
+def extension_entries(path: Path, content: str) -> list[tuple[str, str, str]]:
+    """(id, version, source) for installed manifests and workspace recommendations."""
+    installed = _is_extension_manifest(path) or path.name == "gemini-extension.json"
+    if not installed and path.name != "extensions.json":
+        return []
+    data = load_jsonc(content)
+    if not isinstance(data, dict):
+        return []
+    if not installed:
+        recommended = data.get("recommendations")
+        if not isinstance(recommended, list):
+            return []
+        return [(ext, "", "recommended") for ext in recommended if isinstance(ext, str)]
+    name, publisher, version = data.get("name"), data.get("publisher"), data.get("version")
+    if not isinstance(name, str):
+        return []
+    ext_id = f"{publisher}.{name}" if isinstance(publisher, str) else name
+    return [(ext_id, version if isinstance(version, str) else "", "installed")]
 
 
 def check_extension_manifest(path: Path, content: str) -> list[Finding]:

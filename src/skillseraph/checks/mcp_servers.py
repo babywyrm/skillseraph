@@ -35,7 +35,7 @@ _AUTH_PREFIX = re.compile(r"(?i)^(?:bearer|basic|token)\s+")
 _VALUE_REFERENCE = re.compile(r"\$\{?[\w:.-]+\}?|\{env:[\w.-]+\}")
 _PLACEHOLDER = re.compile(r"(?i)^(?:<[^>]*>|your[_-].*|.*placeholder.*|changeme|x+|\*+|redacted|example.*)$")
 _TLS_KEYS = ("tls", "ssl", "verify", "verify_ssl", "tls_verify")
-_URL_FIELDS = ("url", "httpUrl", "endpoint", "baseUrl", "uri")
+URL_FIELDS = ("url", "httpUrl", "endpoint", "baseUrl", "uri")
 _SHELL_COMMAND = re.compile(
     r"(curl|wget|\b(?:bash|sh|zsh)\s+-c\b|\b(?:bash|sh|zsh)\b.*\||\beval\b)",
     re.IGNORECASE,
@@ -88,7 +88,7 @@ def _embedded_servers_key(path: Path) -> str | None:
     return None
 
 
-def _goose_checks(path: Path, content: str) -> list[Finding]:
+def _goose_servers(content: str) -> list[tuple[str, dict[str, object]]]:
     """Goose ``extensions`` are MCP servers with cmd/uri/envs field names."""
     try:
         data = yaml.safe_load(content)
@@ -97,29 +97,53 @@ def _goose_checks(path: Path, content: str) -> list[Finding]:
     extensions = data.get("extensions") if isinstance(data, dict) else None
     if not isinstance(extensions, dict):
         return []
-    findings: list[Finding] = []
-    seen: set[str] = set()
-    for ext in extensions.values():
-        if isinstance(ext, dict) and ext.get("type") not in {"builtin", "platform"}:
-            server = {**ext, "command": ext.get("cmd"), "url": ext.get("uri"), "env": ext.get("envs")}
-            _inspect_server(path, server, findings, seen)
-    return findings
+    return [
+        (str(name), {**ext, "command": ext.get("cmd"), "url": ext.get("uri"), "env": ext.get("envs")})
+        for name, ext in extensions.items()
+        if isinstance(ext, dict) and ext.get("type") not in {"builtin", "platform"}
+    ]
+
+
+def server_entries(path: Path, content: str) -> list[tuple[str, dict[str, object]]]:
+    """(name, definition) for each MCP server the file declares, in any supported format."""
+    if path.name == "config.yaml" and path.parent.name == "goose":
+        return _goose_servers(content)
+    key = _embedded_servers_key(path)
+    tables: list[object] = []
+    if key:
+        data = load_jsonc(content)
+        servers = data.get(key) if isinstance(data, dict) else None
+        if isinstance(servers, dict) and isinstance(servers.get("servers"), dict):
+            servers = servers["servers"]  # opencode v2 nests names under mcp.servers
+        tables.append(servers)
+    elif _is_codex_config(path):
+        try:
+            tables.append(tomllib.loads(content).get("mcp_servers"))
+        except tomllib.TOMLDecodeError:
+            return []
+    elif _is_mcp_config(path):
+        data = load_jsonc(content)
+        if isinstance(data, dict):
+            tables.extend(data.get(k) for k in ("mcpServers", "servers"))
+    return [
+        (str(name), server)
+        for table in tables
+        if isinstance(table, dict)
+        for name, server in table.items()
+        if isinstance(server, dict)
+    ]
 
 
 def check_mcp_servers(path: Path, content: str) -> list[Finding]:
-    if path.name == "config.yaml" and path.parent.name == "goose":
-        return _goose_checks(path, content)
-    key = _embedded_servers_key(path)
-    if key:
-        return _embedded_server_checks(path, content, key)
-    if not _is_mcp_config(path):
-        return []
-    findings = run_category("mcp_servers", path, content)
-    seen_checks = {f.check for f in findings}
-    if _is_codex_config(path):
-        findings.extend(_toml_checks(path, content, seen_checks))
-    else:
-        findings.extend(_structural_checks(path, content, seen_checks))
+    findings: list[Finding] = []
+    seen: set[str] = set()
+    if _is_mcp_config(path):
+        findings = run_category("mcp_servers", path, content)
+        seen = {f.check for f in findings}
+        if not _is_codex_config(path):
+            findings.extend(_structural_checks(path, content, seen))
+    for _, server in server_entries(path, content):
+        _inspect_server(path, server, findings, seen)
     return findings
 
 
@@ -150,7 +174,7 @@ def _emit(
     ))
 
 
-def _command_line(server: dict[str, object]) -> str:
+def command_line(server: dict[str, object]) -> str:
     parts: list[str] = []
     command = server.get("command")
     if isinstance(command, str):
@@ -214,7 +238,7 @@ def _inspect_server(
     findings: list[Finding],
     seen: set[str],
 ) -> None:
-    launched = _command_line(server)
+    launched = command_line(server)
     argv0 = launched.split(" ", 1)[0]
     shell_target = launched if Path(argv0).name in _SHELLS else argv0
     if _SHELL_COMMAND.search(shell_target):
@@ -298,7 +322,7 @@ def _inspect_server(
             "J6",
         )
 
-    for key in _URL_FIELDS:
+    for key in URL_FIELDS:
         value = server.get(key)
         if not isinstance(value, str) or not value.lower().startswith(("http://", "https://")):
             continue
@@ -366,39 +390,6 @@ def _literal_secret_keys(block: object) -> list[str]:
     return sorted(names)
 
 
-def _embedded_server_checks(path: Path, content: str, key: str) -> list[Finding]:
-    data = load_jsonc(content)
-    servers = data.get(key) if isinstance(data, dict) else None
-    if isinstance(servers, dict) and isinstance(servers.get("servers"), dict):
-        servers = servers["servers"]  # opencode v2 nests names under mcp.servers
-    if not isinstance(servers, dict):
-        return []
-    findings: list[Finding] = []
-    seen: set[str] = set()
-    for server in servers.values():
-        if isinstance(server, dict):
-            _inspect_server(path, server, findings, seen)
-    return findings
-
-
-def _toml_checks(path: Path, content: str, seen: set[str]) -> list[Finding]:
-    """Codex MCP servers live under ``[mcp_servers.<name>]``, not mcp.json."""
-    try:
-        data = tomllib.loads(content)
-    except tomllib.TOMLDecodeError:
-        return []
-
-    servers = data.get("mcp_servers")
-    if not isinstance(servers, dict):
-        return []
-
-    findings: list[Finding] = []
-    for server in servers.values():
-        if isinstance(server, dict):
-            _inspect_server(path, server, findings, seen)
-    return findings
-
-
 def _structural_checks(path: Path, content: str, seen: set[str]) -> list[Finding]:
     """JSON-aware pass for fields the line-based regex rules miss."""
     data = load_jsonc(content)
@@ -458,10 +449,4 @@ def _structural_checks(path: Path, content: str, seen: set[str]) -> list[Finding
                 walk(item)
 
     walk(data)
-    for key in ("mcpServers", "servers"):
-        servers = data.get(key) if isinstance(data, dict) else None
-        if isinstance(servers, dict):
-            for server in servers.values():
-                if isinstance(server, dict):
-                    _inspect_server(path, server, findings, seen)
     return findings

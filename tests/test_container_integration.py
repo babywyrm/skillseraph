@@ -194,8 +194,18 @@ def test_linux_container_scans_macos_and_linux_layouts(tmp_path: Path) -> None:
             IMAGE,
             "audit-local", "--home", "/home/fixture",
             "--fail-on", "none", "--quiet", "--json-out", "/out/home.json",
+            "--inventory", "/out/inventory.json",
         ]
     )
+    inventory_text = (out / "inventory.json").read_text()
+    inventory = json.loads(inventory_text)
+    assert "/home/fixture" not in inventory_text
+    assert "secret-token" not in inventory_text
+    assert {(s["path"], s["name"], s["transport"]) for s in inventory["mcp_servers"]} >= {
+        (".config/goose/config.yaml", "r", "http"),
+        (".config/zed/settings.json", "demo", "stdio"),
+        (".kiro/settings/mcp.json", "k", "stdio"),
+    }
 
     assert {
         "mcp_server_non_local_url",

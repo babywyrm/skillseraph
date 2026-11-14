@@ -47,6 +47,7 @@ class _Command(click.Command):
 @click.option("--include-deps/--no-deps", default=True, help="Scan dependency trees (node_modules, vendor, etc.)")
 @click.option("--json-out", "-j", type=click.Path(), help="Write JSON findings to file")
 @click.option("--sarif", type=click.Path(), help="Write SARIF 2.1.0 report")
+@click.option("--inventory", type=click.Path(), help="Write a JSON inventory of MCP servers, extensions, hooks, and files read (no verdicts)")
 @click.option("--fail-on", type=click.Choice(["critical", "high", "medium", "low", "any", "none"]), default="high", help="Exit non-zero if findings at this severity or above")
 @click.option("--min-confidence", type=click.Choice(["low", "medium", "high"]), default="low", help="Suppress findings below this confidence level")
 @click.option("--home", type=click.Path(exists=True, file_okay=False), help="Home directory to audit with the audit-local target")
@@ -69,6 +70,7 @@ def main(
     include_deps: bool,
     json_out: str | None,
     sarif: str | None,
+    inventory: str | None,
     fail_on: str,
     min_confidence: str,
     home: str | None,
@@ -209,6 +211,15 @@ def main(
 
     if sarif:
         _write_sarif(result, Path(sarif))
+
+    if inventory:
+        from .inventory import write_inventory
+        inv = write_inventory(result, Path(inventory))
+        if not quiet:
+            console.print(
+                f"  [green]Inventory written → {inventory} ({len(inv.mcp_servers)} MCP server(s), "
+                f"{len(inv.extensions)} extension(s), {len(inv.hooks)} hook(s), {len(inv.files)} file(s))[/green]"
+            )
 
     if generate_policy:
         from .policy_gen import write_policy

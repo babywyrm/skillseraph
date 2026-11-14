@@ -50,10 +50,17 @@ def load_jsonc(content: str) -> object | None:
     return parsed
 
 
+_SECRET_WORD = (
+    r"(?:token|secret|passw(?:or)?d|api[_-]?key|access[_-]?key|private[_-]?key"
+    r"|credential|authorization)"
+)
 _SECRET_KEY_VALUE = re.compile(
-    r"(?i)([\"']?[\w.-]*(?:token|secret|passw(?:or)?d|api[_-]?key|access[_-]?key|private[_-]?key"
-    r"|credential|authorization)[\w.-]*[\"']?\s*[:=]\s*[\"']?)"
+    rf"(?i)([\"']?[\w.-]*{_SECRET_WORD}[\w.-]*[\"']?\s*[:=]\s*[\"']?)"
     r"(?!\$|\{env:|<redacted>)(?!(?:Bearer|Basic|Token)\s)([^\s\"',}\]]{4,})"
+)
+_SECRET_FLAG = re.compile(
+    rf"(?i)(--?[\w-]*{_SECRET_WORD}[\w-]*[\"']?(?:\s*,\s*[\"']|\s+))"
+    r"(?!\$|<redacted>|-)([^\s\"',}\]]{4,})"
 )
 _AUTH_SCHEME = re.compile(r"(?i)\b(Bearer|Basic|Token)\s+(?!\$)[\w.~+/=-]{6,}")
 _URL_USERINFO = re.compile(r"(https?://)[^/\s\"'@]+@")
@@ -69,6 +76,7 @@ def redact(text: str) -> str:
     text = _URL_USERINFO.sub(r"\1", text)
     text = TOKEN_SHAPES.sub("<redacted>", text)
     text = _AUTH_SCHEME.sub(r"\1 <redacted>", text)
+    text = _SECRET_FLAG.sub(r"\1<redacted>", text)
     return _SECRET_KEY_VALUE.sub(r"\1<redacted>", text)
 
 

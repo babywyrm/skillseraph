@@ -37,6 +37,7 @@ _LIFECYCLE_KEYS = (
 )
 _SETTINGS_KEYS = ("hooks", "statusLine", "notify")
 _AIDER_COMMAND_KEYS = ("test-cmd", "lint-cmd", "notifications-command")
+_EVENT_KEYS = {*_LIFECYCLE_KEYS, *_SETTINGS_KEYS, *_AIDER_COMMAND_KEYS} - {"command"}
 _LOCAL_HOSTS = {"localhost", "127.0.0.1", "0.0.0.0", "::1"}
 _REMOTE_EXEC = re.compile(
     r"(curl|wget)\b[^\n]*?https?://[^\n]*?(\|\s*|-O-\s*\|\s*|;\s*|&&\s*)?(bash|sh|zsh|python|node)\b"
@@ -63,7 +64,7 @@ def _command_tree(path: Path, content: str) -> object | None:
             return None
         if not isinstance(aider, dict):
             return None
-        return [{"command": aider[k]} for k in _AIDER_COMMAND_KEYS if k in aider]
+        return {k: {"command": aider[k]} for k in _AIDER_COMMAND_KEYS if k in aider}
     elif (name in {"settings.json", "settings.local.json"} and ".claude" in path.parts) or (
         name == "settings.json" and parent == ".gemini"
     ) or is_amazonq_agent(path):
@@ -71,6 +72,20 @@ def _command_tree(path: Path, content: str) -> object | None:
     else:
         return None
     return {k: data[k] for k in _SETTINGS_KEYS if k in data} if isinstance(data, dict) else None
+
+
+def hook_events(path: Path, content: str) -> list[str]:
+    """Names of the automatic command triggers a file defines, e.g. ``hooks.PreToolUse``."""
+    data = _command_tree(path, content)
+    if not isinstance(data, dict):
+        return []
+    events: list[str] = []
+    for key, value in data.items():
+        if key == "hooks" and isinstance(value, dict):
+            events.extend(f"hooks.{event}" for event in value)
+        elif key in _EVENT_KEYS:
+            events.append(key)
+    return events
 
 
 def _remote_http_hosts(node: object) -> list[str]:

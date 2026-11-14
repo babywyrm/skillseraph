@@ -45,9 +45,6 @@ Domain J (config & automation).
   descriptions and external endpoints, as tool-schema smuggling does for MCP.
 - **Change-only `audit-local`** — snapshot a workstation and report only what
   changed since, so a new MCP server or extension stands out.
-- **Inventory output** — `--inventory` lists every MCP server, extension, hook,
-  and rule file found, without judging them, for fleet audits.
-
 - **Rule packs** — versioned, shareable rule bundles (community + curated),
   with a firing sample for every rule (today every rule id must appear in a
   test, which `test_rule_coverage.py` enforces).
@@ -86,6 +83,7 @@ Domain J (config & automation).
 - ~~MCP server version pinning~~
 - ~~Roo Code, Kiro, Amazon Q Developer, Aider, and Goose~~
 - ~~Redacted reports and literal-secret detection in MCP configs~~
+- ~~Inventory output (`--inventory`)~~
 
 ---
 

@@ -112,6 +112,9 @@ skillseraph . --min-confidence high
 
 # Quiet mode for CI logs
 skillseraph . --quiet --json-out findings.json
+
+# List every MCP server, extension, hook, and file read, without verdicts
+skillseraph audit-local --inventory inventory.json --fail-on none
 ```
 
 Exit codes: `0` clean, `1` findings at/above `--fail-on`, `2` error (see
@@ -254,6 +257,14 @@ skillseraph is designed to run as a gate. See [QUICKSTART.md](QUICKSTART.md) for
 - **SARIF 2.1.0** — GitHub Code Scanning / VS Code (`--sarif`); each result
   carries a `rank` (severity × confidence) and a `confidence` property so Code
   Scanning can sort by it
+- **Inventory** — `--inventory FILE` writes what the scan read, with no
+  verdicts, for fleet audits: `files`, `mcp_servers` (`name`, `transport`,
+  redacted `command`, URL `host`, `env_keys` names only), `extensions`
+  (installed or recommended `id` and `version`), and `hooks` (`event`, such as
+  `hooks.PreToolUse` or `postCreateCommand`). Paths are relative to the
+  target, and absolute paths inside commands become `<target>/…` or `~/…`, so
+  an `audit-local` inventory carries no home directory. It works
+  with any target and does not change the exit code
 
 ### Exit codes
 
@@ -290,7 +301,7 @@ Each `findings` entry:
 | `severity` | string | `critical`, `high`, `medium`, `low`, or `info` |
 | `title` | string | One-line summary |
 | `detail` | string | Matched context |
-| `evidence` | string | Redacted excerpt: values of credential-named keys, `Bearer`/`Basic`/`Token` values, common token shapes, and URL userinfo become `<redacted>` or are dropped; `${VAR}` references stay |
+| `evidence` | string | Redacted excerpt: values of credential-named keys and flags (`--api-key VALUE`), `Bearer`/`Basic`/`Token` values, common token shapes, and URL userinfo become `<redacted>` or are dropped; `${VAR}` references stay |
 | `platform` | string | Platform the file belongs to |
 | `taxonomy_id` | string | MCP threat id (`MCP-T01`–`MCP-T14`, see below) |
 | `atlas_id` | string | Attack Path Atlas id, e.g. `J2` |
