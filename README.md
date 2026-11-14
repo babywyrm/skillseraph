@@ -237,6 +237,7 @@ checks as plain JSON.
 | `supply_chain_trust` | Skill/plugin/tool sources that auto-deploy or skip human review, remote sources flagged `trusted`/`verified`, and remote skill feeds/registries (Atlas D3/J5) |
 | `runtime_escape` | Container/orchestrator escape surface: runtime sockets (`docker.sock`, `containerd.sock`), kubelet API, service-account token paths, host-namespace/privileged markers (Atlas J4) |
 | `approver_manipulation` | Indirect prompt injection aimed at an automated reviewer/LLM-judge (mark-as-safe, forced ALLOW verdict, "you are the security filter") (OWASP LLM01, Atlas J2/I3) |
+| `unicode` | Hidden Unicode in any scanned file, including inside JSON `\u` escapes: tag characters and variation-selector runs that encode invisible text (decoded into the evidence), bidi overrides (Trojan Source), zero-width characters inside ASCII text, and words mixing Latin with Cyrillic look-alikes (Atlas J1) |
 | `monitoring_bypass` | Config that disables audit/logging, adds wildcard security exceptions, or disables detection rules (Atlas J3) |
 
 **Hostile input.** A repo scan does not follow symlinks that resolve outside

@@ -43,9 +43,6 @@ Domain J (config & automation).
 
 - **Rule packs** — versioned, shareable rule bundles (community + curated),
   held to the same `examples` and `rules-test` bar as packaged rules.
-- **Unicode / homoglyph deep analysis** — dedicated normalization pass for
-  invisible-character and homoglyph injection beyond the current regex.
-
 ## Horizon
 
 - **Org-wide scanning** — scan all repos in a GitHub org via the API for
@@ -78,6 +75,7 @@ Domain J (config & automation).
 - ~~A2A agent cards~~
 - ~~Change-only `audit-local` (`--since`)~~
 - ~~Rule test command (`rules-test`)~~
+- ~~Hidden Unicode (tag characters, bidi controls, zero-width, Cyrillic homoglyphs)~~
 
 ---
 

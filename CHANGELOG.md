@@ -115,6 +115,20 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **Hidden Unicode detection.** The old `invisible_unicode` rule only
+  matched escaped `\u200b` text, so real invisible characters passed. A new
+  `unicode` check reads the decoded text, including strings behind JSON
+  `\u` escapes:
+  - `hidden_unicode_smuggled_text` (critical): Unicode tag characters or
+    variation-selector runs that encode a string no editor shows; the
+    evidence holds the decoded, redacted text. Flag emoji are exempt.
+  - `hidden_unicode_bidi_control` (high): bidi overrides and isolates
+    (Trojan Source, CVE-2021-42574).
+  - `hidden_unicode_invisible` (medium): zero-width characters and soft
+    hyphens next to ASCII. Emoji joiners, Persian and Indic joiners, and a
+    leading byte-order mark stay quiet.
+  - `hidden_unicode_mixed_script` (medium, medium confidence): a word that
+    mixes Latin letters with Cyrillic look-alikes, as in spoofed hosts.
 - **`skillseraph rules-test FILE...`.** Checks contributed rule files
   without the repo's pytest setup: required fields, valid severity and
   confidence, a pattern that compiles, ids that are unique and do not

@@ -115,6 +115,7 @@ def run_all_checks(path: Path, content: str, line_offset: int = 0) -> list[Findi
     from .supply_chain_trust import check_supply_chain_trust
     from .suppression import check_suppression
     from .tool_abuse import check_tool_abuse
+    from .unicode import check_hidden_unicode
     from .urls import check_urls
 
     findings: list[Finding] = []
@@ -143,6 +144,7 @@ def run_all_checks(path: Path, content: str, line_offset: int = 0) -> list[Findi
         check_runtime_escape,
         check_approver_manipulation,
         check_monitoring_bypass,
+        check_hidden_unicode,
     ]:
         findings.extend(checker(path, content))
     return findings
