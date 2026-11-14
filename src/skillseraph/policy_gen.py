@@ -35,6 +35,16 @@ TOOL_INDICATORS = {
 }
 
 
+def _source_label(target: Path) -> str:
+    """Name the scanned tree without the machine path or, for a home scan, the user."""
+    try:
+        if target == Path.home():
+            return "~"
+    except RuntimeError:
+        pass
+    return target.name
+
+
 def generate_policy(
     result: ScanResult,
     name: str = "skillseraph-generated",
@@ -90,7 +100,7 @@ def generate_policy(
             "name": name,
             "namespace": namespace,
             "annotations": {
-                "skillseraph.io/generated-from": str(result.target),
+                "skillseraph.io/generated-from": _source_label(result.target),
                 "skillseraph.io/findings-count": str(len(result.findings)),
             },
         },

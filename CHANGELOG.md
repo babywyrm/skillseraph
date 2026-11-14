@@ -86,6 +86,10 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **Generated policies no longer carry the machine path.** The
+  `skillseraph.io/generated-from` annotation held the absolute scan path,
+  which named the user and their directory layout in a manifest meant to be
+  committed. It now holds the directory name, or `~` for a home scan.
 - **Image and font assets are no longer scanned as text.** Skill folders
   ship PNGs and fonts, and their bytes produced noise findings. Files with
   image, font, archive, and library extensions are skipped; text files are
