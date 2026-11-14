@@ -30,6 +30,11 @@ uses [Semantic Versioning](https://semver.org/).
   shapes, and URL userinfo. `${VAR}`
   references stay. Findings whose evidence held a secret get a new
   fingerprint, so re-save baselines that covered them.
+- **Admission webhook scans every key.** It scanned only `data` keys with
+  agent-looking names, so a payload in `binaryData`, or under any other
+  key name that a pod mounts at an agent config path with `items[].path`,
+  was admitted. Every `data` key and every base64-decoded `binaryData` key
+  is now scanned; invalid base64 is denied.
 - **Admission webhook rejects unsafe data keys.** Keys were joined straight
   onto the scan directory, so a request posted directly to the webhook with a
   key such as `../name` wrote outside it (CWE-22). Keys that are not valid

@@ -1,7 +1,7 @@
 """Kubernetes ValidatingAdmissionWebhook for skillseraph.
 
-Scans ConfigMap/Secret data keys that match agent-config patterns. Rejects the
-admission request if findings at/above the configured threshold are detected.
+Scans every ConfigMap ``data`` and ``binaryData`` key. Rejects the admission
+request if findings at/above the configured threshold are detected.
 
 Run standalone:  python -m skillseraph.webhook
 Env:
@@ -13,6 +13,8 @@ Env:
 
 from __future__ import annotations
 
+import base64
+import binascii
 import json
 import os
 import re
@@ -22,18 +24,12 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
 from .models import Severity
-from .scanner import scan_directory
+from .scanner import scan_file
 
 FAIL_ON = os.environ.get("FAIL_ON", "high")
 LISTEN_PORT = int(os.environ.get("LISTEN_PORT", "8443"))
 TLS_CERT = os.environ.get("TLS_CERT_FILE", "/certs/tls.crt")
 TLS_KEY = os.environ.get("TLS_KEY_FILE", "/certs/tls.key")
-
-AGENT_CONFIG_KEYS = {
-    "AGENTS.md", "CLAUDE.md", "SKILL.md", "rules.mdc",
-    "copilot-instructions.md", "hooks.json", "mcp.json",
-    "devin.md", "system_prompt.md",
-}
 
 _CONFIGMAP_KEY = re.compile(r"[-._a-zA-Z0-9]{1,253}")
 
@@ -47,25 +43,36 @@ THRESHOLD = {
 }
 
 
-def _scan_configmap_data(data: dict[str, str]) -> list[dict[str, str]]:
-    """Write data keys to a temp dir and scan them."""
+def _invalid(check: str, title: str, key: str) -> dict[str, str]:
+    return {"check": check, "severity": "critical", "title": title, "key": key[:64]}
+
+
+def _scan_configmap_data(data: dict[str, str], binary_data: dict[str, str] | None = None) -> list[dict[str, str]]:
+    """Write every key to a temp dir and scan it.
+
+    Key names are not trusted to pick what gets scanned: a volume's
+    ``items[].path`` can mount any key at an agent config path.
+    """
     findings = []
+    files: list[tuple[str, bytes]] = []
+    for key, content in data.items():
+        files.append((key, content.encode()))
+    for key, encoded in (binary_data or {}).items():
+        try:
+            files.append((key, base64.b64decode(encoded, validate=True)))
+        except binascii.Error:
+            findings.append(_invalid("invalid_binary_data", "binaryData value is not valid base64", key))
     with tempfile.TemporaryDirectory(prefix="seraph-") as td:
-        td_path = Path(td)
-        for key, content in data.items():
+        sev = THRESHOLD[FAIL_ON]
+        for key, raw in files:
             if not _CONFIGMAP_KEY.fullmatch(key) or key in (".", ".."):
-                findings.append({"check": "invalid_configmap_key", "severity": "critical",
-                                 "title": "Data key is not a valid ConfigMap key", "key": key[:64]})
+                findings.append(_invalid("invalid_configmap_key", "Data key is not a valid ConfigMap key", key))
                 continue
-            if not any(key.endswith(suffix) or key in AGENT_CONFIG_KEYS
-                       for suffix in (".md", ".mdc", ".json", ".yaml", ".yml")):
-                continue
-            (td_path / key).write_text(content)
-        result = scan_directory(td_path, governed=True)
-        sev = THRESHOLD.get(FAIL_ON)
-        for f in result.findings:
-            if sev and f.severity.score >= sev.score:
-                findings.append({"check": f.check, "severity": f.severity.value, "title": f.title, "key": str(f.path.name)})
+            path = Path(td) / key
+            path.write_bytes(raw)
+            for f in scan_file(path, governed=True):
+                if sev and f.severity.score >= sev.score:
+                    findings.append({"check": f.check, "severity": f.severity.value, "title": f.title, "key": key})
     return findings
 
 
@@ -76,11 +83,12 @@ class WebhookHandler(BaseHTTPRequestHandler):
 
         review = body.get("request", {})
         obj = review.get("object", {})
-        data = obj.get("data", {})
+        data = obj.get("data") or {}
+        binary_data = obj.get("binaryData") or {}
         ns = review.get("namespace", "")
         name = obj.get("metadata", {}).get("name", "")
 
-        findings = _scan_configmap_data(data) if data else []
+        findings = _scan_configmap_data(data, binary_data) if data or binary_data else []
         allowed = len(findings) == 0
 
         verdict: dict[str, object] = {"uid": review.get("uid", ""), "allowed": allowed}

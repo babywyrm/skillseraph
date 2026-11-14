@@ -1,15 +1,17 @@
 # skillseraph Admission Webhook
 
 Optional deploy-time gate: rejects ConfigMap creates/updates in labeled namespaces
-when their data keys contain agent-config patterns (AGENTS.md, SKILL.md, hooks.json,
-etc.) with findings at or above the severity threshold.
+when any `data` or `binaryData` key has findings at or above the severity
+threshold.
 
 ## How it works
 
 1. Namespace is labeled `skillseraph.io/scan: "true"` (opt-in).
 2. A ConfigMap is created/updated in that namespace.
-3. The webhook extracts data keys matching agent-config patterns.
-4. Each matching key is scanned by skillseraph's rule engine.
+3. The webhook reads every `data` key and every base64-decoded `binaryData`
+   key. Key names do not limit the scan, because a volume's `items[].path`
+   can mount any key at an agent config path.
+4. Each key is scanned by skillseraph's rule engine.
 5. If findings at/above `FAIL_ON` (default: `high`) are found, the request is
    rejected with a 403 and a message listing the findings.
 
