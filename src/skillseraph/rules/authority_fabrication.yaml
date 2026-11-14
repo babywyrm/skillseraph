@@ -40,7 +40,7 @@ rules:
     atlas_id: J1
 
   - id: fake_ticket_reference
-    pattern: '(ticket|change\s?request|CR|JIRA|INC)[-#\s]?\d{2,}.*?(approved|authorized|emergency)'
+    pattern: '^(?>.*?(?:ticket|change\s?request|CR|JIRA|INC)[-#\s]?\d{2,}).*?(?:approved|authorized|emergency)'
     severity: medium
     title: "Fake ticket reference: fabricates a change-management trail"
     taxonomy_id: MCP-T02

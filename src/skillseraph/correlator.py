@@ -15,6 +15,7 @@ import re
 
 from .checks import redact
 from .models import Finding, ScanResult, Severity
+from .scanner import read_capped
 
 # Cross-reference patterns: one file points at another.
 _REFERENCE_PATTERNS = [
@@ -68,7 +69,7 @@ def _find_reference_chains(result: ScanResult) -> list[Finding]:
         if scanned_file.suffix not in (".md", ".mdc", ".json", ".yaml", ".yml"):
             continue
         try:
-            content = scanned_file.read_text(errors="replace")
+            content, _ = read_capped(scanned_file)
         except OSError:
             continue
 

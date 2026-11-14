@@ -304,7 +304,7 @@ def _print_changes(since: str, changes: list[Change]) -> None:
 def _print_results(result: ScanResult, fail_on: str) -> None:
     console.print()
     console.print(f"[bold]skillseraph v{__version__}[/bold] — agent config security scanner")
-    console.print(f"  Target: {result.target}")
+    console.print(f"  Target: {escape(str(result.target))}")
     console.print(f"  Platforms: {', '.join(p.value for p in result.platforms_detected)}")
     console.print(f"  Files scanned: {result.files_scanned}")
     console.print()
@@ -324,7 +324,7 @@ def _print_results(result: ScanResult, fail_on: str) -> None:
         table.add_row(
             f"[{sev_style}]{f.severity.value.upper()}[/{sev_style}]",
             f.check,
-            f.location,
+            escape(f.location),
             f.title,
         )
 

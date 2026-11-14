@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import functools
 import re
+import time
 from dataclasses import dataclass
 from importlib import resources
 from pathlib import Path
@@ -97,6 +98,28 @@ def _hits(pattern: re.Pattern[str], sample: str) -> bool:
     return any(pattern.search(line) for line in sample.splitlines() or [""])
 
 
+_PROBE_SIZES = (1024, 4096, 16384)
+_PROBE_SECONDS = 0.1
+
+
+def _is_slow(compiled: re.Pattern[str], samples: list[str]) -> bool:
+    """True if one long line built by repeating an example token stalls the pattern.
+
+    ponytail: timed in-process and stops at the first slow size, which catches
+    the polynomial blowups seen in practice; an exponential pattern hangs here
+    instead of failing. Upgrade path: run the probe in a subprocess with a timeout.
+    """
+    tokens = {tok for s in samples for tok in s.split()} | {"a", ":"}
+    for tok in sorted(tokens):
+        for size in _PROBE_SIZES:
+            line = (tok + " ") * (size // (len(tok) + 1))
+            start = time.perf_counter()
+            compiled.search(line)
+            if time.perf_counter() - start > _PROBE_SECONDS:
+                return True
+    return False
+
+
 def _verify_rule(rule: object, index: int, seen: set[str], owners: dict[str, Path], own: Path) -> RuleResult:
     if not isinstance(rule, dict):
         return RuleResult(f"rules[{index}]", ("rule must be a mapping",), 0)
@@ -136,6 +159,8 @@ def _verify_rule(rule: object, index: int, seen: set[str], owners: dict[str, Pat
     if compiled is not None:
         problems += [f"match example {n} does not match" for n, s in enumerate(matches, 1) if not _hits(compiled, s)]
         problems += [f"no_match example {n} matches" for n, s in enumerate(misses, 1) if _hits(compiled, s)]
+        if _is_slow(compiled, matches + misses):
+            problems.append("pattern is slow on long input (possible ReDoS)")
     return RuleResult(name, tuple(problems), len(matches) + len(misses))
 
 

@@ -67,7 +67,7 @@ rules:
         - "hidden\\u200b\\u200ctext"
 
   - id: instruction_in_comment
-    pattern: '<!--.*?(ignore|override|inject|execute|system:).*?-->'
+    pattern: '^(?>.*?<!--)(?>.*?(?:ignore|override|inject|execute|system:)).*?-->'
     severity: high
     title: "Hidden instruction in HTML/markdown comment"
     taxonomy_id: MCP-T02

@@ -80,6 +80,13 @@ def test_packaged_file_name_does_not_exempt_a_collision(tmp_path: Path):
     assert "id already used by packaged rule injection.yaml" in result.output
 
 
+def test_slow_patterns_fail_the_redos_probe(tmp_path: Path):
+    body = _broken(pattern="'<!--.*?(ignore|execute).*?-->'", examples='{match: ["<!-- ignore -->"]}')
+    result = _run(str(_rules(tmp_path, body)))
+    assert result.exit_code == 1
+    assert "pattern is slow on long input" in result.output
+
+
 def test_duplicate_ids_within_a_file(tmp_path: Path):
     body = _broken() + _broken().removeprefix("rules:\n")
     result = _run(str(_rules(tmp_path, body)))

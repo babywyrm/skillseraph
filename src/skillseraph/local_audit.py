@@ -6,7 +6,7 @@ from dataclasses import replace
 from pathlib import Path
 
 from .models import AcceptedException, Finding, Platform, ScanResult
-from .scanner import scan_file
+from .scanner import read_capped, scan_file
 
 LOCAL_IDE_FILES: dict[Platform, tuple[str, ...]] = {
     Platform.VSCODE: (
@@ -163,7 +163,7 @@ def audit_local_ide_configs(
                 )
                 if allowed_publishers:
                     try:
-                        content = path.read_text(encoding="utf-8", errors="replace")
+                        content, _ = read_capped(path)
                     except OSError:
                         content = ""
                     for finding in check_unknown_publisher(path, content, allowed_publishers):

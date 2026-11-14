@@ -8,7 +8,7 @@ from datetime import UTC, date, datetime
 from pathlib import Path
 
 from .checks import redact, run_all_checks
-from .models import AcceptedException, Finding, Platform, ScanResult
+from .models import AcceptedException, Finding, Platform, ScanResult, Severity
 from .platforms import PLATFORMS, detect_platforms, get_all_patterns
 
 # ponytail: metadata must be reason, owner, until in that order. Any other
@@ -23,6 +23,14 @@ _INLINE_IGNORE = re.compile(
 _META_ONLY = re.compile(_META)
 
 IGNORE_FILE_NAME = ".skillseraphignore"
+MAX_FILE_BYTES = 4 * 1024 * 1024
+
+
+def read_capped(path: Path) -> tuple[str, bool]:
+    """Text of the first MAX_FILE_BYTES of *path*, and whether the file was longer."""
+    with path.open("rb") as handle:
+        data = handle.read(MAX_FILE_BYTES + 1)
+    return data[:MAX_FILE_BYTES].decode("utf-8", errors="replace"), len(data) > MAX_FILE_BYTES
 
 _IgnoreEntry = tuple[str, str, str, date | None]
 
@@ -168,14 +176,29 @@ def scan_file(
     reason, a role id in *owner*, and an *until* date that is today or later.
     """
     try:
-        content = path.read_text(encoding="utf-8", errors="replace")
-    except (OSError, UnicodeDecodeError):
+        content, truncated = read_capped(path)
+    except OSError:
         return []
 
     if not content.strip():
         return []
 
     findings = run_all_checks(path, content)
+    if truncated:
+        findings.append(Finding(
+            path=path,
+            check="agent_config_oversized",
+            severity=Severity.HIGH,
+            title="Agent config is too large to scan fully",
+            detail=(
+                f"Only the first {MAX_FILE_BYTES} bytes were checked. Agent config this "
+                "large is unusual, and padding is a way to push a payload past scanners."
+            ),
+            evidence=f"larger than {MAX_FILE_BYTES} bytes",
+            taxonomy_id="MCP-T13",
+            atlas_id="J8",
+            confidence="medium",
+        ))
     for f in findings:
         f.evidence, f.detail = redact(f.evidence), redact(f.detail)
     ignores = _inline_ignores(
@@ -259,7 +282,26 @@ def scan_directory(
         resolved_changed = {(target / f).resolve() for f in changed_files}
         files_to_scan = files_to_scan & resolved_changed
 
-    all_findings: list[Finding] = []
+    escaped = {f for f in files_to_scan if not f.resolve().is_relative_to(target)}
+    files_to_scan -= escaped
+    all_findings: list[Finding] = [
+        Finding(
+            path=fpath,
+            check="scan_symlink_outside_target",
+            severity=Severity.HIGH,
+            title="Agent config is a symlink to a file outside the repo",
+            detail=(
+                "The link was not followed. An agent that reads this path loads whatever "
+                "file it points to on the reader's machine, such as credentials, into "
+                "its context."
+            ),
+            evidence="symlink resolves outside the scanned tree",
+            taxonomy_id="MCP-T12",
+            atlas_id="J5",
+            confidence="medium",
+        )
+        for fpath in sorted(escaped)
+    ]
     for fpath in sorted(files_to_scan):
         if fpath.is_file():
             inline: list[AcceptedException] = []

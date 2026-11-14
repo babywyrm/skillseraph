@@ -55,7 +55,7 @@ _SECRET_WORD = (
     r"|credential|authorization)"
 )
 _SECRET_KEY_VALUE = re.compile(
-    rf"(?i)([\"']?[\w.-]*{_SECRET_WORD}[\w.-]*[\"']?\s*[:=]\s*[\"']?)"
+    rf"(?i)(?<![\w.-])([\"']?[\w.-]*{_SECRET_WORD}[\w.-]*[\"']?\s*[:=]\s*[\"']?)"
     r"(?!\$|\{env:|<redacted>)(?!(?:Bearer|Basic|Token)\s)([^\s\"',}\]]{4,})"
 )
 _SECRET_FLAG = re.compile(

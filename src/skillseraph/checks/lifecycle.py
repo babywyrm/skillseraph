@@ -39,10 +39,14 @@ _SETTINGS_KEYS = ("hooks", "statusLine", "notify")
 _AIDER_COMMAND_KEYS = ("test-cmd", "lint-cmd", "notifications-command")
 _EVENT_KEYS = {*_LIFECYCLE_KEYS, *_SETTINGS_KEYS, *_AIDER_COMMAND_KEYS} - {"command"}
 _LOCAL_HOSTS = {"localhost", "127.0.0.1", "0.0.0.0", "::1"}
+# Atomic groups take the first fetcher and the first URL after it and never
+# retry later ones: if any fetcher/URL/interpreter triple exists on a line, one
+# starting at the first fetcher does too. Without them the search is cubic in
+# line length.
 _REMOTE_EXEC = re.compile(
-    r"(curl|wget)\b[^\n]*?https?://[^\n]*?(\|\s*|-O-\s*\|\s*|;\s*|&&\s*)?(bash|sh|zsh|python|node)\b"
-    r"|https?://\S+\.(sh|py|js)\b\s*\|\s*(bash|sh|zsh|python|node)",
-    re.IGNORECASE,
+    r"^(?>[^\n]*?(?:curl|wget)\b)(?>[^\n]*?https?://)[^\n]*?(?:bash|sh|zsh|python|node)\b"
+    r"|https?://\S+\.(?:sh|py|js)\b\s*\|\s*(?:bash|sh|zsh|python|node)",
+    re.IGNORECASE | re.MULTILINE,
 )
 
 

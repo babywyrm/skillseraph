@@ -44,8 +44,11 @@ Rules live in `src/skillseraph/rules/*.yaml`.
    ```
 
    `skillseraph rules-test FILE...` checks each rule's fields, that the
-   pattern compiles, that its id does not collide with a packaged rule, and
-   that every example behaves; it exits `1` on any failure and needs no
+   pattern compiles, that its id does not collide with a packaged rule,
+   that every example behaves, and that the pattern stays fast on one long
+   line built from its example words (scanned repos are hostile: a pattern
+   like `a.*?b.*?c` can stall a scan for minutes; anchor with `^(?>.*?a)`
+   instead). It exits `1` on any failure and needs no
    pytest setup. `tests/test_rule_coverage.py` also runs every `match`
    example through the real scanner.
 3. If the rule needs structure (JSON, TOML), add the check under

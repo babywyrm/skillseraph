@@ -239,6 +239,12 @@ checks as plain JSON.
 | `approver_manipulation` | Indirect prompt injection aimed at an automated reviewer/LLM-judge (mark-as-safe, forced ALLOW verdict, "you are the security filter") (OWASP LLM01, Atlas J2/I3) |
 | `monitoring_bypass` | Config that disables audit/logging, adds wildcard security exceptions, or disables detection rules (Atlas J3) |
 
+**Hostile input.** A repo scan does not follow symlinks that resolve outside
+the target; it reports them as `scan_symlink_outside_target` (high).
+`audit-local` follows them, since dotfiles are often links. Files over 4 MiB
+are reported as `agent_config_oversized` (high) and only their first 4 MiB is
+checked.
+
 Findings carry a severity (`critical`/`high`/`medium`/`low`), a confidence level
 (`high`/`medium`/`low`, filterable with `--min-confidence`), an MCP threat
 id (`MCP-T01`–`MCP-T14`), and an Attack Path Atlas domain ID (Domain J primary;

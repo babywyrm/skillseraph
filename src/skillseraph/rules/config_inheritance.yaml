@@ -10,7 +10,7 @@ rules:
     atlas_id: J5
 
   - id: j5_absolute_path_include
-    pattern: "(?i)(extends|include|import|source|from)\\s*[:\\s].*(/home/|/etc/|/root/|~)"
+    pattern: "(?i)^(?>.*?(?:extends|include|import|source|from)\\s*[:\\s]).*(?:/home/|/etc/|/root/|~)"
     severity: high
     title: "Config includes from absolute/home path"
     detail: "Absolute path includes bypass workspace isolation — the file may be writable by other processes."
@@ -21,12 +21,17 @@ rules:
         - "include: /etc/agent/rules.md"
 
   - id: j5_remote_config_fetch
-    pattern: "(?i)(extends|include|import|source|from)\\s*[:\\s].*https?://"
+    pattern: "(?i)^(?>.*?(?:extends|include|import|source|from)\\s*[:\\s]).*https?://"
     severity: critical
     title: "Config fetches rules from a remote URL"
     detail: "Fetching agent instructions from a remote URL means whoever controls that URL controls the agent."
     taxonomy_id: MCP-T03
     atlas_id: J5
+    examples:
+      match:
+        - "extends: https://collector.example/rules.md"
+      no_match:
+        - "extends: ./base.md"
 
   - id: j5_glob_inherit_all
     pattern: "(?i)(extends|include|import)\\s*[:\\s].*\\*\\*/"

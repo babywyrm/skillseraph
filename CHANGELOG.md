@@ -8,6 +8,19 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Security
 
+- **Scanned trees are treated as hostile.**
+  - A symlink inside a repo that resolves outside it is reported as
+    `scan_symlink_outside_target` and never read, so a cloned repo cannot
+    pull files from the scanning machine into a report (CWE-59).
+    `audit-local` still follows symlinks, since dotfiles often are links.
+  - Files are read up to 4 MiB; a larger agent config gets
+    `agent_config_oversized` and only its first 4 MiB is checked (CWE-400).
+  - Seven patterns that backtracked polynomially on one long line (a scan
+    could run for minutes) now match in linear time with identical results
+    (CWE-1333). `rules-test` fails a pattern that is slow on long input, so
+    a contributed rule cannot reintroduce this.
+  - File paths and the scan target are escaped before reaching the console,
+    so a crafted filename cannot inject terminal markup or links.
 - **Reports no longer copy secret values (CWE-532).** Line rules stored the
   matched line as `evidence` and `detail`, so a one-line `"API_TOKEN":
   "<value>"`, an `Authorization: Bearer` header, or a token in a command

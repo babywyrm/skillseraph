@@ -18,6 +18,7 @@ from .checks.extensions import extension_entries
 from .checks.lifecycle import hook_events
 from .checks.mcp_servers import URL_FIELDS, command_line, server_entries
 from .models import ScanResult
+from .scanner import read_capped
 
 
 @dataclass(frozen=True)
@@ -94,7 +95,7 @@ def build_inventory(result: ScanResult) -> Inventory:
     labels = _path_labels(result.target)
     for path in sorted(set(result.scanned_paths)):
         try:
-            content = path.read_text(encoding="utf-8", errors="replace")
+            content, _ = read_capped(path)
         except OSError:
             continue
         rel = path.relative_to(result.target).as_posix()
