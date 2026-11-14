@@ -50,6 +50,12 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **Correlation read files the scan never covered.** The reference-chain
+  pass walked every `.md`/`.json`/`.yaml` under the target, so `audit-local`
+  read the whole home directory and a repo scan read `node_modules`. It now
+  reads only the scanned files. On a typical workstation `audit-local` went
+  from minutes to about a second and stopped reporting chains through
+  unrelated files.
 - **Plain `mcp.json` servers skipped the server inspector.** Cursor,
   Windsurf, VS Code (`servers`), and Claude Desktop configs only got the
   line regexes, so argv-list commands, `trust`, and other structural checks

@@ -91,4 +91,5 @@ def apply_baseline(result: ScanResult, baseline_fps: set[str]) -> ScanResult:
         findings=kept,
         files_scanned=result.files_scanned,
         platforms_detected=result.platforms_detected,
+        scanned_paths=result.scanned_paths,
     )

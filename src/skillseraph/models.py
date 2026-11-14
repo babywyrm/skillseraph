@@ -99,6 +99,7 @@ class ScanResult:
     files_scanned: int = 0
     platforms_detected: list[Platform] = field(default_factory=list)
     exceptions: list[AcceptedException] = field(default_factory=list)
+    scanned_paths: list[Path] = field(default_factory=list)
 
     @property
     def critical_count(self) -> int:

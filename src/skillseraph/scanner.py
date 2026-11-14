@@ -282,4 +282,5 @@ def scan_directory(
         files_scanned=len(files_to_scan),
         platforms_detected=platforms,
         exceptions=exceptions,
+        scanned_paths=sorted(files_to_scan),
     )

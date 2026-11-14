@@ -63,8 +63,8 @@ def _find_reference_chains(result: ScanResult) -> list[Finding]:
 
     chain_findings: list[Finding] = []
     # For each scanned file, check if it references other files that have findings.
-    for scanned_file in result.target.rglob("*") if result.target else []:
-        if not scanned_file.is_file() or scanned_file.suffix not in (".md", ".mdc", ".json", ".yaml", ".yml"):
+    for scanned_file in result.scanned_paths:
+        if scanned_file.suffix not in (".md", ".mdc", ".json", ".yaml", ".yml"):
             continue
         try:
             content = scanned_file.read_text(errors="replace")

@@ -145,14 +145,14 @@ def audit_local_ide_configs(
     allowed_publishers = allowed_publishers or set()
     findings: list[Finding] = []
     exceptions: list[AcceptedException] = []
-    files_scanned = 0
+    scanned_paths: list[Path] = []
     platforms_detected: list[Platform] = []
 
     for platform, rel_paths in LOCAL_IDE_FILES.items():
         platform_seen = False
         for rel_path in rel_paths:
             for path in _iter_existing_files(target / rel_path):
-                files_scanned += 1
+                scanned_paths.append(path)
                 platform_seen = True
                 inline: list[AcceptedException] = []
                 for finding in scan_file(path, governed=governed, exceptions=inline):
@@ -175,7 +175,8 @@ def audit_local_ide_configs(
     return ScanResult(
         target=target,
         findings=findings,
-        files_scanned=files_scanned,
+        files_scanned=len(scanned_paths),
         platforms_detected=platforms_detected or [Platform.GENERIC],
         exceptions=exceptions,
+        scanned_paths=scanned_paths,
     )
