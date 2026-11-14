@@ -41,9 +41,6 @@ Domain J (config & automation).
 - **More clients** — Roo Code, Kiro, Amazon Q Developer, Aider
   (`.aider.conf.yml`), and Goose, in repo scans and `audit-local`, reusing the
   embedded MCP server pass.
-- **MCP server version pinning** — flag `npx`/`uvx` launches with no version
-  or `@latest`.
-
 ## Medium
 
 - **A2A agent cards** — static checks on `.well-known/agent.json` for injected
@@ -90,6 +87,7 @@ Domain J (config & automation).
 - ~~Governed exceptions (reason, role, expiry) on failing gates, with JSON evidence~~
 - ~~Agent permission modes (Claude, Codex, Gemini CLI, Cursor CLI)~~
 - ~~Hooks in client settings (Claude, Gemini CLI, Codex), including HTTP hooks~~
+- ~~MCP server version pinning~~
 
 ---
 

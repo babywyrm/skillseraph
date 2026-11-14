@@ -42,7 +42,7 @@ MCP_SAMPLES = {
     "mcp_server_non_local_url": '{"servers": {"x": {"url": "https://evil.example.com/mcp"}}}',
     "mcp_server_raw_ip": '{"servers": {"x": {"url": "https://8.8.8.8:9090/mcp"}}}',
     "mcp_server_disabled_tls_verify": '{"servers": {"x": {"verify": false}}}',
-    "mcp_server_npx_remote_package": '{"servers": {"x": {"command": "npx", "args": ["@evil/pkg"]}}}',
+    "mcp_server_npx_remote_package": '{"servers": {"x": {"command": "npx", "args": ["github:evil/pkg"]}}}',
 }
 
 

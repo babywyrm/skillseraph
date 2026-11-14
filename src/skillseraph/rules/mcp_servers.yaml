@@ -40,10 +40,10 @@ rules:
     atlas_id: J4
 
   - id: mcp_server_npx_remote_package
-    pattern: "(?i)\"(command|args)\".*\"(npx|uvx|pip install|npm exec)\".*\"(@|git\\+|https?://)"
+    pattern: "(?i)\"(command|args)\".*\"(npx|uvx|pip install|npm exec)\".*\"(git\\+|https?://|(github|gitlab|bitbucket|gist):)"
     severity: critical
-    title: "MCP server fetches and runs a remote package via npx/uvx"
-    detail: "The server definition runs a remote package at agent startup. An attacker who controls this config achieves supply-chain code execution."
+    title: "MCP server runs a package straight from git or a URL"
+    detail: "The server definition runs code fetched from a git host or URL at agent startup, bypassing the registry. An attacker who controls this config or that source achieves code execution."
     taxonomy_id: MCP-T08
     atlas_id: J6
 

@@ -41,9 +41,20 @@ uses [Semantic Versioning](https://semver.org/).
   than `none`, in `--watch`, and in the admission webhook, an ignore comment
   or `.skillseraphignore` line counts only with `reason`, `owner` (a role id),
   and an unexpired `until`. Add those fields, or the finding fails the gate.
+- **`mcp_server_npx_remote_package` means git or URL sources.** It stays
+  critical for `git+`, `http(s)://`, and `github:`/`gitlab:`/`bitbucket:`/
+  `gist:` specs. Registry packages such as `npx -y @scope/pkg` no longer
+  match it; the new `mcp_server_unpinned_package` (medium) flags them when
+  they lack an exact version. Before, any `@` counted, so a scoped package
+  was critical on one line and clean when pretty-printed.
 
 ### Fixed
 
+- **Plain `mcp.json` servers skipped the server inspector.** Cursor,
+  Windsurf, VS Code (`servers`), and Claude Desktop configs only got the
+  line regexes, so argv-list commands, `trust`, and other structural checks
+  missed them. They now get the same pass as Codex TOML and embedded
+  servers.
 - **Commented JSON was skipped.** The structural MCP, devcontainer
   lifecycle, and IDE checks used strict `json.loads`, so a JSONC file (with
   `//` comments or trailing commas, normal in VS Code and devcontainers) was
@@ -67,6 +78,11 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **MCP server version pinning.** `mcp_server_unpinned_package` (medium)
+  flags `npx`, `bunx`, `pnpx`, `uvx`, `npm exec`, and `pnpm`/`yarn dlx`
+  launches that are not pinned to an exact version (`pkg@1.2.3`,
+  `pkg==1.2.3`), including `--package` and `--from` forms. Local paths and
+  git or URL sources are left to the other checks.
 - **Hooks in agent client settings.** Claude Code and Gemini CLI settings
   `hooks` and `statusLine`, Codex inline `[hooks]` and `notify`, and
   `~/.codex/hooks.json` now go through the lifecycle remote-exec check. MCP

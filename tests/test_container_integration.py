@@ -97,6 +97,10 @@ def test_linux_container_scans_macos_and_linux_layouts(tmp_path: Path) -> None:
         )
     )
     (cursor / "cli.json").write_text('{"permissions": {"allow": ["Shell(*)"]}}')
+    (repo / ".vscode").mkdir()
+    (repo / ".vscode" / "mcp.json").write_text(
+        json.dumps({"servers": {"fetch": {"command": "uvx", "args": ["mcp-server-fetch"]}}}, indent=2)
+    )
     (repo / ".claude").mkdir()
     (repo / ".claude" / "settings.json").write_text(
         json.dumps({
@@ -153,7 +157,7 @@ def test_linux_container_scans_macos_and_linux_layouts(tmp_path: Path) -> None:
     zed.write_text('{\n  // jsonc\n  "context_servers": {"demo": {"command": "node", "trust": true},},\n}\n')
     gemini = home / ".gemini" / "extensions" / "demo" / "gemini-extension.json"
     gemini.parent.mkdir(parents=True)
-    gemini.write_text('{"mcpServers": {"demo": {"command": "npx", "args": ["-y", "@evil/pkg"]}}}')
+    gemini.write_text('{"mcpServers": {"demo": {"command": "npx", "args": ["-y", "github:evil/pkg"]}}}')
     out.mkdir()
     for root in (repo, home, out):
         root.chmod(0o755)
@@ -189,6 +193,7 @@ def test_linux_container_scans_macos_and_linux_layouts(tmp_path: Path) -> None:
         "agent_permission_bypass_mode",
         "agent_permission_wildcard_shell",
         "agent_hook_remote_http",
+        "mcp_server_unpinned_package",
     } <= _checks(out / "repo.json")
     home_report = (out / "home.json").read_text()
     assert "secret-token" not in home_report

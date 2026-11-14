@@ -11,6 +11,7 @@ pass over just that key. Evidence lists key names, never values.
 from __future__ import annotations
 
 import re
+import shlex
 import tomllib
 from pathlib import Path
 from urllib.parse import urlparse
@@ -35,7 +36,13 @@ _SHELL_COMMAND = re.compile(
 )
 _SHELLS = {"sh", "bash", "zsh", "dash"}
 _REMOTE_LAUNCH = re.compile(r"(npx|uvx|pip install|npm exec)", re.IGNORECASE)
-_REMOTE_REF = re.compile(r"(@|git\+|https?://)", re.IGNORECASE)
+_REMOTE_REF = re.compile(r"(git\+|https?://|\b(?:github|gitlab|bitbucket|gist):)", re.IGNORECASE)
+_RUNNERS = {"npx", "bunx", "pnpx", "uvx"}
+_SUBCOMMAND_RUNNERS = {"npm": "exec", "pnpm": "dlx", "yarn": "dlx", "bun": "x"}
+_NPM_VALUE_FLAGS = {"--registry", "--cache", "-c", "--call", "--userconfig"}
+_UV_VALUE_FLAGS = {"--python", "-p", "--with", "--index", "--index-url", "--extra-index-url", "--default-index"}
+_EXACT_NPM = re.compile(r"\d+\.\d+\.\d+(?:[-+][\w.+-]+)?")
+_EXACT_PY = re.compile(r"[\w.\-]+(?:\[[\w,\-]+\])?(?:==|@)\d[\w.+!-]*")
 _LOCAL_URL = re.compile(
     r"^https?://(?:localhost|127\.0\.0\.1|0\.0\.0\.0)(?::|/|$)",
     re.IGNORECASE,
@@ -130,6 +137,49 @@ def _command_line(server: dict[str, object]) -> str:
     return " ".join(parts)
 
 
+def _package_spec(launched: str) -> tuple[str, str] | None:
+    """(launcher, package spec) when a registry runner starts the server."""
+    try:
+        argv = shlex.split(launched)
+    except ValueError:
+        return None
+    if not argv:
+        return None
+    launcher, rest = Path(argv[0]).name, argv[1:]
+    if launcher in _SUBCOMMAND_RUNNERS:
+        if not rest or rest[0] != _SUBCOMMAND_RUNNERS[launcher]:
+            return None
+        rest = rest[1:]
+    elif launcher not in _RUNNERS:
+        return None
+    python = launcher == "uvx"
+    package_flags = {"--from"} if python else {"-p", "--package"}
+    # ponytail: known value-taking flags only; an unknown one shifts the spec to its value.
+    value_flags = _UV_VALUE_FLAGS if python else _NPM_VALUE_FLAGS
+    i = 0
+    while i < len(rest):
+        flag, eq, value = rest[i].partition("=")
+        if flag in package_flags:
+            spec = value if eq else (rest[i + 1] if i + 1 < len(rest) else "")
+            return (launcher, spec) if spec else None
+        if flag in value_flags and not eq:
+            i += 2
+        elif rest[i].startswith("-"):
+            i += 1
+        else:
+            return launcher, rest[i]
+    return None
+
+
+def _unpinned(launcher: str, spec: str) -> bool:
+    if spec.startswith((".", "/", "~", "file:")) or _REMOTE_REF.search(spec):
+        return False
+    if launcher == "uvx":
+        return not _EXACT_PY.fullmatch(spec)
+    version = spec.lstrip("@").partition("@")[2]
+    return not _EXACT_NPM.fullmatch(version)
+
+
 def _inspect_server(
     path: Path,
     server: dict[str, object],
@@ -199,9 +249,23 @@ def _inspect_server(
             findings, seen, path,
             "mcp_server_npx_remote_package",
             Severity.CRITICAL,
-            "MCP server fetches and runs a remote package via npx/uvx",
-            "The server definition runs a remote package at agent startup.",
+            "MCP server runs a package straight from git or a URL",
+            "The server definition runs code fetched from a git host or URL at agent startup.",
             launched,
+            "MCP-T08",
+            "J6",
+        )
+
+    package = _package_spec(launched)
+    if package and _unpinned(*package):
+        _emit(
+            findings, seen, path,
+            "mcp_server_unpinned_package",
+            Severity.MEDIUM,
+            "MCP server package is not pinned to an exact version",
+            "Each agent start resolves the newest matching release, so a compromised "
+            "or hijacked publish runs without any config change.",
+            " ".join(package),
             "MCP-T08",
             "J6",
         )
@@ -332,4 +396,10 @@ def _structural_checks(path: Path, content: str, seen: set[str]) -> list[Finding
                 walk(item)
 
     walk(data)
+    for key in ("mcpServers", "servers"):
+        servers = data.get(key) if isinstance(data, dict) else None
+        if isinstance(servers, dict):
+            for server in servers.values():
+                if isinstance(server, dict):
+                    _inspect_server(path, server, findings, seen)
     return findings
