@@ -15,10 +15,14 @@ threshold.
 5. If findings at/above `FAIL_ON` (default: `high`) are found, the request is
    rejected with a 403 and a message listing the findings.
 
-The webhook is always a gate. An inline `skillseraph: ignore <rule>` comment
-inside a ConfigMap value counts only when it gives a reason, a role, and an
-unexpired date (`reason="…" owner=<role> until=YYYY-MM-DD`). A bare ignore
-does not stop a rejection.
+The webhook is always a gate, and by default it ignores inline
+`skillseraph: ignore <rule>` comments in ConfigMap values. The ConfigMap's
+author writes those comments and nobody reviews them at admission, so
+honoring them would let anyone who can create a ConfigMap approve their own
+payload. Set `ALLOW_INLINE_EXCEPTIONS=true` only if ConfigMap contents are
+reviewed before they reach the cluster (for example, applied by GitOps from
+a reviewed repo). Even then a comment counts only with a reason, a role, and
+an unexpired date (`reason="…" owner=<role> until=YYYY-MM-DD`).
 
 Build the image first and load it into the cluster
 (`docker build -t skillseraph:local .`), then set that image in
@@ -47,6 +51,7 @@ kubectl apply -n my-agents -f deploy/k8s/configmap-poisoned.yaml
 | `LISTEN_PORT` | `8443` | Webhook listen port |
 | `TLS_CERT_FILE` | `/certs/tls.crt` | TLS certificate path |
 | `TLS_KEY_FILE` | `/certs/tls.key` | TLS key path |
+| `ALLOW_INLINE_EXCEPTIONS` | off | Honor governed ignore comments in ConfigMap values (`true` to enable) |
 
 The webhook exits at startup if `FAIL_ON` is not one of `critical`, `high`,
 `medium`, `low`, `any`, or `none`, or if the TLS cert or key is missing. With

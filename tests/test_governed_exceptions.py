@@ -6,6 +6,7 @@ from pathlib import Path
 
 from click.testing import CliRunner
 
+from skillseraph import webhook
 from skillseraph.cli import main
 from skillseraph.scanner import scan_directory, scan_file
 from skillseraph.webhook import _scan_configmap_data
@@ -168,6 +169,16 @@ class TestGovernedGate:
                 "line": 1,
             }
         ]
+
+    def test_webhook_ignores_inline_exceptions_by_default(self):
+        # Whoever writes the ConfigMap writes its exceptions; nobody reviews them at admission.
+        findings = _scan_configmap_data({"AGENTS.md": _inline("prompt_injection_override", "2099-01-01")})
+        assert any(f["check"] == "prompt_injection_override" for f in findings)
+
+    def test_webhook_honors_inline_exceptions_when_opted_in(self, monkeypatch):
+        monkeypatch.setattr(webhook, "ALLOW_INLINE_EXCEPTIONS", True)
+        findings = _scan_configmap_data({"AGENTS.md": _inline("prompt_injection_override", "2099-01-01")})
+        assert not any(f["check"] == "prompt_injection_override" for f in findings)
 
     def test_webhook_bare_ignore_still_rejected(self):
         findings = _scan_configmap_data({

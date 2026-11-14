@@ -143,7 +143,7 @@ docs/examples/**
 rule:hypothetical_framing
 ```
 
-Any other `--fail-on` value is a gate, and so is the admission webhook. A gate honors a suppression only when it names the rule or path, a reason, a role, and an expiry date. The date is inclusive and compared in UTC. `owner` is a role identifier such as `repo-maintainer`. Do not put a personal name, an email address, or a secret in `owner` or `reason`.
+Any other `--fail-on` value is a gate. The admission webhook ignores inline suppressions unless `ALLOW_INLINE_EXCEPTIONS` is set, because the ConfigMap author writes them and nobody reviews them at admission. A gate honors a suppression only when it names the rule or path, a reason, a role, and an expiry date. The date is inclusive and compared in UTC. `owner` is a role identifier such as `repo-maintainer`. Do not put a personal name, an email address, or a secret in `owner` or `reason`.
 
 ```markdown
 This doc quotes "ignore previous instructions". skillseraph: ignore prompt_injection_override reason="quoted in project docs" owner=repo-maintainer until=2026-12-31

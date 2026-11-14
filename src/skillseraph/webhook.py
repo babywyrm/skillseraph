@@ -9,6 +9,7 @@ Env:
   LISTEN_PORT     webhook port (default: 8443)
   TLS_CERT_FILE   path to TLS cert (required by K8s webhooks)
   TLS_KEY_FILE    path to TLS key
+  ALLOW_INLINE_EXCEPTIONS  honor governed ignore comments in ConfigMap values (default: off)
 """
 
 from __future__ import annotations
@@ -31,6 +32,9 @@ LISTEN_PORT = int(os.environ.get("LISTEN_PORT", "8443"))
 TLS_CERT = os.environ.get("TLS_CERT_FILE", "/certs/tls.crt")
 TLS_KEY = os.environ.get("TLS_KEY_FILE", "/certs/tls.key")
 
+# The ConfigMap author writes any inline exception and nobody reviews it at
+# admission, so honoring one lets the author approve their own payload.
+ALLOW_INLINE_EXCEPTIONS = os.environ.get("ALLOW_INLINE_EXCEPTIONS", "").lower() in {"1", "true", "yes"}
 MAX_BODY = 4 * 1024 * 1024
 _CONFIGMAP_KEY = re.compile(r"[-._a-zA-Z0-9]{1,253}")
 
@@ -71,7 +75,7 @@ def _scan_configmap_data(data: dict[str, str], binary_data: dict[str, str] | Non
                 continue
             path = Path(td) / key
             path.write_bytes(raw)
-            for f in scan_file(path, governed=True):
+            for f in scan_file(path, governed=True, inline_ignores=ALLOW_INLINE_EXCEPTIONS):
                 if sev and f.severity.score >= sev.score:
                     findings.append({"check": f.check, "severity": f.severity.value, "title": f.title, "key": key})
     return findings

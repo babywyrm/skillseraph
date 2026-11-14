@@ -30,6 +30,11 @@ uses [Semantic Versioning](https://semver.org/).
   shapes, and URL userinfo. `${VAR}`
   references stay. Findings whose evidence held a secret get a new
   fingerprint, so re-save baselines that covered them.
+- **Admission webhook ignores inline exceptions by default.** A ConfigMap
+  could carry a complete governed ignore comment for its own payload, and
+  nobody reviews that comment at admission, so anyone able to create a
+  ConfigMap could approve it. Inline exceptions now count only with
+  `ALLOW_INLINE_EXCEPTIONS=true`.
 - **Admission webhook scans every key.** It scanned only `data` keys with
   agent-looking names, so a payload in `binaryData`, or under any other
   key name that a pod mounts at an agent config path with `items[].path`,
@@ -74,9 +79,10 @@ uses [Semantic Versioning](https://semver.org/).
   shape (`Rule`), and `write_policy` no longer takes unused keyword
   arguments.
 - **Breaking: gates ignore bare suppressions.** With any `--fail-on` other
-  than `none`, in `--watch`, and in the admission webhook, an ignore comment
-  or `.skillseraphignore` line counts only with `reason`, `owner` (a role id),
-  and an unexpired `until`. Add those fields, or the finding fails the gate.
+  than `none` and in `--watch`, an ignore comment or `.skillseraphignore`
+  line counts only with `reason`, `owner` (a role id), and an unexpired
+  `until`. Add those fields, or the finding fails the gate. The admission
+  webhook ignores inline comments unless `ALLOW_INLINE_EXCEPTIONS` is set.
 - **`mcp_server_npx_remote_package` means git or URL sources.** It stays
   critical for `git+`, `http(s)://`, and `github:`/`gitlab:`/`bitbucket:`/
   `gist:` specs. Registry packages such as `npx -y @scope/pkg` no longer
@@ -254,9 +260,9 @@ uses [Semantic Versioning](https://semver.org/).
 - **Codex MCP servers in `config.toml`.** `[mcp_servers]` tables are checked
   for remote URLs, shell/fetch commands, and remote `npx`/`uvx` packages.
   Credential findings list env key names and omit values.
-- **Governed exceptions.** When `--fail-on` is not `none`, and in the admission
-  webhook, a suppression counts only with a reason, a role identifier, and an
-  expiry. Bare ignores and path globs still apply to `--fail-on none`. Honored
+- **Governed exceptions.** When `--fail-on` is not `none`, a suppression
+  counts only with a reason, a role identifier, and an expiry (the
+  admission webhook honors inline ones only when opted in). Bare ignores and path globs still apply to `--fail-on none`. Honored
   exceptions are included in the JSON report. `owner` is a role id; the field
   rejects an email address.
 - **Supply-chain trust detection (`supply_chain_trust`)** — flags skill/plugin/

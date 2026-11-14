@@ -175,11 +175,13 @@ def scan_file(
     governed: bool = False,
     today: date | None = None,
     exceptions: list[AcceptedException] | None = None,
+    inline_ignores: bool = True,
 ) -> list[Finding]:
     """Scan a single file for agent config security issues.
 
     When *governed* is set, an inline suppression counts only with a non-empty
     reason, a role id in *owner*, and an *until* date that is today or later.
+    With *inline_ignores* off, suppression comments in the file count for nothing.
     """
     if path.suffix.lower() in _BINARY_SUFFIXES:
         return []
@@ -209,6 +211,8 @@ def scan_file(
         ))
     for f in findings:
         f.evidence, f.detail = redact(f.evidence), redact(f.detail)
+    if not inline_ignores:
+        return findings
     ignores = _inline_ignores(
         content,
         governed=governed,
