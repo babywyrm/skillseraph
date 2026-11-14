@@ -62,6 +62,17 @@ a 5-second timeout, so one stalled client cannot hold up reviews.
 
 ## Failure policy
 
-Set to `Ignore` (fail-open) so the webhook never blocks cluster operations if it's
-unhealthy. For stricter enforcement, change to `Fail` — but ensure the webhook is
-highly available first.
+The shipped manifest uses `failurePolicy: Ignore` (fail open) so an unhealthy
+webhook never blocks cluster operations.
+
+**Fail open means no check.** While the webhook is down, restarting,
+unreachable, or slower than `timeoutSeconds` (10s), every ConfigMap in a
+labeled namespace is admitted unscanned, and anyone who can make the webhook
+fail or stall can get a payload in that way. Treat it as a guardrail, not an
+enforcement boundary, and pair it with scanning at the source (CI,
+pre-commit).
+
+For enforcement, set `failurePolicy: Fail` and make the webhook highly
+available first: run at least two replicas with a PodDisruptionBudget, and
+keep `skillseraph-system` out of the namespace selector so the webhook can
+always restart.

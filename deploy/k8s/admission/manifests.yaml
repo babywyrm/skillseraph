@@ -109,6 +109,8 @@ webhooks:
   - name: configmap.skillseraph.io
     admissionReviewVersions: ["v1"]
     sideEffects: None
+    # Fail open: while the webhook is down or slow, ConfigMaps are admitted
+    # unscanned. See README "Failure policy" before relying on it to enforce.
     failurePolicy: Ignore
     timeoutSeconds: 10
     namespaceSelector:
