@@ -118,6 +118,9 @@ OLD = {
     "instruction_in_comment": r"<!--.*?(ignore|override|inject|execute|system:).*?-->",
     "j5_absolute_path_include": r"(?i)(extends|include|import|source|from)\s*[:\s].*(/home/|/etc/|/root/|~)",
     "j5_remote_config_fetch": r"(?i)(extends|include|import|source|from)\s*[:\s].*https?://",
+    "mcp_server_npx_remote_package": (
+        r"(?i)\"(command|args)\".*\"(npx|uvx|pip install|npm exec)\".*\"(git\+|https?://|(github|gitlab|bitbucket|gist):)"
+    ),
     "fake_ticket_reference": r"(ticket|change\s?request|CR|JIRA|INC)[-#\s]?\d{2,}.*?(approved|authorized|emergency)",
 }
 OLD_REMOTE_EXEC = (
@@ -127,7 +130,7 @@ OLD_REMOTE_EXEC = (
 PIECES = [
     "curl", "wget", "fetch", " ", "  ", "https://", "http://", "|", "bash", "sh", "zsh", "x", "<!--", "-->",
     "ignore", "system:", "extends", "from", ":", "/home/", "~", "\n", "-O-", ";", "&&", ".sh", "python3",
-    "node", "INC", "ticket", "change request", "#", "4821", "7", "approved", "emergency", "token", "api_key", "=", '"', "'", "abc12345", "Bearer ", ".", "-", "--", "{", "}", ",",
+    "node", '"command"', '"args"', '"npx"', '"uvx"', '"github:', '"git+', '"https://', "INC", "ticket", "change request", "#", "4821", "7", "approved", "emergency", "token", "api_key", "=", '"', "'", "abc12345", "Bearer ", ".", "-", "--", "{", "}", ",",
 ]
 
 

@@ -15,7 +15,7 @@ uses [Semantic Versioning](https://semver.org/).
     `audit-local` still follows symlinks, since dotfiles often are links.
   - Files are read up to 4 MiB; a larger agent config gets
     `agent_config_oversized` and only its first 4 MiB is checked (CWE-400).
-  - Seven patterns that backtracked polynomially on one long line (a scan
+  - Eight patterns that backtracked polynomially on one long line (a scan
     could run for minutes) now match in linear time with identical results
     (CWE-1333). `rules-test` fails a pattern that is slow on long input, so
     a contributed rule cannot reintroduce this.

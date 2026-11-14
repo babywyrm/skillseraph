@@ -46,7 +46,7 @@ rules:
     atlas_id: J4
 
   - id: mcp_server_npx_remote_package
-    pattern: "(?i)\"(command|args)\".*\"(npx|uvx|pip install|npm exec)\".*\"(git\\+|https?://|(github|gitlab|bitbucket|gist):)"
+    pattern: "(?i)^(?>.*?\"(?:command|args)\")(?>.*?\"(?:npx|uvx|pip install|npm exec)\").*\"(?:git\\+|https?://|(?:github|gitlab|bitbucket|gist):)"
     severity: critical
     title: "MCP server runs a package straight from git or a URL"
     detail: "The server definition runs code fetched from a git host or URL at agent startup, bypassing the registry. An attacker who controls this config or that source achieves code execution."
