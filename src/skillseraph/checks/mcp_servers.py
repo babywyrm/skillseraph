@@ -16,18 +16,21 @@ import tomllib
 from pathlib import Path
 from urllib.parse import urlparse
 
+import yaml
+
 from ..models import Finding, Severity
 from ..rules_engine import run_category
-from . import load_jsonc
+from . import is_amazonq_agent, load_jsonc
 
 MCP_CONFIG_NAMES = {
     "mcp.json",
     ".mcp.json",
     "claude_desktop_config.json",
+    "mcp_settings.json",
 }
 
 _CREDENTIAL_KEY = re.compile(r"(TOKEN|KEY|SECRET|PASSWORD|CREDENTIAL|AUTH)", re.IGNORECASE)
-_TOOL_LIST_KEYS = ("allowedTools", "tools", "enabledTools", "enabled_tools", "includeTools")
+_TOOL_LIST_KEYS = ("allowedTools", "tools", "enabledTools", "enabled_tools", "includeTools", "autoApprove")
 _TLS_KEYS = ("tls", "ssl", "verify", "verify_ssl", "tls_verify")
 _URL_FIELDS = ("url", "httpUrl", "endpoint", "baseUrl", "uri")
 _SHELL_COMMAND = re.compile(
@@ -77,10 +80,32 @@ def _embedded_servers_key(path: Path) -> str | None:
         return "context_servers"
     if name in {"opencode.json", "opencode.jsonc"}:
         return "mcp"
+    if is_amazonq_agent(path):
+        return "mcpServers"
     return None
 
 
+def _goose_checks(path: Path, content: str) -> list[Finding]:
+    """Goose ``extensions`` are MCP servers with cmd/uri/envs field names."""
+    try:
+        data = yaml.safe_load(content)
+    except yaml.YAMLError:
+        return []
+    extensions = data.get("extensions") if isinstance(data, dict) else None
+    if not isinstance(extensions, dict):
+        return []
+    findings: list[Finding] = []
+    seen: set[str] = set()
+    for ext in extensions.values():
+        if isinstance(ext, dict) and ext.get("type") not in {"builtin", "platform"}:
+            server = {**ext, "command": ext.get("cmd"), "url": ext.get("uri"), "env": ext.get("envs")}
+            _inspect_server(path, server, findings, seen)
+    return findings
+
+
 def check_mcp_servers(path: Path, content: str) -> list[Finding]:
+    if path.name == "config.yaml" and path.parent.name == "goose":
+        return _goose_checks(path, content)
     key = _embedded_servers_key(path)
     if key:
         return _embedded_server_checks(path, content, key)

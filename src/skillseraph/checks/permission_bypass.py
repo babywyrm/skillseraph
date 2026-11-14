@@ -2,18 +2,22 @@
 
 Line rules live in rules/permission_bypass.yaml. Agent clients also store
 permission modes as structured settings (Claude Code, Codex, Gemini CLI,
-Cursor CLI), which get a parsed pass so evidence is the exact key and value.
+Cursor CLI, Amazon Q, Aider), which get a parsed pass so evidence is the
+exact key and value.
 """
 
 from __future__ import annotations
 
+import fnmatch
 import re
 import tomllib
 from pathlib import Path
 
+import yaml
+
 from ..models import Finding, Severity
 from ..rules_engine import run_category
-from . import load_jsonc
+from . import is_amazonq_agent, load_jsonc
 from .mcp_servers import _SHELLS
 
 _RULE = re.compile(r"^\s*(\w+)\s*(?:\((.*)\))?\s*$", re.DOTALL)
@@ -83,7 +87,41 @@ def _agent_permissions(path: Path, content: str) -> list[Finding]:
     if name in {"cli.json", "cli-config.json"} and path.parent.name == ".cursor":
         rules = _unscoped_shell_rules(_section(load_jsonc(content), "permissions").get("allow"), {"Shell"})
         return _shell_finding(path, "permissions.allow", rules)
+    if is_amazonq_agent(path):
+        data = load_jsonc(content)
+        allowed = data.get("allowedTools") if isinstance(data, dict) else None
+        rules = [
+            r for r in allowed if isinstance(r, str) and _amazonq_allows_shell(r)
+        ] if isinstance(allowed, list) else []
+        return _shell_finding(path, "allowedTools", rules)
+    if name == ".aider.conf.yml":
+        return _aider(path, content)
     return []
+
+
+def _amazonq_allows_shell(rule: str) -> bool:
+    """Amazon Q allowedTools are globs; ``@builtin`` allows every native tool."""
+    if rule == "@builtin":
+        return True
+    return fnmatch.fnmatchcase("execute_bash", rule.removeprefix("@builtin/"))
+
+
+def _aider(path: Path, content: str) -> list[Finding]:
+    try:
+        data = yaml.safe_load(content)
+    except yaml.YAMLError:
+        return []
+    if not isinstance(data, dict) or data.get("yes-always") is not True:
+        return []
+    return [_finding(
+        path,
+        "agent_permission_bypass_mode",
+        Severity.HIGH,
+        "Aider answers yes to every confirmation",
+        "yes-always approves every prompt, including running suggested shell commands "
+        "and adding files or URLs to the chat.",
+        "yes-always=true",
+    )]
 
 
 def _claude(path: Path, data: object) -> list[Finding]:

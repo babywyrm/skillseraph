@@ -49,6 +49,16 @@ def load_jsonc(content: str) -> object | None:
     return parsed
 
 
+def is_amazonq_agent(path: Path) -> bool:
+    """Amazon Q agent config: default.json or cli-agents/*.json, repo or ~/.aws."""
+    parent, grandparent = path.parent.name, path.parent.parent.name
+    if path.suffix != ".json":
+        return False
+    if path.name == "default.json" and (parent == ".amazonq" or (parent == "amazonq" and grandparent == ".aws")):
+        return True
+    return parent == "cli-agents" and grandparent in {".amazonq", "amazonq"}
+
+
 def run_all_checks(path: Path, content: str, line_offset: int = 0) -> list[Finding]:
     """Run all check categories against a file's content."""
     from .approver_manipulation import check_approver_manipulation

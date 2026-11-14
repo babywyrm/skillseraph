@@ -5,10 +5,11 @@ or per-key objects, so a dangerous ``curl … | sh`` can be split across lines
 where the line-regex engine never sees the whole pipeline. This pass parses
 the JSON and reassembles each command before matching.
 
-Agent clients also run commands from their own settings: Claude Code and
-Gemini CLI ``hooks`` and ``statusLine``, Codex inline ``[hooks]`` and
-``notify``. Only those subtrees are read, so MCP server commands in the same
-file stay with the MCP checks.
+Agent clients also run commands from their own settings: Claude Code,
+Gemini CLI, and Amazon Q agent ``hooks``, Claude ``statusLine``, Codex inline
+``[hooks]`` and ``notify``, and Aider ``test-cmd``/``lint-cmd``/
+``notifications-command``. Only those parts are read, so MCP server commands
+in the same file stay with the MCP checks.
 """
 
 from __future__ import annotations
@@ -18,8 +19,10 @@ import tomllib
 from pathlib import Path
 from urllib.parse import urlparse
 
+import yaml
+
 from ..models import Finding, Severity
-from . import load_jsonc
+from . import is_amazonq_agent, load_jsonc
 
 _LIFECYCLE_FILES = ("devcontainer.json", "hooks.json")
 _LIFECYCLE_KEYS = (
@@ -33,6 +36,7 @@ _LIFECYCLE_KEYS = (
     "notify",
 )
 _SETTINGS_KEYS = ("hooks", "statusLine", "notify")
+_AIDER_COMMAND_KEYS = ("test-cmd", "lint-cmd", "notifications-command")
 _LOCAL_HOSTS = {"localhost", "127.0.0.1", "0.0.0.0", "::1"}
 _REMOTE_EXEC = re.compile(
     r"(curl|wget)\b[^\n]*?https?://[^\n]*?(\|\s*|-O-\s*\|\s*|;\s*|&&\s*)?(bash|sh|zsh|python|node)\b"
@@ -52,9 +56,17 @@ def _command_tree(path: Path, content: str) -> object | None:
             data = tomllib.loads(content)
         except tomllib.TOMLDecodeError:
             return None
+    elif name == ".aider.conf.yml":
+        try:
+            aider = yaml.safe_load(content)
+        except yaml.YAMLError:
+            return None
+        if not isinstance(aider, dict):
+            return None
+        return [{"command": aider[k]} for k in _AIDER_COMMAND_KEYS if k in aider]
     elif (name in {"settings.json", "settings.local.json"} and ".claude" in path.parts) or (
         name == "settings.json" and parent == ".gemini"
-    ):
+    ) or is_amazonq_agent(path):
         data = load_jsonc(content)
     else:
         return None

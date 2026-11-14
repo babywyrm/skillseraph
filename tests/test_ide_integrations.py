@@ -230,7 +230,7 @@ def test_each_audited_platform_reaches_linux_and_macos(tmp_path: Path):
     del tmp_path
     assert Platform.CLAUDE in LOCAL_IDE_FILES
     assert Platform.CLINE in LOCAL_IDE_FILES
-    xdg_on_macos = {Platform.ZED, Platform.OPENCODE}
+    xdg_on_macos = {Platform.ZED, Platform.OPENCODE, Platform.GOOSE}
     for platform, paths in LOCAL_IDE_FILES.items():
         shared = platform in xdg_on_macos or any(
             path.startswith(".") and not path.startswith(".config/") for path in paths

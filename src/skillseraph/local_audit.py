@@ -63,7 +63,7 @@ LOCAL_IDE_FILES: dict[Platform, tuple[str, ...]] = {
         ".gemini/commands",
         ".gemini/extensions",
     ),
-    # Zed and opencode use ~/.config on macOS as well as Linux.
+    # Zed, opencode, and Goose use ~/.config on macOS as well as Linux.
     Platform.ZED: (
         ".config/zed/settings.json",
         ".config/zed/tasks.json",
@@ -76,6 +76,28 @@ LOCAL_IDE_FILES: dict[Platform, tuple[str, ...]] = {
         ".config/opencode/agent",
         ".config/opencode/commands",
         ".config/opencode/command",
+    ),
+    Platform.ROO: (
+        "Library/Application Support/Code/User/globalStorage/rooveterinaryinc.roo-cline/settings/mcp_settings.json",
+        "Library/Application Support/Code/User/globalStorage/rooveterinaryinc.roo-cline/settings/custom_modes.yaml",
+        ".config/Code/User/globalStorage/rooveterinaryinc.roo-cline/settings/mcp_settings.json",
+        ".config/Code/User/globalStorage/rooveterinaryinc.roo-cline/settings/custom_modes.yaml",
+        ".roo/rules",
+    ),
+    Platform.KIRO: (
+        ".kiro/settings/mcp.json",
+        ".kiro/steering",
+        ".kiro/agents",
+    ),
+    Platform.AMAZONQ: (
+        ".aws/amazonq/mcp.json",
+        ".aws/amazonq/default.json",
+        ".aws/amazonq/cli-agents",
+    ),
+    Platform.AIDER: (".aider.conf.yml",),
+    Platform.GOOSE: (
+        ".config/goose/config.yaml",
+        ".config/goose/.goosehints",
     ),
     Platform.WINDSURF: (
         "Library/Application Support/Windsurf/User/settings.json",

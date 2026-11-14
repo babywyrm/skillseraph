@@ -161,6 +161,42 @@ PLATFORMS: dict[Platform, PlatformSpec] = {
         ],
         dep_plant_paths=[],
     ),
+    Platform.ROO: PlatformSpec(
+        name=Platform.ROO,
+        description="Roo Code rules, modes, and MCP servers",
+        file_patterns=[".roo/**", ".roomodes", ".roorules"],
+        dep_plant_paths=[],
+    ),
+    Platform.KIRO: PlatformSpec(
+        name=Platform.KIRO,
+        description="Kiro steering, agents, and MCP servers",
+        file_patterns=[".kiro/steering/**", ".kiro/agents/**", ".kiro/settings/mcp.json"],
+        dep_plant_paths=[],
+    ),
+    Platform.AMAZONQ: PlatformSpec(
+        name=Platform.AMAZONQ,
+        description="Amazon Q Developer rules, agents, and MCP servers",
+        file_patterns=[
+            ".amazonq/rules/**",
+            ".amazonq/cli-agents/*.json",
+            ".amazonq/mcp.json",
+            ".amazonq/default.json",
+            "AmazonQ.md",
+        ],
+        dep_plant_paths=[],
+    ),
+    Platform.AIDER: PlatformSpec(
+        name=Platform.AIDER,
+        description="Aider config",
+        file_patterns=[".aider.conf.yml"],
+        dep_plant_paths=[],
+    ),
+    Platform.GOOSE: PlatformSpec(
+        name=Platform.GOOSE,
+        description="Goose hints",
+        file_patterns=[".goosehints", "**/.goosehints"],
+        dep_plant_paths=[],
+    ),
     Platform.DEVIN: PlatformSpec(
         name=Platform.DEVIN,
         description="Devin / Cognition agent configs",

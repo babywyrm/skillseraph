@@ -78,6 +78,15 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **Roo Code, Kiro, Amazon Q Developer, Aider, and Goose.** New platforms
+  `roo`, `kiro`, `amazonq`, `aider`, and `goose` in repo scans and
+  `audit-local`, using each client's documented paths. Their MCP servers go
+  through the shared server inspector, including Amazon Q agent files and
+  Goose `extensions` (YAML `cmd`/`uri`/`envs`). Kiro `autoApprove: ["*"]`
+  counts as a wildcard tool list; Amazon Q `allowedTools` globs that cover
+  `execute_bash` count as unscoped shell; Amazon Q agent hooks and Aider
+  `test-cmd`/`lint-cmd`/`notifications-command` get the lifecycle check;
+  Aider `yes-always: true` is an approval bypass.
 - **MCP server version pinning.** `mcp_server_unpinned_package` (medium)
   flags `npx`, `bunx`, `pnpx`, `uvx`, `npm exec`, and `pnpm`/`yarn dlx`
   launches that are not pinned to an exact version (`pkg@1.2.3`,

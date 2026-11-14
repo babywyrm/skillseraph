@@ -9,7 +9,7 @@ Domain J (config & automation).
 
 | Area | State |
 |------|-------|
-| Multi-platform detection (16 platforms incl. VS Code, JetBrains, Zed, Gemini CLI, opencode) | **Strong** |
+| Multi-platform detection (21 platforms incl. VS Code, JetBrains, Zed, Gemini CLI, opencode, Roo Code, Kiro, Amazon Q, Aider, Goose) | **Strong** |
 | Data-driven YAML rules (20 packs) | **Strong** — all regex categories YAML-driven |
 | Supply-chain / runtime-escape / approver-manipulation / monitoring coverage | **Strong** — config-plane detections mapped to Atlas D3/J4/J2/J3 |
 | Structural (non-regex) parsers | **Strong** — extension manifests, extensions.json, mcp.json env/allowlist fields, and devcontainer/hooks lifecycle commands |
@@ -38,9 +38,7 @@ Domain J (config & automation).
   The Dockerfile build order is fixed.
 - **Provenance / signature checks** — flag skills and rules lacking a trusted
   source or signature; optional allowlist of trusted publishers.
-- **More clients** — Roo Code, Kiro, Amazon Q Developer, Aider
-  (`.aider.conf.yml`), and Goose, in repo scans and `audit-local`, reusing the
-  embedded MCP server pass.
+
 ## Medium
 
 - **A2A agent cards** — static checks on `.well-known/agent.json` for injected
@@ -88,6 +86,7 @@ Domain J (config & automation).
 - ~~Agent permission modes (Claude, Codex, Gemini CLI, Cursor CLI)~~
 - ~~Hooks in client settings (Claude, Gemini CLI, Codex), including HTTP hooks~~
 - ~~MCP server version pinning~~
+- ~~Roo Code, Kiro, Amazon Q Developer, Aider, and Goose~~
 
 ---
 

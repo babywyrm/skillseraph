@@ -163,10 +163,12 @@ skillseraph . --baseline .skillseraph-baseline.json --baseline-max-age 90
 
 skillseraph auto-detects and scans config surfaces for these platforms.
 `audit-local` also reads Linux and macOS user config for VS Code, Cursor,
-Windsurf, Codex, Claude, Continue, Copilot CLI, Gemini CLI, Zed, and opencode.
-Shared dot paths (`~/.codex`, `~/.claude`, `~/.continue`, `~/.cursor`,
-`~/.copilot`, `~/.gemini`) are the same on both systems, and Zed and opencode
-use `~/.config` on both. Claude Desktop is `Library/Application Support/Claude`
+Windsurf, Codex, Claude, Continue, Copilot CLI, Gemini CLI, Zed, opencode,
+Roo Code, Kiro, Amazon Q Developer, Aider, and Goose. Shared dot paths
+(`~/.codex`, `~/.claude`, `~/.continue`, `~/.cursor`, `~/.copilot`,
+`~/.gemini`, `~/.kiro`, `~/.aws/amazonq`, `~/.aider.conf.yml`) are the same on
+both systems, and Zed, opencode, and Goose use `~/.config` on both. Roo Code's
+global MCP settings and modes live in VS Code's `globalStorage`. Claude Desktop is `Library/Application Support/Claude`
 on macOS and `.config/Claude` on Linux. APM endpoint evidence keeps the host
 and drops URL userinfo. JSON config with comments or trailing commas (JSONC,
 as in VS Code, Zed, opencode, and devcontainers) gets the same structural
@@ -185,6 +187,11 @@ checks as plain JSON.
 | Claude | `CLAUDE.md`, `.claude/**`, `claude_desktop_config.json`, `.mcp.json` |
 | Windsurf | `.windsurfrules`, `.windsurf/**` |
 | Cline / Continue | `.clinerules`, `.continue/**` |
+| Roo Code | `.roo/**` (rules, `mcp.json`), `.roomodes`, `.roorules` |
+| Kiro | `.kiro/steering/**`, `.kiro/agents/**`, `.kiro/settings/mcp.json` |
+| Amazon Q Developer | `.amazonq/rules/**`, `.amazonq/cli-agents/*.json`, `.amazonq/{mcp,default}.json`, `AmazonQ.md` |
+| Aider | `.aider.conf.yml` |
+| Goose | `.goosehints` (`~/.config/goose/config.yaml` via `audit-local`) |
 | Devin | `devin.md`, `.devin/**` |
 | Bedrock Agents | `**/bedrock-agent*.{json,yaml}`, knowledge-base configs |
 | LangChain / LangGraph | `**/agents.yaml`, `**/tools.yaml`, prompt templates |
@@ -199,7 +206,7 @@ checks as plain JSON.
 |--------|---------|
 | `injection` | Instruction override, persona hijack, jailbreak, token-boundary, hidden-comment, multi-language injection, **sleeper/conditional-trigger payloads** (Atlas C1) |
 | `exfiltration` | Credential harvesting, data push to URLs, secret-file/env access, DNS/clipboard exfil |
-| `permission_bypass` | Sandbox/approval bypass, consent bypass, arbitrary execution, privilege requests, plus parsed agent permission settings: Claude Code `bypassPermissions`, Codex `approval_policy = "never"` and `danger-full-access`, and unscoped shell allow rules (`Bash(*)`, `Shell(*)`, bare `run_shell_command`, or a shell interpreter) in Claude, Gemini CLI, and Cursor CLI |
+| `permission_bypass` | Sandbox/approval bypass, consent bypass, arbitrary execution, privilege requests, plus parsed agent permission settings: Claude Code `bypassPermissions`, Codex `approval_policy = "never"` and `danger-full-access`, and unscoped shell allow rules (`Bash(*)`, `Shell(*)`, bare `run_shell_command`, or a shell interpreter) in Claude, Gemini CLI, and Cursor CLI, Amazon Q `allowedTools` globs that cover `execute_bash`, and Aider `yes-always` |
 | `encoding` | Base64/hex blobs, data URIs, unicode-escape chains, `eval(atob())`, ROT13/charcode obfuscation |
 | `urls` | Known exfil services, raw-IP/metadata/loopback URLs, MCP server redirects |
 | `suppression` | Review/PR suppression, change concealment, stealth operation, user deception |
@@ -208,13 +215,13 @@ checks as plain JSON.
 | `authority_fabrication` | Fake maintenance windows, fabricated approvals, pre-authorization claims |
 | `runtime_bypass` | Language-runtime evasion of command blocklists, encoded-pipe-to-shell |
 | `breakglass` | Embedded override tokens, admission/policy bypass instructions |
-| `mcp_servers` | Poisoned MCP server defs in JSON/JSONC, Codex `config.toml`, and servers embedded in Claude, Gemini CLI, Zed, opencode, and Copilot CLI settings (remote/raw-IP URLs, env-credential injection, stdio command exec, packages run straight from git or a URL, registry packages not pinned to an exact version, TLS disable, wildcard tools, `trust: true` approval bypass) + **tool schema smuggling** (Atlas I3) |
+| `mcp_servers` | Poisoned MCP server defs in JSON/JSONC, Codex `config.toml`, and servers embedded in Claude, Gemini CLI, Zed, opencode, Copilot CLI, and Amazon Q agent settings and Goose `extensions` (remote/raw-IP URLs, env-credential injection, stdio command exec, packages run straight from git or a URL, registry packages not pinned to an exact version, TLS disable, wildcard tools and Kiro `autoApprove: ["*"]`, `trust: true` approval bypass) + **tool schema smuggling** (Atlas I3) |
 | `automation_triggers` | Wildcard event triggers, shell exec in automations, broad write perms (Atlas J3) |
 | `config_inheritance` | Parent traversal, absolute-path includes, remote config fetch, recursive globs (Atlas J5) |
 | `skill_invocation` | **Skill invocation hijack** (Atlas J2): callback/redirect on invoke, self-modification, invocation-time override, silent invocation, remote skill pull |
 | `ide_integrations` | VS Code, Cursor, and Codex task/debug/user config abuse: remote shell pipes, secret env injection, runtime preloads, extension trust, APM/telemetry collector redirects (including per-signal OTLP endpoints) and inline credentials in OTLP exporter headers (evidence names the headers, never the value) in JSON, YAML, and TOML |
 | `extensions` | Installed IDE extension manifests (structural parse): wildcard activation, lifecycle scripts fetching remote code, entry points escaping the install dir, and (opt-in) non-allowlisted publishers |
-| `lifecycle` | `devcontainer.json` / `hooks.json` lifecycle commands, plus Claude Code and Gemini CLI settings `hooks` and `statusLine` and Codex inline `[hooks]` and `notify` (structural parse): remote-fetch-to-interpreter payloads split across array/object command forms, and HTTP hooks posting tool events to a non-local host |
+| `lifecycle` | `devcontainer.json` / `hooks.json` lifecycle commands, plus Claude Code, Gemini CLI, and Amazon Q agent `hooks`, Claude `statusLine`, Codex inline `[hooks]` and `notify`, and Aider `test-cmd` / `lint-cmd` / `notifications-command` (structural parse): remote-fetch-to-interpreter payloads split across array/object command forms, and HTTP hooks posting tool events to a non-local host |
 | `jetbrains` | JetBrains `.idea` run configs / external tools / `.iml`: remote-fetch commands and secret env injection in run configurations |
 | `supply_chain_trust` | Skill/plugin/tool sources that auto-deploy or skip human review, remote sources flagged `trusted`/`verified`, and remote skill feeds/registries (Atlas D3/J5) |
 | `runtime_escape` | Container/orchestrator escape surface: runtime sockets (`docker.sock`, `containerd.sock`), kubelet API, service-account token paths, host-namespace/privileged markers (Atlas J4) |

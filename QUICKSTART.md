@@ -82,6 +82,11 @@ It reads these files and no others:
 | Gemini CLI | `~/.gemini/settings.json`, `GEMINI.md`, `commands/`, `extensions/*/gemini-extension.json` | same |
 | Zed | `~/.config/zed/settings.json`, `tasks.json` | same |
 | opencode | `~/.config/opencode/opencode.json(c)`, `AGENTS.md`, `agents/`, `commands/` | same |
+| Roo Code | `Library/Application Support/Code/User/globalStorage/rooveterinaryinc.roo-cline/settings/{mcp_settings.json,custom_modes.yaml}`, `~/.roo/rules/` | `~/.config/Code/User/globalStorage/…` (same files) |
+| Kiro | `~/.kiro/settings/mcp.json`, `steering/`, `agents/` | same |
+| Amazon Q Developer | `~/.aws/amazonq/mcp.json`, `default.json`, `cli-agents/` | same |
+| Aider | `~/.aider.conf.yml` | same |
+| Goose | `~/.config/goose/config.yaml`, `.goosehints` | same |
 
 It does not read session logs, auth files, history, or databases. Reports list
 credential env var names, never their values, and drop the user:password part
