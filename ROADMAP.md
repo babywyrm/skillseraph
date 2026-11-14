@@ -41,8 +41,6 @@ Domain J (config & automation).
 
 ## Medium
 
-- **Change-only `audit-local`** — snapshot a workstation and report only what
-  changed since, so a new MCP server or extension stands out.
 - **Rule packs** — versioned, shareable rule bundles (community + curated),
   with a firing sample for every rule (today every rule id must appear in a
   test, which `test_rule_coverage.py` enforces).
@@ -82,6 +80,7 @@ Domain J (config & automation).
 - ~~Inventory output (`--inventory`)~~
 - ~~pre-commit hook (`.pre-commit-hooks.yaml`)~~
 - ~~A2A agent cards~~
+- ~~Change-only `audit-local` (`--since`)~~
 
 ---
 

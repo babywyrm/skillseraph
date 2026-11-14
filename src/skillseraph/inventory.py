@@ -113,7 +113,68 @@ def build_inventory(result: ScanResult) -> Inventory:
     )
 
 
-def write_inventory(result: ScanResult, path: Path) -> Inventory:
-    inventory = build_inventory(result)
+def write_inventory(inventory: Inventory, path: Path) -> None:
     path.write_text(json.dumps({"version": __version__, **asdict(inventory)}, indent=2))
-    return inventory
+
+
+_IDENTITY = {"files": (), "mcp_servers": ("path", "name"), "extensions": ("path", "id"), "hooks": ("path", "event")}
+
+_Indexed = dict[str, dict[str, dict[str, object]]]
+
+
+class InventoryError(ValueError):
+    """An inventory file is unreadable or not in the shape --inventory writes."""
+
+
+@dataclass(frozen=True)
+class Change:
+    kind: str  # "+" added, "~" changed, "-" removed
+    section: str
+    label: str
+    fields: tuple[str, ...] = ()
+
+
+def _index(data: object) -> _Indexed:
+    """Entries keyed by identity per section; InventoryError on any shape it does not expect."""
+    if not isinstance(data, dict):
+        raise InventoryError("inventory must be a JSON object")
+    indexed: _Indexed = {}
+    for section, identity in _IDENTITY.items():
+        entries = data.get(section, [])
+        if not isinstance(entries, list):
+            raise InventoryError(f"inventory {section} must be a list")
+        indexed[section] = {}
+        for entry in entries:
+            if section == "files":
+                if not isinstance(entry, str):
+                    raise InventoryError("inventory files must be strings")
+                indexed[section][entry] = {}
+                continue
+            if not isinstance(entry, dict) or not all(isinstance(entry.get(k), str) for k in identity):
+                raise InventoryError(f"inventory {section} entries need string {', '.join(identity)}")
+            indexed[section][" ".join(entry[k] for k in identity)] = entry
+    return indexed
+
+
+def load_inventory(path: Path) -> _Indexed:
+    try:
+        return _index(json.loads(path.read_text(encoding="utf-8")))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise InventoryError(f"cannot read inventory {path}: {exc}") from exc
+
+
+def diff_inventory(old: _Indexed, inventory: Inventory) -> list[Change]:
+    new = _index(asdict(inventory))
+    changes: list[Change] = []
+    for section in _IDENTITY:
+        before, after = old[section], new[section]
+        changes += [Change("+", section, key) for key in sorted(after.keys() - before.keys())]
+        changes += [
+            Change("~", section, key, tuple(sorted(
+                f for f in after[key].keys() | before[key].keys() if before[key].get(f) != after[key].get(f)
+            )))
+            for key in sorted(after.keys() & before.keys())
+            if before[key] != after[key]
+        ]
+        changes += [Change("-", section, key) for key in sorted(before.keys() - after.keys())]
+    return changes

@@ -8,9 +8,18 @@ from pathlib import Path
 
 import click
 from rich.console import Console
+from rich.markup import escape
 from rich.table import Table
 
 from . import __version__
+from .inventory import (
+    Change,
+    InventoryError,
+    build_inventory,
+    diff_inventory,
+    load_inventory,
+    write_inventory,
+)
 from .models import Finding, Platform, ScanResult, Severity
 from .scanner import scan_directory
 
@@ -48,6 +57,7 @@ class _Command(click.Command):
 @click.option("--json-out", "-j", type=click.Path(), help="Write JSON findings to file")
 @click.option("--sarif", type=click.Path(), help="Write SARIF 2.1.0 report")
 @click.option("--inventory", type=click.Path(), help="Write a JSON inventory of MCP servers, extensions, hooks, and files read (no verdicts)")
+@click.option("--since", type=click.Path(), help="Compare against an earlier --inventory file; exit 1 if any MCP server, extension, hook, or file was added or changed")
 @click.option("--fail-on", type=click.Choice(["critical", "high", "medium", "low", "any", "none"]), default="high", help="Exit non-zero if findings at this severity or above")
 @click.option("--min-confidence", type=click.Choice(["low", "medium", "high"]), default="low", help="Suppress findings below this confidence level")
 @click.option("--home", type=click.Path(exists=True, file_okay=False), help="Home directory to audit with the audit-local target")
@@ -71,6 +81,7 @@ def main(
     json_out: str | None,
     sarif: str | None,
     inventory: str | None,
+    since: str | None,
     fail_on: str,
     min_confidence: str,
     home: str | None,
@@ -132,6 +143,11 @@ def main(
 
     if not audit_local and not target_path.exists():
         raise ScanError(f"Target does not exist: {target}")
+
+    try:
+        snapshot = load_inventory(Path(since)) if since else None
+    except InventoryError as exc:
+        raise ScanError(str(exc)) from exc
 
     # Watch mode: enter the polling loop and never return (until Ctrl-C or fail).
     if watch:
@@ -212,14 +228,21 @@ def main(
     if sarif:
         _write_sarif(result, Path(sarif))
 
-    if inventory:
-        from .inventory import write_inventory
-        inv = write_inventory(result, Path(inventory))
-        if not quiet:
-            console.print(
-                f"  [green]Inventory written → {inventory} ({len(inv.mcp_servers)} MCP server(s), "
-                f"{len(inv.extensions)} extension(s), {len(inv.hooks)} hook(s), {len(inv.files)} file(s))[/green]"
-            )
+    surface_grew = False
+    if inventory or snapshot is not None:
+        inv = build_inventory(result)
+        if inventory:
+            write_inventory(inv, Path(inventory))
+            if not quiet:
+                console.print(
+                    f"  [green]Inventory written → {escape(inventory)} ({len(inv.mcp_servers)} MCP server(s), "
+                    f"{len(inv.extensions)} extension(s), {len(inv.hooks)} hook(s), {len(inv.files)} file(s))[/green]"
+                )
+        if snapshot is not None and since:
+            changes = diff_inventory(snapshot, inv)
+            surface_grew = any(change.kind != "-" for change in changes)
+            if not quiet:
+                _print_changes(since, changes)
 
     if generate_policy:
         from .policy_gen import write_policy
@@ -227,8 +250,21 @@ def main(
         if not quiet:
             console.print(f"  [green]NullfieldPolicy written → {generate_policy} ({count} finding(s) mapped)[/green]")
 
-    exit_code = _check_threshold(result, fail_on)
-    sys.exit(exit_code)
+    sys.exit(max(_check_threshold(result, fail_on), int(surface_grew)))
+
+
+def _print_changes(since: str, changes: list[Change]) -> None:
+    if not changes:
+        console.print(f"  [green]No surface changes since {escape(since)}[/green]", soft_wrap=True)
+        return
+    counts = {kind: sum(1 for c in changes if c.kind == kind) for kind in "+~-"}
+    console.print(
+        f"  Changes since {escape(since)}: {counts['+']} added, {counts['~']} changed, {counts['-']} removed",
+        soft_wrap=True,
+    )
+    for change in changes:
+        fields = f" ({', '.join(change.fields)})" if change.fields else ""
+        console.print(f"  {change.kind} {change.section} {escape(change.label)}{escape(fields)}", soft_wrap=True)
 
 
 def _print_results(result: ScanResult, fail_on: str) -> None:

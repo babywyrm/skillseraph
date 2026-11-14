@@ -110,6 +110,21 @@ For an incident, keep the report with the time it was taken:
 skillseraph audit-local --fail-on none --json-out "workstation-$(date -u +%Y%m%dT%H%M%SZ).json"
 ```
 
+To notice new attack surface even when nothing is flagged, save an inventory
+once and compare later runs against it:
+
+```bash
+skillseraph audit-local --fail-on none --inventory known-good.json
+# later, for example from cron or a login hook
+skillseraph audit-local --fail-on none --since known-good.json
+```
+
+The second run lists each MCP server, extension, hook, and config file that
+was added (`+`), changed (`~`, with the changed fields), or removed (`-`). It
+exits `1` if anything was added or changed; removals alone exit `0`. Keep
+the usual `--fail-on` to gate on findings at the same time. Refresh the
+snapshot with `--inventory` after you review a change.
+
 ---
 
 ## 4. Tune the gate

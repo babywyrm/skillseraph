@@ -115,6 +115,9 @@ skillseraph . --quiet --json-out findings.json
 
 # List every MCP server, extension, hook, and file read, without verdicts
 skillseraph audit-local --inventory inventory.json --fail-on none
+
+# Later: show what was added or changed since, exit 1 if anything was
+skillseraph audit-local --since inventory.json --fail-on none
 ```
 
 Exit codes: `0` clean, `1` findings at/above `--fail-on`, `2` error (see
@@ -267,14 +270,17 @@ skillseraph is designed to run as a gate. See [QUICKSTART.md](QUICKSTART.md) for
   target, and absolute paths inside commands become `<target>/…` or `~/…`, so
   an `audit-local` inventory carries no home directory. It works
   with any target and does not change the exit code
+- **Surface changes** — `--since FILE` compares the run against an earlier
+  `--inventory` file and prints added (`+`), changed (`~`), and removed (`-`)
+  entries. Added or changed entries exit `1` even under `--fail-on none`
 
 ### Exit codes
 
 | Code | Meaning |
 |------|---------|
 | `0` | No finding at or above `--fail-on` (or `--fail-on none`) |
-| `1` | At least one finding at or above `--fail-on` |
-| `2` | No verdict: bad option, missing target, unreadable or expired baseline, or an internal error |
+| `1` | At least one finding at or above `--fail-on`, or `--since` found added or changed surface |
+| `2` | No verdict: bad option, missing target, unreadable or expired baseline, unreadable `--since` inventory, or an internal error |
 
 Treat `2` as a failed gate too; the Cursor hook in QUICKSTART denies on any
 non-zero code.

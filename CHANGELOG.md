@@ -97,6 +97,12 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **Change-only audits with `--since FILE`.** Compares a run against an
+  earlier `--inventory` file and lists MCP servers, extensions, hooks, and
+  files that were added, changed (with field names), or removed. Anything
+  added or changed exits 1, so a new MCP server or extension stands out
+  even when no rule fires. A malformed or unreadable snapshot exits 2, and
+  names from it are printed as text, never as console markup.
 - **A2A agent cards.** `.well-known/agent-card.json` and `agent.json` are
   scanned. `a2a_card_text_injection` (severity of the matched rule) decodes
   every card string and re-runs the injection rules, reporting only what JSON

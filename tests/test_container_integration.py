@@ -199,6 +199,16 @@ def test_linux_container_scans_macos_and_linux_layouts(tmp_path: Path) -> None:
             "--inventory", "/out/inventory.json",
         ]
     )
+    _run(
+        [
+            "docker", "run", "--rm", "--user", host_user,
+            "-v", f"{home.resolve()}:/home/fixture:ro",
+            "-v", f"{out.resolve()}:/out:ro",
+            IMAGE,
+            "audit-local", "--home", "/home/fixture",
+            "--fail-on", "none", "--quiet", "--since", "/out/inventory.json",
+        ]
+    )
     inventory_text = (out / "inventory.json").read_text()
     inventory = json.loads(inventory_text)
     assert "/home/fixture" not in inventory_text
