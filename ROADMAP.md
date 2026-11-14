@@ -59,8 +59,6 @@ Domain J (config & automation).
   to mcpnuke for an endpoint scan, bridging static config and live behavior.
 - **Extension binary diffing** — compare installed extension contents against
   marketplace-published hashes to catch post-install tampering.
-- **pre-commit hook** — ship `.pre-commit-hooks.yaml` so repos can gate on
-  skillseraph without CI changes.
 - **Rule test command** — `skillseraph rules test` runs a contributed rule's
   positive and negative samples without the repo's pytest setup.
 
@@ -84,6 +82,7 @@ Domain J (config & automation).
 - ~~Roo Code, Kiro, Amazon Q Developer, Aider, and Goose~~
 - ~~Redacted reports and literal-secret detection in MCP configs~~
 - ~~Inventory output (`--inventory`)~~
+- ~~pre-commit hook (`.pre-commit-hooks.yaml`)~~
 
 ---
 

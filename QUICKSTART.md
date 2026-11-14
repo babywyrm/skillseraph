@@ -214,25 +214,28 @@ jobs:
 
 ## 6. Pre-commit hook
 
+The repo ships a `.pre-commit-hooks.yaml`, so pre-commit installs skillseraph
+into its own environment:
+
 ```yaml
 repos:
-  - repo: local
+  - repo: https://github.com/babywyrm/skillseraph
+    rev: v0.3.0  # first tag with the hook; until it is cut, pin a commit SHA from main
     hooks:
       - id: skillseraph
-        name: skillseraph agent-config scan
-        entry: skillseraph
         args: ["--fail-on", "high", "--quiet"]
-        language: system
-        pass_filenames: false
-        files: '(AGENTS\.md|CLAUDE\.md|SKILL\.md|\.mdc|\.cursor/.*|\.codex/.*|\.claude/.*|\.vscode/.*|copilot-instructions\.md)$'
 ```
 
 ```bash
 pre-commit install
 ```
 
-The hook scans the whole repo when a matching file is staged. It uses the
-gate rules from section 4.
+The hook scans the whole repo (not just staged files) so cross-file chains
+still show up, and it uses the gate rules from section 4. With no `args` it
+runs `skillseraph .` at the default `--fail-on high`. Add `files:` to run it
+only when agent config changes. If skillseraph is already on `PATH`, a
+`repo: local` hook with `entry: skillseraph`, `language: system`, and
+`pass_filenames: false` does the same without the managed install.
 
 ---
 

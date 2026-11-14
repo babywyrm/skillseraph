@@ -244,7 +244,7 @@ skillseraph is designed to run as a gate. See [QUICKSTART.md](QUICKSTART.md) for
 
 - Workstation self-check (`audit-local`) and what it reads on macOS and Linux
 - GitHub Actions (composite action and reusable workflow at `@v0`)
-- Pre-commit hook
+- Pre-commit hook (`id: skillseraph`, shipped in `.pre-commit-hooks.yaml`)
 - Kubernetes init-container / admission scanning of mounted configs
 - Cursor `beforeShellExecution` hook that blocks agent shell commands while a critical finding is present
 

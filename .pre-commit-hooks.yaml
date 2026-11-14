@@ -1,0 +1,7 @@
+- id: skillseraph
+  name: skillseraph
+  description: Scan agent configs (skills, rules, hooks, MCP servers) for security issues
+  entry: skillseraph
+  language: python
+  pass_filenames: false
+  minimum_pre_commit_version: "3.0.0"

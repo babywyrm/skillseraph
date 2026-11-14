@@ -102,6 +102,10 @@ uses [Semantic Versioning](https://semver.org/).
   audits. Commands are redacted, env entries are key names only, URLs are
   hosts only, paths are relative to the target, and absolute paths in
   commands are shown as `<target>/…` or `~/…`.
+- **pre-commit hook.** `.pre-commit-hooks.yaml` ships `id: skillseraph`, so a
+  repo can gate commits with `repo: https://github.com/babywyrm/skillseraph`
+  and no local install. QUICKSTART's old `repo: local` example needed one and
+  missed newer client files through its `files:` filter.
 - **Literal secrets in MCP server configs.** `mcp_server_literal_secret`
   (high) flags credential-named or token-shaped `env` and `headers` values
   that are not `${VAR}`/`{env:VAR}` references or placeholders, in every
