@@ -36,6 +36,7 @@ class Platform(str, Enum):
     AMAZONQ = "amazonq"
     AIDER = "aider"
     GOOSE = "goose"
+    A2A = "a2a"
     DEVIN = "devin"
     BEDROCK = "bedrock"
     LANGCHAIN = "langchain"

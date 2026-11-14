@@ -92,6 +92,7 @@ def is_amazonq_agent(path: Path) -> bool:
 
 def run_all_checks(path: Path, content: str, line_offset: int = 0) -> list[Finding]:
     """Run all check categories against a file's content."""
+    from .a2a import check_a2a_card
     from .approver_manipulation import check_approver_manipulation
     from .authority_fabrication import check_authority_fabrication
     from .automation_triggers import check_automation_triggers
@@ -132,6 +133,7 @@ def run_all_checks(path: Path, content: str, line_offset: int = 0) -> list[Findi
         check_automation_triggers,
         check_config_inheritance,
         check_mcp_servers,
+        check_a2a_card,
         check_skill_invocation,
         check_ide_integrations,
         check_extension_manifest,

@@ -9,7 +9,7 @@ Domain J (config & automation).
 
 | Area | State |
 |------|-------|
-| Multi-platform detection (21 platforms incl. VS Code, JetBrains, Zed, Gemini CLI, opencode, Roo Code, Kiro, Amazon Q, Aider, Goose) | **Strong** |
+| Multi-platform detection (22 platforms incl. VS Code, JetBrains, Zed, Gemini CLI, opencode, Roo Code, Kiro, Amazon Q, Aider, Goose, A2A agent cards) | **Strong** |
 | Data-driven YAML rules (20 packs) | **Strong** — all regex categories YAML-driven |
 | Supply-chain / runtime-escape / approver-manipulation / monitoring coverage | **Strong** — config-plane detections mapped to Atlas D3/J4/J2/J3 |
 | Structural (non-regex) parsers | **Strong** — extension manifests, extensions.json, mcp.json env/allowlist fields, and devcontainer/hooks lifecycle commands |
@@ -23,7 +23,7 @@ Domain J (config & automation).
 | Kubernetes gating | **Strong** — init-container + admission webhook (opt-in) |
 | Policy generation (nullfield) | **Done** |
 | Atlas Domain J coverage | **Strong** — J1–J8 done |
-| Cross-domain (static) coverage | **Medium** — C1 sleeper, I3 tool-schema, D1/D3/D4 supply chain |
+| Cross-domain (static) coverage | **Medium** — C1 sleeper, I3 tool-schema and A2A card text, D1/D3/D4 supply chain |
 
 ---
 
@@ -41,8 +41,6 @@ Domain J (config & automation).
 
 ## Medium
 
-- **A2A agent cards** — static checks on `.well-known/agent.json` for injected
-  descriptions and external endpoints, as tool-schema smuggling does for MCP.
 - **Change-only `audit-local`** — snapshot a workstation and report only what
   changed since, so a new MCP server or extension stands out.
 - **Rule packs** — versioned, shareable rule bundles (community + curated),
@@ -83,6 +81,7 @@ Domain J (config & automation).
 - ~~Redacted reports and literal-secret detection in MCP configs~~
 - ~~Inventory output (`--inventory`)~~
 - ~~pre-commit hook (`.pre-commit-hooks.yaml`)~~
+- ~~A2A agent cards~~
 
 ---
 

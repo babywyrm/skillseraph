@@ -197,6 +197,12 @@ PLATFORMS: dict[Platform, PlatformSpec] = {
         file_patterns=[".goosehints", "**/.goosehints"],
         dep_plant_paths=[],
     ),
+    Platform.A2A: PlatformSpec(
+        name=Platform.A2A,
+        description="A2A agent cards",
+        file_patterns=["**/.well-known/agent-card.json", "**/.well-known/agent.json"],
+        dep_plant_paths=[],
+    ),
     Platform.DEVIN: PlatformSpec(
         name=Platform.DEVIN,
         description="Devin / Cognition agent configs",

@@ -97,6 +97,12 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **A2A agent cards.** `.well-known/agent-card.json` and `agent.json` are
+  scanned. `a2a_card_text_injection` (severity of the matched rule) decodes
+  every card string and re-runs the injection rules, reporting only what JSON
+  escapes hid from the line scan. `a2a_card_plaintext_endpoint` (high) flags
+  `http://` endpoints, and `a2a_card_no_auth` (low) flags remote endpoints
+  without `securitySchemes` or `security`. Evidence names fields and hosts.
 - **`--inventory FILE`.** Writes a verdict-free JSON list of the MCP servers,
   extensions, hooks, and files a scan or `audit-local` read, for fleet
   audits. Commands are redacted, env entries are key names only, URLs are
