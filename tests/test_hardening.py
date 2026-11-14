@@ -113,6 +113,16 @@ def test_long_lines_scan_in_linear_time(tmp_path: Path, token: str):
     assert time.perf_counter() - start < 3
 
 
+def test_binary_assets_are_not_scanned_but_text_with_nul_is(tmp_path: Path):
+    skill = tmp_path / ".codex" / "skills" / "x"
+    skill.mkdir(parents=True)
+    blob = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR" + INJECTION.encode() + "K\u0435".encode()
+    (skill / "logo.PNG").write_bytes(blob)
+    (skill / "SKILL.md").write_bytes(blob)
+    assert scanner.scan_file(skill / "logo.PNG") == []
+    assert scanner.scan_file(skill / "SKILL.md") != []
+
+
 OLD = {
     "remote_bootstrap": r"(curl|wget|fetch)\s+.*(https?://|\|)\s*(sh|bash|python|node)",
     "instruction_in_comment": r"<!--.*?(ignore|override|inject|execute|system:).*?-->",

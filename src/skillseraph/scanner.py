@@ -24,6 +24,12 @@ _META_ONLY = re.compile(_META)
 
 IGNORE_FILE_NAME = ".skillseraphignore"
 MAX_FILE_BYTES = 4 * 1024 * 1024
+# Assets an agent does not read as instructions; text files are scanned even
+# if they contain NUL bytes, so a stray NUL cannot hide a config.
+_BINARY_SUFFIXES = frozenset({
+    ".png", ".jpg", ".jpeg", ".gif", ".webp", ".ico", ".bmp", ".pdf", ".zip", ".gz",
+    ".tgz", ".woff", ".woff2", ".ttf", ".otf", ".wasm", ".so", ".dylib",
+})
 
 
 def read_capped(path: Path) -> tuple[str, bool]:
@@ -175,6 +181,8 @@ def scan_file(
     When *governed* is set, an inline suppression counts only with a non-empty
     reason, a role id in *owner*, and an *until* date that is today or later.
     """
+    if path.suffix.lower() in _BINARY_SUFFIXES:
+        return []
     try:
         content, truncated = read_capped(path)
     except OSError:

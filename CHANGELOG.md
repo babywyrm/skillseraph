@@ -72,6 +72,11 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **Image and font assets are no longer scanned as text.** Skill folders
+  ship PNGs and fonts, and their bytes produced noise findings. Files with
+  image, font, archive, and library extensions are skipped; text files are
+  still scanned even if they contain NUL bytes, so a stray NUL cannot hide
+  a config.
 - **`--baseline` dropped governed exceptions.** Applying a baseline rebuilt
   the result without its `exceptions`, so the JSON report and the console
   count lost the evidence for every honored exception. The baseline now
