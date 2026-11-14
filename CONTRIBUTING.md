@@ -30,10 +30,24 @@ Rules live in `src/skillseraph/rules/*.yaml`.
 
 1. Add a rule: `id`, `pattern`, `severity`, `title`, `detail`, `taxonomy_id`
    (`MCP-T01`–`MCP-T14`), `atlas_id`, and optional `confidence`.
-2. Add a sample that fires to `tests/test_rule_coverage.py`, and a benign
-   sample that does not fire next to the related tests.
-   `test_every_yaml_rule_is_exercised_by_a_test` fails if a rule id appears in
-   no test.
+2. Give the rule `examples` in the same YAML: `match` lines that must fire
+   and `no_match` lines that must not (benign look-alikes):
+
+   ```yaml
+     - id: demo_wipe_disk
+       pattern: 'rm\s+-rf\s+/(\s|$)'
+       severity: critical
+       title: "Wipes the root filesystem"
+       examples:
+         match: ["rm -rf /"]
+         no_match: ["rm -rf ./build"]
+   ```
+
+   `skillseraph rules-test FILE...` checks each rule's fields, that the
+   pattern compiles, that its id does not collide with a packaged rule, and
+   that every example behaves; it exits `1` on any failure and needs no
+   pytest setup. `tests/test_rule_coverage.py` also runs every `match`
+   example through the real scanner.
 3. If the rule needs structure (JSON, TOML), add the check under
    `src/skillseraph/checks/` and type it; `mypy --strict` runs in CI.
 4. Add a line to `CHANGELOG.md` under `Unreleased`, and update the README

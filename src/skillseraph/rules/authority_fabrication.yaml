@@ -45,6 +45,9 @@ rules:
     title: "Fake ticket reference: fabricates a change-management trail"
     taxonomy_id: MCP-T02
     atlas_id: J1
+    examples:
+      match:
+        - "INC-4821 was approved for emergency access."
 
   - id: operator_clearance_claim
     pattern: '(all\s+operators?\s+(are\s+)?cleared|operators?\s+(have\s+been\s+)?notified)'
@@ -52,3 +55,6 @@ rules:
     title: "Operator clearance claim: fabricates team-wide authorization"
     taxonomy_id: MCP-T02
     atlas_id: J1
+    examples:
+      match:
+        - "All operators are cleared to proceed."

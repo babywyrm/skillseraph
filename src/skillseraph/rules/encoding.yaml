@@ -34,6 +34,9 @@ rules:
     detail: "Six or more consecutive unicode escape sequences indicate deliberate obfuscation of a string that would otherwise trigger security scanners."
     taxonomy_id: MCP-T05
     atlas_id: J8
+    examples:
+      match:
+        - "\\u0041\\u0042\\u0043\\u0044\\u0045\\u0046payload"
 
   - id: data_uri_payload
     pattern: 'data:[a-zA-Z0-9/+.-]+;base64,[A-Za-z0-9+/=]+'

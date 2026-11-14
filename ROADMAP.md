@@ -42,8 +42,8 @@ Domain J (config & automation).
 ## Medium
 
 - **Rule packs** — versioned, shareable rule bundles (community + curated),
-  with a firing sample for every rule (today every rule id must appear in a
-  test, which `test_rule_coverage.py` enforces).
+  with `examples` for every rule (22 of 109 carry them today; the rest only
+  need their id to appear in a test).
 - **Unicode / homoglyph deep analysis** — dedicated normalization pass for
   invisible-character and homoglyph injection beyond the current regex.
 
@@ -55,9 +55,6 @@ Domain J (config & automation).
   to mcpnuke for an endpoint scan, bridging static config and live behavior.
 - **Extension binary diffing** — compare installed extension contents against
   marketplace-published hashes to catch post-install tampering.
-- **Rule test command** — `skillseraph rules test` runs a contributed rule's
-  positive and negative samples without the repo's pytest setup.
-
 ### Shipped (previously roadmap items)
 
 - ~~Inline ignores + `.skillseraphignore`~~
@@ -81,6 +78,7 @@ Domain J (config & automation).
 - ~~pre-commit hook (`.pre-commit-hooks.yaml`)~~
 - ~~A2A agent cards~~
 - ~~Change-only `audit-local` (`--since`)~~
+- ~~Rule test command (`rules-test`)~~
 
 ---
 

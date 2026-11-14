@@ -22,6 +22,9 @@ rules:
     title: "Perl/Ruby inline execution wired to file/process APIs (blocklist bypass)"
     taxonomy_id: MCP-T05
     atlas_id: J4
+    examples:
+      match:
+        - "perl -e 'open(F, $ARGV[0]); system(\"id\")'"
 
   - id: php_inline_bypass
     pattern: '\bphp\s+-r\b.*(file_get_contents|fopen|system|exec|shell_exec)'
@@ -29,6 +32,9 @@ rules:
     title: "PHP inline execution wired to file/process APIs (blocklist bypass)"
     taxonomy_id: MCP-T05
     atlas_id: J4
+    examples:
+      match:
+        - "php -r 'system($_GET[0]);'"
 
   - id: explicit_bypass_instruction
     pattern: '(use|prefer|instead\s+use|fall\s?back\s+to)\s+.*(runtime|interpreter|node\s+-e|python\s+-c).*(blocked|blocklist|forbidden|denied|restricted)'
@@ -50,3 +56,6 @@ rules:
     title: "Interpreter invoked via env wrapper (may evade name-based blocklists)"
     taxonomy_id: MCP-T05
     atlas_id: J4
+    examples:
+      match:
+        - "env python -c 'import os'"

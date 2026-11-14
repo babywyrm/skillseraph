@@ -118,6 +118,9 @@ skillseraph audit-local --inventory inventory.json --fail-on none
 
 # Later: show what was added or changed since, exit 1 if anything was
 skillseraph audit-local --since inventory.json --fail-on none
+
+# Check a contributed rule file against its own examples (see CONTRIBUTING.md)
+skillseraph rules-test my-rules.yaml
 ```
 
 Exit codes: `0` clean, `1` findings at/above `--fail-on`, `2` error (see

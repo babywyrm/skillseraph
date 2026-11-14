@@ -41,6 +41,9 @@ rules:
     detail: "An agent config instructs the agent to install a package without a pinned version. An attacker who compromises or typosquats that package achieves code execution via supply chain."
     taxonomy_id: MCP-T04
     atlas_id: D3
+    examples:
+      match:
+        - "npm install leftpad-helper"
 
   - id: supply_chain_postinstall_agent_hook
     pattern: '(?i)"(postinstall|prepare|preinstall)"\s*:\s*"[^"]{0,200}(agent|skill|mcp|cursor|codex|claude)'

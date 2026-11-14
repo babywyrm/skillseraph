@@ -97,6 +97,14 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **`skillseraph rules-test FILE...`.** Checks contributed rule files
+  without the repo's pytest setup: required fields, valid severity and
+  confidence, a pattern that compiles, ids that are unique and do not
+  collide with packaged rules, and `examples.match` / `examples.no_match`
+  samples that behave. Exits 1 on any failing rule, 2 on an unreadable file.
+  Rule examples now live in the rule YAML; the 22 samples from
+  `test_rule_coverage.py` moved there, and that test runs every example
+  through the scanner.
 - **Change-only audits with `--since FILE`.** Compares a run against an
   earlier `--inventory` file and lists MCP servers, extensions, hooks, and
   files that were added, changed (with field names), or removed. Anything

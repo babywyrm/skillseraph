@@ -21,6 +21,7 @@ from .inventory import (
     write_inventory,
 )
 from .models import Finding, Platform, ScanResult, Severity
+from .rules_engine import RuleFileError, packaged_rule_ids, verify_rule_file
 from .scanner import scan_directory
 
 console = Console()
@@ -52,6 +53,7 @@ class _Command(click.Command):
 
 @click.command(cls=_Command)
 @click.argument("target", default=".", type=click.Path())
+@click.argument("rule_files", nargs=-1, type=click.Path())
 @click.option("--platform", "-p", type=click.Choice([p.value for p in Platform]), multiple=True, help="Target platform(s). Default: auto-detect.")
 @click.option("--include-deps/--no-deps", default=True, help="Scan dependency trees (node_modules, vendor, etc.)")
 @click.option("--json-out", "-j", type=click.Path(), help="Write JSON findings to file")
@@ -76,6 +78,7 @@ class _Command(click.Command):
 @click.option("--version", "-V", is_flag=True, help="Show version")
 def main(
     target: str,
+    rule_files: tuple[str, ...],
     platform: tuple[str, ...],
     include_deps: bool,
     json_out: str | None,
@@ -103,6 +106,13 @@ def main(
     if version:
         click.echo(f"skillseraph {__version__}")
         return
+
+    if target == "rules-test":
+        if not rule_files:
+            raise ScanError("rules-test needs one or more rule YAML files")
+        sys.exit(_rules_test(rule_files, quiet))
+    if rule_files:
+        raise ScanError(f"Unexpected extra arguments: {' '.join(rule_files)}")
 
     if target == "demo-fixture":
         from .demo import create_demo_fixture
@@ -251,6 +261,30 @@ def main(
             console.print(f"  [green]NullfieldPolicy written → {generate_policy} ({count} finding(s) mapped)[/green]")
 
     sys.exit(max(_check_threshold(result, fail_on), int(surface_grew)))
+
+
+def _rules_test(rule_files: tuple[str, ...], quiet: bool) -> int:
+    owners = packaged_rule_ids()
+    try:
+        results = [(name, verify_rule_file(Path(name), owners)) for name in rule_files]
+    except RuleFileError as exc:
+        raise ScanError(str(exc)) from exc
+    failed = 0
+    for name, rules in results:
+        if not quiet:
+            console.print(f"[bold]{escape(name)}[/bold]", soft_wrap=True)
+        for rule in rules:
+            failed += bool(rule.problems)
+            if quiet:
+                continue
+            if rule.problems:
+                console.print(f"  [red]✗[/red] {escape(rule.rule_id)}: {escape('; '.join(rule.problems))}", soft_wrap=True)
+            else:
+                console.print(f"  [green]✓[/green] {escape(rule.rule_id)} ({rule.examples} examples)", soft_wrap=True)
+    total = sum(len(rules) for _, rules in results)
+    if not quiet:
+        console.print(f"{total - failed} rule(s) passed, {failed} failed")
+    return 1 if failed else 0
 
 
 def _print_changes(since: str, changes: list[Change]) -> None:

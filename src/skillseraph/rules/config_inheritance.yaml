@@ -16,6 +16,9 @@ rules:
     detail: "Absolute path includes bypass workspace isolation — the file may be writable by other processes."
     taxonomy_id: MCP-T02
     atlas_id: J5
+    examples:
+      match:
+        - "include: /etc/agent/rules.md"
 
   - id: j5_remote_config_fetch
     pattern: "(?i)(extends|include|import|source|from)\\s*[:\\s].*https?://"
@@ -32,3 +35,6 @@ rules:
     detail: "A recursive glob include pulls in all matching files including those planted by dependencies."
     taxonomy_id: MCP-T02
     atlas_id: J5
+    examples:
+      match:
+        - "extends: **/rules/"
