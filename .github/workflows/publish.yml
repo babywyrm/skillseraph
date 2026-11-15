@@ -12,9 +12,11 @@ name: publish
 # Then cut a release (version must match pyproject.toml):
 #   git tag vX.Y.Z && git push origin vX.Y.Z
 #
-# The "release" job also creates a GitHub Release with auto-generated notes
-# and moves the floating major tag for action consumers. For 0.x that tag is
-# v0 (uses: babywyrm/skillseraph@v0).
+# The tag's commit must be on main. After PyPI accepts the upload, the
+# "release" job creates a GitHub Release with auto-generated notes and moves
+# the floating major tag for action consumers. For 0.x that tag is v0
+# (uses: babywyrm/skillseraph@v0). It moves only forward, and never for a
+# prerelease tag.
 
 on:
   push:
@@ -22,6 +24,10 @@ on:
       - "v[0-9]*"
 
 permissions: {}
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
 
 jobs:
   # ── build sdist + wheel ───────────────────────────────────────────────────
@@ -37,6 +43,18 @@ jobs:
 
       - name: Install uv
         uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          enable-cache: false # release artifacts are built from a clean environment
+
+      - name: Check the tag is on main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          STATUS="$(gh api "repos/$GITHUB_REPOSITORY/compare/$GITHUB_SHA...main" --jq .status)"
+          case "$STATUS" in
+            ahead|identical) ;;
+            *) echo "::error::$GITHUB_REF_NAME ($GITHUB_SHA) is not on main"; exit 1 ;;
+          esac
 
       - name: Check tag matches pyproject version
         env:
@@ -77,7 +95,7 @@ jobs:
   # ── GitHub Release + floating major tag ───────────────────────────────────
   release:
     name: GitHub Release
-    needs: build
+    needs: [build, publish-pypi]
     runs-on: ubuntu-latest
     permissions:
       contents: write   # create GitHub release + update floating tag
@@ -98,11 +116,20 @@ jobs:
       - name: Update floating major tag (e.g. v0)
         shell: bash
         run: |
+          if [[ ! "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "$GITHUB_REF_NAME is a prerelease; leaving the floating tag alone"
+            exit 0
+          fi
           # Extract major version from the pushed tag (v0.3.0 → v0)
           MAJOR="${GITHUB_REF_NAME%%.*}"
           REFS="repos/$GITHUB_REPOSITORY/git/refs"
-          if gh api "$REFS/tags/$MAJOR" >/dev/null 2>&1; then
-            gh api -X PATCH "$REFS/tags/$MAJOR" -f sha="$GITHUB_SHA" -F force=true
+          if CURRENT="$(gh api "repos/$GITHUB_REPOSITORY/commits/refs/tags/$MAJOR" --jq .sha 2>/dev/null)"; then
+            STATUS="$(gh api "repos/$GITHUB_REPOSITORY/compare/$CURRENT...$GITHUB_SHA" --jq .status)"
+            case "$STATUS" in
+              ahead) gh api -X PATCH "$REFS/tags/$MAJOR" -f sha="$GITHUB_SHA" -F force=true ;;
+              identical) ;;
+              *) echo "::warning::$MAJOR is not behind $GITHUB_REF_NAME; not moving it" ;;
+            esac
           else
             gh api "$REFS" -f ref="refs/tags/$MAJOR" -f sha="$GITHUB_SHA"
           fi

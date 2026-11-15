@@ -8,6 +8,11 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Security
 
+- **`v0` moves only after a reviewed release (CWE-284).** The release job
+  depended only on the build, so a tag could move `v0`, which every
+  `@v0` user runs, even when the PyPI publish was rejected or never
+  approved. It now waits for the publish, the tag's commit must be on
+  `main`, prerelease tags leave `v0` alone, and `v0` never moves backwards.
 - **Report writes replace a symlink instead of following it (CWE-59).** A
   repo could commit `skillseraph.json` or `skillseraph.sarif` as a link and
   have a CI scan overwrite another file. JSON, SARIF, inventory, baseline,
