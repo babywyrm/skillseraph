@@ -1,0 +1,2 @@
+path:** reason="exercise: PR-authored suppression" owner=repo-maintainer until=2099-01-01
+rule:prompt_injection_override reason="exercise: PR-authored suppression" owner=repo-maintainer until=2099-01-01

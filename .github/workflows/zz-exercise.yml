@@ -1,0 +1,60 @@
+name: exercise
+
+# Temporary: exercises the action's PR hardening from a pull request.
+# Not for merge.
+
+on:
+  pull_request:
+
+permissions: {}
+
+jobs:
+  pr-suppressions:
+    name: PR-authored suppressions are ignored
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - id: scan
+        continue-on-error: true
+        uses: ./ # zizmor: ignore[self-repository] -- exercising this checkout's action
+        with:
+          path: exercise
+          fail-on: high
+          baseline: exercise/bl.json
+          json: exercise/out.json
+      - name: Expect a gated finding and an untouched symlink target
+        env:
+          OUTCOME: ${{ steps.scan.outcome }}
+        run: |
+          test "$OUTCOME" = failure
+          git diff --exit-code README.md
+          test ! -L exercise/out.json
+          python3 -c "import json; d = json.load(open('exercise/out.json')); assert d['files_scanned'] == 1 and d['findings'], d"
+
+  shallow:
+    name: Shallow checkout with a baseline fails closed
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - id: scan
+        continue-on-error: true
+        uses: ./ # zizmor: ignore[self-repository] -- exercising this checkout's action
+        with:
+          path: exercise
+          baseline: exercise/bl.json
+          changed-only: "false"
+      - name: Expect failure
+        env:
+          OUTCOME: ${{ steps.scan.outcome }}
+        run: test "$OUTCOME" = failure
