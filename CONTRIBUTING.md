@@ -20,6 +20,9 @@ SKILLSERAPH_CONTAINER=1 uv run pytest tests/test_container_integration.py
 ```
 
 Workflow changes: `uvx zizmor@1.32.0 --offline .` must report no findings.
+Pin every action to a full commit SHA with its version in a comment, set
+`permissions: {}` at the top, and grant each job only what it uses, with a
+comment on each write scope.
 Third-party actions are pinned to a commit SHA with the version in a comment.
 
 CI runs all of the above on Ubuntu and macOS for Python 3.11–3.13.

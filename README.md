@@ -1,5 +1,9 @@
 # skillseraph
 
+[![ci](https://github.com/babywyrm/skillseraph/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/babywyrm/skillseraph/actions/workflows/ci.yml)
+[![codeql](https://github.com/babywyrm/skillseraph/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/babywyrm/skillseraph/actions/workflows/codeql.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/babywyrm/skillseraph/badge)](https://scorecard.dev/viewer/?uri=github.com/babywyrm/skillseraph)
+
 **Agent config security scanner.** Detects poisoned skills, rules, hooks, and
 instructions across agentic AI platforms — before a coding agent ever reads them.
 

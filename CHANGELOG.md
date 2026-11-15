@@ -63,6 +63,12 @@ uses [Semantic Versioning](https://semver.org/).
   tokens, checkouts drop persisted credentials, and the publish jobs each get
   only the permission they use. The release job uses `gh` instead of a
   third-party release action. CI runs `zizmor` on every workflow.
+- **Code scanning.** CodeQL (`security-extended`) analyzes the Python
+  source and the workflows themselves on every push, pull request, and
+  weekly. OpenSSF Scorecard grades the repo's supply-chain practices
+  weekly, and dependency review fails a pull request that adds a dependency
+  with a known moderate-or-worse vulnerability. Results land in the
+  Security tab; each job gets only the permissions it uses.
 
 ### Changed
 
