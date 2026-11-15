@@ -114,6 +114,10 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **`demo-fixture --force` deletes only an earlier fixture (CWE-73).** It
+  removed the whole output directory, so `--output ~ --force` would wipe the
+  home directory. It now replaces only `repo/` and `home/`, and refuses a
+  directory that holds anything else.
 - **`--watch` gates every scan.** It rechecked `--fail-on` only when the
   finding count changed, so a low finding that became critical kept the
   watcher running, and cross-file correlation never ran. Each scan is now
