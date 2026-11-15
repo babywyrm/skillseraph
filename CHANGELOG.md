@@ -124,6 +124,8 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **`rules-test` refuses rule files over 1 MiB** instead of reading them
+  whole into memory.
 - **`demo-fixture --force` deletes only an earlier fixture (CWE-73).** It
   removed the whole output directory, so `--output ~ --force` would wipe the
   home directory. It now replaces only `repo/` and `home/`, and refuses a

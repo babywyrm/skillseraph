@@ -42,6 +42,12 @@ def test_good_rule_file_passes(tmp_path: Path):
     assert "1 rule(s) passed, 0 failed" in result.output
 
 
+def test_oversized_rule_file_is_refused(tmp_path: Path):
+    result = _run(str(_rules(tmp_path, GOOD + "#" * (1024 * 1024))))
+    assert result.exit_code == 2
+    assert "too large" in result.output
+
+
 def _broken(**fields: str) -> str:
     rule = {
         "id": "demo_rule", "pattern": "'evil'", "severity": "high", "title": '"t"',

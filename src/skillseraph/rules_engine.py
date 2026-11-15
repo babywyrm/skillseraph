@@ -98,6 +98,7 @@ def _hits(pattern: re.Pattern[str], sample: str) -> bool:
     return any(pattern.search(line) for line in sample.splitlines() or [""])
 
 
+_MAX_RULE_FILE_BYTES = 1024 * 1024
 _PROBE_SIZES = (1024, 4096, 16384)
 _PROBE_SECONDS = 0.1
 
@@ -171,7 +172,11 @@ def verify_rule_file(path: Path, owners: dict[str, Path] | None = None) -> list[
     different file is a collision, so a packaged file may test its own ids.
     """
     try:
-        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+        with path.open("rb") as handle:
+            raw = handle.read(_MAX_RULE_FILE_BYTES + 1)
+        if len(raw) > _MAX_RULE_FILE_BYTES:
+            raise RuleFileError(f"rule file {path} is too large (over {_MAX_RULE_FILE_BYTES} bytes)")
+        data = yaml.safe_load(raw.decode("utf-8"))
     except (OSError, UnicodeDecodeError, yaml.YAMLError) as exc:
         raise RuleFileError(f"cannot read rule file {path}: {exc}") from exc
     rules = data.get("rules") if isinstance(data, dict) else None
