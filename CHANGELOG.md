@@ -103,6 +103,14 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **A baseline entry covers only the finding it was made for (CWE-697).**
+  Fingerprints were built from redacted, 200-character evidence, so once
+  `"API_TOKEN": <redacted>` was accepted, any later token on a line in the
+  same file and check matched it, as did a payload sharing the first 200
+  characters. When evidence is redacted or truncated, the fingerprint now
+  hashes the full source line. Other fingerprints are unchanged, so
+  existing baselines keep working. A baseline dated more than a day in the
+  future counts as expired under `--baseline-max-age`.
 - **Changed-only mode no longer drops changed files.** With `path:` set to
   a subdirectory, the action's diff listed repo-root paths that matched
   nothing; non-ASCII names arrived quoted; and symlinked configs never

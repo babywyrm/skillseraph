@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import os
 import re
 from dataclasses import replace
@@ -25,6 +26,7 @@ _META_ONLY = re.compile(_META)
 
 IGNORE_FILE_NAME = ".skillseraphignore"
 MAX_FILE_BYTES = 4 * 1024 * 1024
+_EVIDENCE_CAP = 200  # checks truncate evidence to this many characters
 # Assets an agent does not read as instructions; text files are scanned even
 # if they contain NUL bytes, so a stray NUL cannot hide a config.
 _BINARY_SUFFIXES = frozenset({
@@ -210,8 +212,13 @@ def scan_file(
             atlas_id="J8",
             confidence="medium",
         ))
+    lines = content.splitlines()
     for f in findings:
-        f.evidence, f.detail = redact(f.evidence), redact(f.detail)
+        raw = f.evidence
+        f.evidence, f.detail = redact(raw), redact(f.detail)
+        if f.evidence != raw or len(raw) >= _EVIDENCE_CAP:
+            source = lines[f.line - 1].strip() if f.line and f.line <= len(lines) else raw
+            f.digest = hashlib.sha256(source.encode("utf-8")).hexdigest()
     if not inline_ignores:
         return findings
     ignores = _inline_ignores(

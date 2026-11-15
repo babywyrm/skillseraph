@@ -70,6 +70,8 @@ class Finding:
     atlas_id: str = ""
     mitre_id: str = ""
     confidence: str = "high"
+    # Hash of the source line when evidence was redacted or truncated; never reported.
+    digest: str = ""
 
     @property
     def location(self) -> str:

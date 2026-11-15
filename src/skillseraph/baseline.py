@@ -11,7 +11,7 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import replace
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from .models import Finding, ScanResult
@@ -23,7 +23,7 @@ def fingerprint(finding: Finding, root: Path) -> str:
         rel = finding.path.relative_to(root)
     except ValueError:
         rel = finding.path
-    evidence = " ".join(finding.evidence.split()).lower()
+    evidence = finding.digest or " ".join(finding.evidence.split()).lower()
     raw = f"{rel}|{finding.check}|{evidence}"
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
 
@@ -78,7 +78,8 @@ def is_baseline_expired(path: Path, max_age_days: int) -> bool:
     if created is None:
         return True
     age = datetime.now(UTC) - created
-    return age.days > max_age_days
+    # A future date would never age out; one day absorbs clock skew between machines.
+    return age.days > max_age_days or age < -timedelta(days=1)
 
 
 def apply_baseline(result: ScanResult, baseline_fps: set[str]) -> ScanResult:

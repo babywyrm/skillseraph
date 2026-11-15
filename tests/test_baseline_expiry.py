@@ -61,6 +61,11 @@ class TestExpiry:
         _write_aged_baseline(bpath, _result(tmp_path), days_old=40)
         assert is_baseline_expired(bpath, 30) is True
 
+    def test_future_dated_baseline_is_expired(self, tmp_path):
+        bpath = tmp_path / "b.json"
+        _write_aged_baseline(bpath, _result(tmp_path), days_old=-400)
+        assert is_baseline_expired(bpath, 30) is True
+
     def test_legacy_baseline_treated_as_expired(self, tmp_path):
         bpath = tmp_path / "b.json"
         bpath.write_text(json.dumps({"version": 1, "fingerprints": []}))
