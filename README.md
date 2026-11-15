@@ -45,13 +45,13 @@ skillseraph is uv-native. `uv` is the engine — every install path below uses i
 curl -fsSL https://raw.githubusercontent.com/babywyrm/skillseraph/main/install.sh | sh
 ```
 
-Installs `uv` if it isn't present, then puts `skillseraph` on your PATH via
-`uv tool install`. Takes ~10 seconds on a fast connection.
+Installs `uv` if it isn't present, then puts the latest release (`v0`) on
+your PATH via `uv tool install`. Takes ~10 seconds on a fast connection.
 
-Pin to a release:
+Pin to a release, or use `main` for unreleased changes:
 
 ```bash
-SKILLSERAPH_REF=v0.2.0 curl -fsSL https://raw.githubusercontent.com/babywyrm/skillseraph/main/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/babywyrm/skillseraph/main/install.sh | SKILLSERAPH_REF=v0.2.0 sh
 ```
 
 ### From git (no clone required)

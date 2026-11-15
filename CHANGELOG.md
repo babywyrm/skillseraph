@@ -8,6 +8,12 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Security
 
+- **Installs use reviewed code and locked dependencies (CWE-829).** The
+  action installed with dependency ranges resolved at run time; it now
+  applies the versions in `uv.lock`. `install.sh` installs the latest
+  release (`v0`) instead of `main`, and runs nothing if the download is
+  cut short. The README's pin example set `SKILLSERAPH_REF` on `curl`
+  instead of `sh`, so the pin never applied.
 - **Pull request CI no longer holds `packages: write`.** The image job built
   and tested PR code with a token that could push to GHCR; the push now
   runs in its own job on `main` only.

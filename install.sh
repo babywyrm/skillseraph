@@ -18,7 +18,7 @@
 set -eu
 
 REPO="https://github.com/babywyrm/skillseraph"
-GIT_REF="${SKILLSERAPH_REF:-main}"   # override with SKILLSERAPH_REF=v0.2.0 to pin
+GIT_REF="${SKILLSERAPH_REF:-v0}"   # latest release; SKILLSERAPH_REF=v0.2.0 pins, =main tracks dev
 
 # ── helpers ─────────────────────────────────────────────────────────────────
 
@@ -29,6 +29,10 @@ err()  { printf '\033[1;31merr\033[0m %s\n' "$*" >&2; exit 1; }
 need_cmd() {
     command -v "$1" >/dev/null 2>&1 || err "required command not found: $1"
 }
+
+# Everything below runs from main, called on the last line, so a download
+# cut short by `curl | sh` defines a partial function and runs nothing.
+main() {
 
 # ── OS / arch check ──────────────────────────────────────────────────────────
 
@@ -92,3 +96,6 @@ printf '  skillseraph audit-local                # check this workstation\n'
 printf '  skillseraph --help                     # full usage\n'
 printf '\n'
 printf 'Docs: %s\n' "$REPO"
+}
+
+main "$@"
