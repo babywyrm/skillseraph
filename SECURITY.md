@@ -7,8 +7,10 @@ release (the `v0` tag) is supported.
 
 ## Reporting a vulnerability
 
-Use GitHub private vulnerability reporting: the repository's **Security** tab,
-then **Report a vulnerability**. Do not open a public issue.
+Use GitHub private vulnerability reporting:
+[report a vulnerability](https://github.com/babywyrm/skillseraph/security/advisories/new)
+(or the repository's **Security** tab, then **Report a vulnerability**). Do
+not open a public issue.
 
 Include the version or commit, the command or config that triggers it, and
 the impact. A minimal config file is ideal; a working exploit is not needed.
