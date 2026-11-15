@@ -125,6 +125,9 @@ runs:
         IN_MIN_CONFIDENCE: ${{ inputs.min-confidence }}
         IN_FILES_FROM: ${{ steps.diff.outputs.files }}
       run: |
+        for out in "$IN_SARIF" "$IN_JSON"; do
+          if [ -L "$out" ]; then rm -f "$out"; fi
+        done
         ARGS=("$IN_PATH" "--fail-on" "$IN_FAIL_ON" "--min-confidence" "$IN_MIN_CONFIDENCE")
         ARGS+=("--sarif" "$IN_SARIF" "--json-out" "$IN_JSON")
         if [ -n "$IN_PLATFORM" ]; then

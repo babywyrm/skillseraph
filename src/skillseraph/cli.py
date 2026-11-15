@@ -22,7 +22,7 @@ from .inventory import (
 )
 from .models import Finding, Platform, ScanResult, Severity
 from .rules_engine import RuleFileError, packaged_rule_ids, verify_rule_file
-from .scanner import scan_directory
+from .scanner import scan_directory, write_text
 
 console = Console()
 
@@ -389,7 +389,7 @@ def _write_json(result: ScanResult, path: Path) -> None:
             for f in result.findings
         ],
     }
-    path.write_text(json.dumps(data, indent=2))
+    write_text(path, json.dumps(data, indent=2))
 
 
 _CONFIDENCE_FACTOR = {"high": 1.0, "medium": 0.7, "low": 0.4}
@@ -436,7 +436,7 @@ def _write_sarif(result: ScanResult, path: Path) -> None:
             ],
         }],
     }
-    path.write_text(json.dumps(sarif_doc, indent=2))
+    write_text(path, json.dumps(sarif_doc, indent=2))
 
 
 def _check_threshold(result: ScanResult, fail_on: str) -> int:

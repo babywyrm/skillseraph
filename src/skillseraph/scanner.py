@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import os
 import re
+import tempfile
 from dataclasses import replace
 from datetime import UTC, date, datetime
 from pathlib import Path
@@ -40,6 +42,24 @@ def read_capped(path: Path) -> tuple[str, bool]:
     with path.open("rb") as handle:
         data = handle.read(MAX_FILE_BYTES + 1)
     return data[:MAX_FILE_BYTES].decode("utf-8", errors="replace"), len(data) > MAX_FILE_BYTES
+
+
+def write_text(path: Path, text: str) -> None:
+    """Write *text* to *path* by renaming a temp file over it.
+
+    A symlink already at *path* is replaced, not followed, so a scanned repo
+    cannot point a report write at another file.
+    """
+    fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as handle:
+            handle.write(text)
+        os.chmod(tmp, 0o644)
+        os.replace(tmp, path)
+    except BaseException:
+        with contextlib.suppress(OSError):
+            os.unlink(tmp)
+        raise
 
 _IgnoreEntry = tuple[str, str, str, date | None]
 
