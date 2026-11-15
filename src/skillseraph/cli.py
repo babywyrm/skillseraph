@@ -123,9 +123,9 @@ def main(
             fixture = create_demo_fixture(Path(output), force=force)
         except ValueError as exc:
             raise ScanError(str(exc)) from exc
-        console.print(f"[green]Demo fixture written → {fixture.root}[/green]")
-        console.print(f"  Repo fixture: {fixture.repo}")
-        console.print(f"  Home fixture: {fixture.home}")
+        console.print(f"[green]Demo fixture written → {escape(str(fixture.root))}[/green]")
+        console.print(f"  Repo fixture: {escape(str(fixture.repo))}")
+        console.print(f"  Home fixture: {escape(str(fixture.home))}")
         console.print("  Try: skillseraph <fixture>/repo --fail-on none")
         console.print("  Try: skillseraph audit-local --home <fixture>/home --fail-on none")
         return
@@ -218,7 +218,7 @@ def main(
     if save_baseline:
         count = write_baseline(result, Path(save_baseline))
         if not quiet:
-            console.print(f"[green]Wrote baseline with {count} accepted finding(s) → {save_baseline}[/green]")
+            console.print(f"[green]Wrote baseline with {count} accepted finding(s) → {escape(save_baseline)}[/green]")
         sys.exit(0)
 
     suppressed = 0
@@ -270,7 +270,7 @@ def main(
         from .policy_gen import write_policy
         count = write_policy(result, Path(generate_policy))
         if not quiet:
-            console.print(f"  [green]NullfieldPolicy written → {generate_policy} ({count} finding(s) mapped)[/green]")
+            console.print(f"  [green]NullfieldPolicy written → {escape(generate_policy)} ({count} finding(s) mapped)[/green]")
 
     sys.exit(max(_check_threshold(result, fail_on), int(surface_grew)))
 
@@ -337,7 +337,7 @@ def _print_results(result: ScanResult, fail_on: str) -> None:
             f"[{sev_style}]{f.severity.value.upper()}[/{sev_style}]",
             f.check,
             escape(f.location),
-            f.title,
+            escape(f.title),
         )
 
     console.print(table)
