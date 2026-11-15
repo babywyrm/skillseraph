@@ -381,4 +381,4 @@ checkout. PyPI and the container image are not published yet. See:
 
 ## License
 
-MIT
+[MIT](LICENSE)
