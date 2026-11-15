@@ -21,13 +21,18 @@ class DemoFixture:
 def create_demo_fixture(root: Path, force: bool = False) -> DemoFixture:
     """Create a synthetic fixture with fake poisoned IDE and agent configs."""
     root = root.resolve()
+    repo = root / "repo"
+    home = root / "home"
     if root.exists() and any(root.iterdir()):
         if not force:
             raise ValueError(f"Refusing to write into non-empty directory: {root}")
-        shutil.rmtree(root)
-
-    repo = root / "repo"
-    home = root / "home"
+        if {p.name for p in root.iterdir()} - {"repo", "home"}:
+            raise ValueError(f"--force only replaces an earlier demo fixture; {root} holds other files")
+        for old in (repo, home):
+            if old.is_symlink() or old.is_file():
+                old.unlink()
+            elif old.exists():
+                shutil.rmtree(old)
 
     (repo / ".vscode").mkdir(parents=True, exist_ok=True)
     (repo / ".cursor" / "rules").mkdir(parents=True, exist_ok=True)

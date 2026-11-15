@@ -65,7 +65,7 @@ class _Command(click.Command):
 @click.option("--home", type=click.Path(exists=True, file_okay=False), help="Home directory to audit with the audit-local target")
 @click.option("--allow-extension-publisher", multiple=True, help="Trusted extension publisher for audit-local; unlisted publishers are flagged (repeatable)")
 @click.option("--output", type=click.Path(), help="Output directory for the demo-fixture target")
-@click.option("--force", is_flag=True, help="Allow demo-fixture to replace a non-empty output directory")
+@click.option("--force", is_flag=True, help="Allow demo-fixture to replace an earlier demo fixture in --output")
 @click.option("--baseline", type=click.Path(), help="Suppress findings recorded in this baseline file")
 @click.option("--baseline-max-age", type=int, help="Fail if the baseline is older than this many days (forces re-review)")
 @click.option("--save-baseline", type=click.Path(), help="Write current findings as an accepted baseline and exit 0")

@@ -39,6 +39,18 @@ def test_demo_fixture_refuses_non_empty_output_without_force(tmp_path: Path):
     assert (fixture_root / "keep.txt").read_text() == "do not overwrite"
 
 
+def test_force_replaces_only_an_earlier_fixture(tmp_path: Path):
+    fixture_root = tmp_path / "fixture"
+    runner = CliRunner()
+    assert runner.invoke(main, ["demo-fixture", "--output", str(fixture_root)]).exit_code == 0
+    assert runner.invoke(main, ["demo-fixture", "--output", str(fixture_root), "--force"]).exit_code == 0
+
+    (fixture_root / "keep.txt").write_text("do not delete")
+    result = runner.invoke(main, ["demo-fixture", "--output", str(fixture_root), "--force"])
+    assert result.exit_code == 2
+    assert (fixture_root / "keep.txt").read_text() == "do not delete"
+
+
 def test_smoke_test_runs_fixture_scans_and_cleans_up():
     result = CliRunner().invoke(main, ["smoke-test"])
 
