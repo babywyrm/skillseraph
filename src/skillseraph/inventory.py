@@ -18,7 +18,7 @@ from .checks.extensions import extension_entries
 from .checks.lifecycle import hook_events
 from .checks.mcp_servers import URL_FIELDS, command_line, server_entries
 from .models import ScanResult
-from .scanner import read_capped
+from .scanner import read_capped, write_text
 
 
 @dataclass(frozen=True)
@@ -115,7 +115,7 @@ def build_inventory(result: ScanResult) -> Inventory:
 
 
 def write_inventory(inventory: Inventory, path: Path) -> None:
-    path.write_text(json.dumps({"version": __version__, **asdict(inventory)}, indent=2))
+    write_text(path, json.dumps({"version": __version__, **asdict(inventory)}, indent=2))
 
 
 _IDENTITY = {"files": (), "mcp_servers": ("path", "name"), "extensions": ("path", "id"), "hooks": ("path", "event")}

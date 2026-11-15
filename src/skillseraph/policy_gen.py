@@ -20,6 +20,7 @@ from pathlib import Path
 import yaml
 
 from .models import ScanResult, Severity
+from .scanner import write_text
 
 TOOL_INDICATORS = {
     "exfiltration": ["egress.fetch_url", "gateway.fetch_content"],
@@ -116,5 +117,5 @@ def generate_policy(
 def write_policy(result: ScanResult, path: Path) -> int:
     """Generate and write a NullfieldPolicy YAML file. Returns finding count."""
     policy = generate_policy(result)
-    path.write_text(yaml.dump(policy, default_flow_style=False, sort_keys=False))
+    write_text(path, yaml.dump(policy, default_flow_style=False, sort_keys=False))
     return len(result.findings)

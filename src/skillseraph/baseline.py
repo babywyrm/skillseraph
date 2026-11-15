@@ -15,6 +15,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from .models import Finding, ScanResult
+from .scanner import write_text
 
 
 def fingerprint(finding: Finding, root: Path) -> str:
@@ -39,7 +40,7 @@ def load_baseline(path: Path) -> set[str]:
 def save_baseline(result: ScanResult, path: Path) -> int:
     """Write all current findings as an accepted baseline. Returns count."""
     fps = sorted({fingerprint(f, result.target) for f in result.findings})
-    path.write_text(json.dumps({
+    write_text(path, json.dumps({
         "version": 1,
         "target": str(result.target),
         "created": datetime.now(UTC).isoformat(),

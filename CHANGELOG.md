@@ -8,6 +8,12 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Security
 
+- **Report writes replace a symlink instead of following it (CWE-59).** A
+  repo could commit `skillseraph.json` or `skillseraph.sarif` as a link and
+  have a CI scan overwrite another file. JSON, SARIF, inventory, baseline,
+  and policy output is now written to a temp file and renamed into place,
+  and the action removes a linked output path before scanning, so an
+  `if: always()` artifact upload cannot publish the link's target.
 - **A pull request cannot suppress its own findings (CWE-807).** The action
   read the baseline and `.skillseraphignore` from the PR checkout, so a PR
   could accept the findings it introduced. On `pull_request` events both
