@@ -8,6 +8,9 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Security
 
+- **Pull request CI no longer holds `packages: write`.** The image job built
+  and tested PR code with a token that could push to GHCR; the push now
+  runs in its own job on `main` only.
 - **`v0` moves only after a reviewed release (CWE-284).** The release job
   depended only on the build, so a tag could move `v0`, which every
   `@v0` user runs, even when the PyPI publish was rejected or never
