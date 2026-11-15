@@ -154,16 +154,28 @@ def main(
     if not audit_local and not target_path.exists():
         raise ScanError(f"Target does not exist: {target}")
 
+    # Watch mode: enter the polling loop and never return (until Ctrl-C or fail).
+    if watch:
+        from .watcher import watch_and_scan
+
+        unsupported = {
+            "audit-local": audit_local, "--baseline": baseline, "--save-baseline": save_baseline,
+            "--json-out": json_out, "--sarif": sarif, "--inventory": inventory, "--since": since,
+            "--generate-policy": generate_policy, "--changed-only": changed_only,
+            "--files-from": files_from, "--min-confidence": min_confidence != "low",
+        }
+        if used := [name for name, value in unsupported.items() if value]:
+            raise ScanError(f"--watch does not support {', '.join(used)}")
+        watch_and_scan(
+            target_path, platforms=platforms, include_deps=include_deps,
+            fail_on=fail_on, quiet=quiet, correlate=correlate,
+        )
+        return
+
     try:
         snapshot = load_inventory(Path(since)) if since else None
     except InventoryError as exc:
         raise ScanError(str(exc)) from exc
-
-    # Watch mode: enter the polling loop and never return (until Ctrl-C or fail).
-    if watch:
-        from .watcher import watch_and_scan
-        watch_and_scan(target_path, platforms=platforms, include_deps=include_deps, fail_on=fail_on, quiet=quiet)
-        return  # unreachable (watch exits via sys.exit)
 
     changed: list[Path] | None = None
     if changed_only or files_from:

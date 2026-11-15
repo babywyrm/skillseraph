@@ -16,9 +16,10 @@ import time
 from pathlib import Path
 
 from rich.console import Console
+from rich.markup import escape
 
 from .models import Platform
-from .scanner import scan_directory
+from .scanner import _matching_files, scan_directory
 
 console = Console()
 
@@ -33,16 +34,18 @@ def watch_and_scan(
     include_deps: bool = True,
     fail_on: str = "high",
     quiet: bool = False,
+    correlate: bool = True,
 ) -> None:
     """Poll for filesystem changes and re-scan when agent config files change.
 
-    Exits with code 1 if findings at/above `fail_on` are detected (sidecar mode).
-    In quiet mode, only prints when findings change.
+    Exits with code 1 as soon as a scan has findings at/above `fail_on`
+    (sidecar mode). Results print only when the finding count changes.
     """
     from .cli import _check_threshold, _print_results
+    from .correlator import correlate as run_correlate
 
     if not quiet:
-        console.print(f"[bold]skillseraph --watch[/bold] monitoring {target}")
+        console.print(f"[bold]skillseraph --watch[/bold] monitoring {escape(str(target))}")
         console.print(f"  poll interval: {_POLL_INTERVAL}s | fail_on: {fail_on}")
         console.print(f"  platforms: {[p.value for p in platforms] if platforms else 'auto-detect'}")
         console.print()
@@ -56,7 +59,8 @@ def watch_and_scan(
             changed = _poll_changes(target, last_mtimes, platforms, include_deps)
             if changed or last_finding_count == -1:
                 if changed and not quiet:
-                    console.print(f"[dim]  changed: {', '.join(str(p.name) for p in changed[:5])}{'…' if len(changed) > 5 else ''}[/dim]")
+                    names = escape(", ".join(p.name for p in changed[:5]))
+                    console.print(f"[dim]  changed: {names}{'…' if len(changed) > 5 else ''}[/dim]")
 
                 result = scan_directory(
                     target,
@@ -64,16 +68,18 @@ def watch_and_scan(
                     include_deps=include_deps,
                     governed=fail_on != "none",
                 )
+                if correlate:
+                    result = run_correlate(result)
 
-                if len(result.findings) != last_finding_count:
-                    last_finding_count = len(result.findings)
+                count_changed = len(result.findings) != last_finding_count
+                last_finding_count = len(result.findings)
+                if count_changed and not quiet:
+                    _print_results(result, fail_on)
+                if _check_threshold(result, fail_on) != 0:
                     if not quiet:
-                        _print_results(result, fail_on)
-                    if _check_threshold(result, fail_on) != 0:
-                        if not quiet:
-                            console.print("[red bold]Findings at/above threshold — exiting non-zero.[/red bold]")
-                        sys.exit(1)
-                elif not quiet and changed:
+                        console.print("[red bold]Findings at/above threshold — exiting non-zero.[/red bold]")
+                    sys.exit(1)
+                if not count_changed and not quiet and changed:
                     console.print(f"  [dim]no new findings ({last_finding_count} total)[/dim]")
 
             time.sleep(_POLL_INTERVAL)
@@ -103,18 +109,15 @@ def _poll_changes(
     changed: list[Path] = []
     current_mtimes: dict[str, float] = {}
 
-    for pattern in patterns:
-        for fpath in target.glob(pattern):
-            if not fpath.is_file():
-                continue
-            key = str(fpath)
-            try:
-                mtime = fpath.stat().st_mtime
-            except OSError:
-                continue
-            current_mtimes[key] = mtime
-            if key not in last_mtimes or last_mtimes[key] != mtime:
-                changed.append(fpath)
+    for fpath in sorted(_matching_files(target, patterns)):
+        key = str(fpath)
+        try:
+            mtime = fpath.stat().st_mtime
+        except OSError:
+            continue
+        current_mtimes[key] = mtime
+        if key not in last_mtimes or last_mtimes[key] != mtime:
+            changed.append(fpath)
 
     last_mtimes.clear()
     last_mtimes.update(current_mtimes)

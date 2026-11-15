@@ -103,6 +103,12 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **`--watch` gates every scan.** It rechecked `--fail-on` only when the
+  finding count changed, so a low finding that became critical kept the
+  watcher running, and cross-file correlation never ran. Each scan is now
+  correlated and gated, polling uses the same file matching as a normal
+  scan, and flags watch mode would ignore (`--baseline`, `--sarif`,
+  `--min-confidence`, `audit-local`, and the like) exit 2.
 - **A baseline entry covers only the finding it was made for (CWE-697).**
   Fingerprints were built from redacted, 200-character evidence, so once
   `"API_TOKEN": <redacted>` was accepted, any later token on a line in the
