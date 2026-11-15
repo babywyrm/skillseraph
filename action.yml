@@ -65,7 +65,10 @@ runs:
       shell: bash
       env:
         ACTION_PATH: ${{ github.action_path }}
-      run: uv tool install "$ACTION_PATH"
+      run: |
+        constraints="$RUNNER_TEMP/skillseraph-constraints.txt"
+        uv export --frozen --no-hashes --no-emit-project --project "$ACTION_PATH" -o "$constraints" -q
+        uv tool install --constraints "$constraints" "$ACTION_PATH"
 
     - name: Compute changed files (PR diff mode)
       id: diff
