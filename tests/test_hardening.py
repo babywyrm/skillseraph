@@ -91,10 +91,12 @@ def test_paths_cannot_inject_console_markup(tmp_path: Path, monkeypatch):
     result.target = Path("[red]t[/red]")
     for f in result.findings:
         f.path = Path("[link=evil.example]x.mdc")
+        f.title = "Reads [/bold] from file content"
     cli._print_results(result, "none")
     out = console.export_text()
     assert "[red]t[/red]" in out
     assert "[link=evil.example]x.mdc" in out
+    assert "Reads [/bold] from file content" in out
 
 
 TOKENS = ["curl ", "curl https://x ", "<!-- ", "extends: ", "a", "bash ", "token=", "wget "]

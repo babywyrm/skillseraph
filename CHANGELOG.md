@@ -35,8 +35,9 @@ uses [Semantic Versioning](https://semver.org/).
     could run for minutes) now match in linear time with identical results
     (CWE-1333). `rules-test` fails a pattern that is slow on long input, so
     a contributed rule cannot reintroduce this.
-  - File paths and the scan target are escaped before reaching the console,
-    so a crafted filename cannot inject terminal markup or links.
+  - File paths, finding titles, and the scan target are escaped before
+    reaching the console, so a crafted filename or file content cannot
+    inject terminal markup or links, or crash the report.
 - **Reports no longer copy secret values (CWE-532).** Line rules stored the
   matched line as `evidence` and `detail`, so a one-line `"API_TOKEN":
   "<value>"`, an `Authorization: Bearer` header, or a token in a command
