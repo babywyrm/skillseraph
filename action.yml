@@ -78,6 +78,37 @@ runs:
         git diff --name-only --diff-filter=ACMR "$BASE_SHA...$HEAD_SHA" > "$RUNNER_TEMP/skillseraph-changed.txt"
         echo "files=$RUNNER_TEMP/skillseraph-changed.txt" >> "$GITHUB_OUTPUT"
 
+    - name: Read suppressions from the PR base
+      id: base
+      if: github.event_name == 'pull_request'
+      shell: bash
+      env:
+        BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        IN_PATH: ${{ inputs.path }}
+        IN_BASELINE: ${{ inputs.baseline }}
+      run: |
+        ignore="$IN_PATH/.skillseraphignore"
+        if [ -z "$IN_BASELINE" ] && [ ! -e "$ignore" ] && [ ! -L "$ignore" ]; then
+          exit 0
+        fi
+        if ! git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
+          echo "::error::Suppressions are read from the PR base commit; check out with fetch-depth: 0"
+          exit 2
+        fi
+        rm -f "$ignore"
+        if git cat-file -e "$BASE_SHA:./$ignore" 2>/dev/null; then
+          git show "$BASE_SHA:./$ignore" > "$ignore"
+        fi
+        if [ -n "$IN_BASELINE" ]; then
+          pinned="$RUNNER_TEMP/skillseraph-baseline.json"
+          if git cat-file -e "$BASE_SHA:./$IN_BASELINE" 2>/dev/null; then
+            git show "$BASE_SHA:./$IN_BASELINE" > "$pinned"
+          else
+            echo "{\"created\": \"$(date -u +%Y-%m-%dT%H:%M:%S+00:00)\", \"fingerprints\": []}" > "$pinned"
+          fi
+          echo "baseline=$pinned" >> "$GITHUB_OUTPUT"
+        fi
+
     - name: Run skillseraph
       shell: bash
       env:
@@ -87,7 +118,7 @@ runs:
         IN_JSON: ${{ inputs.json }}
         IN_PLATFORM: ${{ inputs.platform }}
         IN_INCLUDE_DEPS: ${{ inputs.include-deps }}
-        IN_BASELINE: ${{ inputs.baseline }}
+        IN_BASELINE: ${{ github.event_name == 'pull_request' && steps.base.outputs.baseline || inputs.baseline }}
         IN_BASELINE_MAX_AGE: ${{ inputs.baseline-max-age }}
         IN_MIN_CONFIDENCE: ${{ inputs.min-confidence }}
         IN_FILES_FROM: ${{ steps.diff.outputs.files }}

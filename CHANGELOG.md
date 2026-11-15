@@ -8,6 +8,11 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Security
 
+- **A pull request cannot suppress its own findings (CWE-807).** The action
+  read the baseline and `.skillseraphignore` from the PR checkout, so a PR
+  could accept the findings it introduced. On `pull_request` events both
+  now come from the base commit, and the run fails if that commit was not
+  fetched.
 - **Scanned trees are treated as hostile.**
   - A symlink inside a repo that resolves outside it is reported as
     `scan_symlink_outside_target` and never read, so a cloned repo cannot

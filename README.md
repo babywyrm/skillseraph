@@ -170,6 +170,8 @@ skillseraph . --save-baseline .skillseraph-baseline.json
 skillseraph . --baseline .skillseraph-baseline.json --baseline-max-age 90
 ```
 
+On a pull request, the action reads the baseline and `.skillseraphignore` from the base commit, not the PR branch. A PR can add a suppression, but it takes effect only after the PR is reviewed and merged. Check out with `fetch-depth: 0` so the base commit is available. Inline suppressions in changed files still count, because they appear in the PR diff.
+
 ---
 
 ## What it scans
