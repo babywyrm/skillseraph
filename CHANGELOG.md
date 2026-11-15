@@ -103,6 +103,13 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **Changed-only mode no longer drops changed files.** With `path:` set to
+  a subdirectory, the action's diff listed repo-root paths that matched
+  nothing; non-ASCII names arrived quoted; and symlinked configs never
+  matched, so `scan_symlink_outside_target` could not fire. The diff is now
+  relative to `path` with quoting off, and paths are compared without
+  resolving links. `--changed-only` with a terminal on stdin exits 2
+  instead of scanning nothing.
 - **Generated policies no longer carry the machine path.** The
   `skillseraph.io/generated-from` annotation held the absolute scan path,
   which named the user and their directory layout in a manifest meant to be

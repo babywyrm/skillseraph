@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import re
 from dataclasses import replace
 from datetime import UTC, date, datetime
@@ -291,8 +292,7 @@ def scan_directory(
         }
 
     if changed_files is not None:
-        resolved_changed = {(target / f).resolve() for f in changed_files}
-        files_to_scan = files_to_scan & resolved_changed
+        files_to_scan &= {Path(os.path.normpath(target / f)) for f in changed_files}
 
     escaped = {f for f in files_to_scan if not f.resolve().is_relative_to(target)}
     files_to_scan -= escaped

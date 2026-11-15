@@ -169,10 +169,10 @@ def main(
     if changed_only or files_from:
         if files_from:
             changed = [Path(ln.strip()) for ln in Path(files_from).read_text().splitlines() if ln.strip()]
-        elif not sys.stdin.isatty():
-            changed = [Path(ln.strip()) for ln in sys.stdin if ln.strip()]
+        elif sys.stdin.isatty():
+            raise ScanError("--changed-only reads paths from stdin; pipe them in or use --files-from")
         else:
-            changed = []
+            changed = [Path(ln.strip()) for ln in sys.stdin if ln.strip()]
 
     governed = fail_on != "none"
     if audit_local:
