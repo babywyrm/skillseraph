@@ -9,7 +9,13 @@ RUN uv sync --frozen --no-dev --no-editable
 
 FROM python:3.12-slim@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b
 
-RUN groupadd -r seraph && useradd -r -g seraph -d /app seraph
+# Debian security fixes land before the python image is rebuilt, and the app
+# runs from the uv venv, so the system pip is only attack surface.
+RUN apt-get update \
+    && apt-get upgrade -y --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/* \
+    && python -m pip uninstall -y pip \
+    && groupadd -r seraph && useradd -r -g seraph -d /app seraph
 WORKDIR /app
 
 COPY --from=builder /app/.venv .venv/

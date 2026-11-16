@@ -72,6 +72,17 @@ def test_init_container_security_context_gates(tmp_path: Path) -> None:
 
 
 @needs_container
+def test_image_has_no_pip() -> None:
+    """The app runs from the uv venv; a system pip is unused attack surface."""
+    _docker_ready()
+    result = subprocess.run(
+        ["docker", "run", "--rm", "--entrypoint", "python", IMAGE, "-c", "import pip"],
+        check=False, capture_output=True,
+    )
+    assert result.returncode != 0
+
+
+@needs_container
 def test_linux_container_scans_macos_and_linux_layouts(tmp_path: Path) -> None:
     _docker_ready()
 

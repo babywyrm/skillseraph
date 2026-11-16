@@ -13,7 +13,9 @@ uses [Semantic Versioning](https://semver.org/).
   release sdists and wheels get signed provenance; `gh attestation verify`
   checks either (see SECURITY.md). A new `image-scan` workflow scans the
   image with Grype on every change and weekly, reports to code scanning,
-  and fails on fixable high or critical CVEs.
+  and fails on fixable high or critical CVEs. Its first run found two in
+  zlib and one in pip: the image now applies Debian security updates at
+  build time and drops the unused system pip.
 - **Installs use reviewed code and locked dependencies (CWE-829).** The
   action installed with dependency ranges resolved at run time; it now
   applies the versions in `uv.lock`. `install.sh` installs the latest
