@@ -23,7 +23,9 @@ Workflow changes: `uvx zizmor@1.32.0 --offline .` must report no findings.
 Pin every action to a full commit SHA with its version in a comment, set
 `permissions: {}` at the top, and grant each job only what it uses, with a
 comment on each write scope.
-Third-party actions are pinned to a commit SHA with the version in a comment.
+The repository allows only GitHub-owned actions and an explicit list of
+others, and rejects unpinned ones. A new third-party action fails until a
+maintainer adds it to the list, so say why it is needed in the PR.
 
 CI runs all of the above on Ubuntu and macOS for Python 3.11–3.13.
 

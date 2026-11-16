@@ -8,6 +8,11 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Security
 
+- **CI scans every change for secrets.** A `secrets` workflow runs
+  TruffleHog, pinned by digest, over new commits on each push and PR and
+  over the full history weekly. It catches generic credentials such as
+  private keys and connection strings, and checks whether found tokens are
+  live, which GitHub secret scanning does not offer on this plan.
 - **Published artifacts are verifiable and the image is CVE-scanned.** The
   GHCR image gets a signed SLSA provenance attestation and an SBOM, and
   release sdists and wheels get signed provenance; `gh attestation verify`
