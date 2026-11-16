@@ -81,4 +81,11 @@ same commits. Commit subjects are imperative, capitalized after the type
 prefix, and at most 50 characters (`fix: reject unsafe webhook keys`). The
 body explains why.
 
+`main` takes changes only through pull requests, merged by rebase or squash
+once CI, CodeQL, dependency review, the image scan, and the secrets scan
+pass. Release tags (`v0.3.0`) cannot be moved or deleted once pushed.
+Changes to workflows, the action, the Dockerfile, the installer, deploy
+manifests, or dependencies are routed to the code owners in
+[`.github/CODEOWNERS`](.github/CODEOWNERS).
+
 Security issues go through [SECURITY.md](SECURITY.md), not pull requests.

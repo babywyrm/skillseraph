@@ -1,0 +1,8 @@
+# Changes here run in CI, ship to users, or publish releases.
+/.github/            @babywyrm
+/action.yml          @babywyrm
+/Dockerfile          @babywyrm
+/install.sh          @babywyrm
+/deploy/             @babywyrm
+/pyproject.toml      @babywyrm
+/uv.lock             @babywyrm
