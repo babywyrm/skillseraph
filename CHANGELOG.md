@@ -8,6 +8,13 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Security
 
+- **`main` and release tags are protected.** Changes reach `main` only
+  through pull requests that pass CI, CodeQL (with no new high alerts),
+  dependency review, the image scan, and the secrets scan; force-pushes and
+  deletion are blocked. Release tags cannot be moved or deleted, and the
+  PyPI environment accepts only `v*` tags, with maintainer approval per
+  publish. `CODEOWNERS` covers workflows, the action, the image, the
+  installer, deploy manifests, and dependencies.
 - **CI scans every change for secrets.** A `secrets` workflow runs
   TruffleHog, pinned by digest, over new commits on each push and PR and
   over the full history weekly. It catches generic credentials such as
