@@ -19,6 +19,20 @@ Redact tokens, hostnames, and anything else from your own environment.
 You should get an acknowledgement within a week. Once a fix ships, the
 advisory is published with credit unless you ask otherwise.
 
+## Verifying what you run
+
+Release files (from v0.3.0) and the container image carry signed build
+provenance from this repository's workflows. Check it with the GitHub CLI:
+
+```bash
+gh attestation verify skillseraph-0.3.0-py3-none-any.whl --repo babywyrm/skillseraph
+gh attestation verify oci://ghcr.io/babywyrm/skillseraph:latest --repo babywyrm/skillseraph
+```
+
+PyPI uploads also carry the publish step's attestations, shown on the
+project's PyPI page. The image is scanned for known CVEs on every change
+and weekly; results are in the repository's code scanning alerts.
+
 ## In scope
 
 - A crafted input that makes skillseraph run code, write outside its scan or

@@ -8,6 +8,12 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Security
 
+- **Published artifacts are verifiable and the image is CVE-scanned.** The
+  GHCR image gets a signed SLSA provenance attestation and an SBOM, and
+  release sdists and wheels get signed provenance; `gh attestation verify`
+  checks either (see SECURITY.md). A new `image-scan` workflow scans the
+  image with Grype on every change and weekly, reports to code scanning,
+  and fails on fixable high or critical CVEs.
 - **Installs use reviewed code and locked dependencies (CWE-829).** The
   action installed with dependency ranges resolved at run time; it now
   applies the versions in `uv.lock`. `install.sh` installs the latest

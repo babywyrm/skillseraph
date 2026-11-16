@@ -1,0 +1,51 @@
+name: image-scan
+
+# Scans the container image for known CVEs in OS and Python packages.
+# Fails on high or critical CVEs that have a fix, since those are actionable
+# with a base-image or lockfile bump. Runs weekly so a CVE published after
+# the last commit still surfaces.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  grype:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      security-events: write # upload SARIF to code scanning
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Build image
+        run: docker build -t skillseraph:scan .
+
+      - name: Scan image (Grype)
+        id: scan
+        uses: anchore/scan-action@27805bf3b4e84b4a5c980df22ed233c00390a439 # v7.4.2
+        with:
+          image: skillseraph:scan
+          severity-cutoff: high
+          only-fixed: "true"
+          output-format: sarif
+
+      - name: Upload SARIF
+        if: always() && steps.scan.outputs.sarif != '' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        with:
+          sarif_file: ${{ steps.scan.outputs.sarif }}
+          category: grype-image
