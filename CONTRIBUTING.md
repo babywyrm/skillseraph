@@ -27,7 +27,7 @@ The repository allows only GitHub-owned actions and an explicit list of
 others, and rejects unpinned ones. A new third-party action fails until a
 maintainer adds it to the list, so say why it is needed in the PR.
 
-CI runs all of the above on Ubuntu and macOS for Python 3.11–3.13.
+CI runs all of the above on Ubuntu and macOS for Python 3.11–3.15.
 
 ## Adding a detection
 

@@ -118,6 +118,8 @@ uses [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- **CI tests Python 3.11 through 3.15**, and the container image runs on
+  Python 3.15, which clears six of the image's open interpreter CVEs.
 - **Breaking: errors exit 2.** A bad option, missing target, unreadable or
   expired baseline, or internal error now exits `2` with a one-line message
   instead of `1` or a traceback, so CI can tell "findings" (`1`) from "no

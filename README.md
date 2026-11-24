@@ -75,7 +75,7 @@ uv tool install .         # global install from local checkout
 ```
 
 Runs on Linux and macOS. Pure Python (3.11+), no system dependencies.
-GitHub Actions runs the suite on Ubuntu and macOS (Python 3.11–3.13). The
+GitHub Actions runs the suite on Ubuntu and macOS (Python 3.11–3.15). The
 container job builds the Linux image and runs `tests/test_container_integration.py`,
 which scans a macOS home layout and a Linux home layout inside that image.
 Push stays on `main`. Locally: `docker build -t skillseraph:ci .` then
